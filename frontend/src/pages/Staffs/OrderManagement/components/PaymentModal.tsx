@@ -7,7 +7,7 @@ import { toast } from 'sonner'
 import orderApi from '@/apis/order.api'
 import userApi from '@/apis/user.api'
 import type { Order } from '@/types/order.type'
-import { useMutation } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -22,6 +22,20 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
   const [voucherCode, setVoucherCode] = useState('')
   const [foundCustomer, setFoundCustomer] = useState<any>(null)
   const [customerVouchers, setCustomerVouchers] = useState<any[]>([])
+
+  const { data: checkoutData, isFetching: isCheckoutFetching, refetch: refetchCheckout } = useQuery({
+    queryKey: ['order-checkout', order?.id],
+    queryFn: async () => {
+      if (!order?.id) throw new Error('Không tìm thấy đơn hàng')
+      const res = await orderApi.getOrderCheckout(order.id)
+      return res.data.data
+    },
+    enabled: isOpen && Boolean(order?.id)
+  })
+
+  const formatCurrency = (value?: number) => {
+    return new Intl.NumberFormat('vi-VN').format(value ?? 0) + ' VND'
+  }
 
   const lookupCustomerMutation = useMutation({
     mutationFn: async (phoneNum: string) => {
@@ -56,6 +70,7 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
     },
     onSuccess: () => {
       toast.success('Áp dụng voucher thành công!')
+      refetchCheckout()
       onSuccess()
     },
     onError: (err: any) => {
@@ -107,6 +122,10 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
   })
 
   const handlePay = (paymentMethod: 'CASH' | 'PAYOS') => {
+    if (isCheckoutFetching) {
+      toast.info('Đang tải thông tin checkout, vui lòng chờ...')
+      return
+    }
     setMethod(paymentMethod)
     paymentMutation.mutate(paymentMethod)
   }
@@ -115,9 +134,40 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
     <Modal isOpen={isOpen} onClose={onClose} title={`Thanh toán đơn #${order?.code || ''}`}>
       <div className='flex flex-col gap-4'>
         <p className='text-muted-foreground mb-2 text-center text-sm'>
-          Vui lòng chọn phương thức thanh toán cho đơn hàng này. Tổng tiền:{' '}
-          <span className='text-primary ml-1 text-lg font-bold'>{order?.finalPrice?.toLocaleString() || 0} VND</span>
+          Vui lòng chọn phương thức thanh toán cho đơn hàng này.
         </p>
+        <div className='bg-muted/50 mb-2 rounded-md p-4'>
+          {isCheckoutFetching ? (
+            <p className='text-sm text-muted-foreground'>Đang tải thông tin checkout...</p>
+          ) : (
+            <div className='space-y-2 text-sm'>
+              <div className='flex items-center justify-between'>
+                <span className='text-muted-foreground'>Tổng tiền món</span>
+                <span className='font-semibold'>{formatCurrency(checkoutData?.totalAmount)}</span>
+              </div>
+              <div className='flex items-center justify-between'>
+                <span className='text-muted-foreground'>Giảm giá</span>
+                <span className='font-semibold'>- {formatCurrency(checkoutData?.discountAmount)}</span>
+              </div>
+              <div className='flex items-center justify-between'>
+                <span className='text-muted-foreground'>Tổng cọc đã trả</span>
+                <span className='font-semibold text-green-700'>{formatCurrency(checkoutData?.depositedAmount)}</span>
+              </div>
+              <div className='flex items-center justify-between'>
+                <span className='text-muted-foreground'>Cọc bàn đã trả</span>
+                <span className='font-semibold'>{formatCurrency(checkoutData?.tableDepositPaidAmount)}</span>
+              </div>
+              <div className='flex items-center justify-between'>
+                <span className='text-muted-foreground'>Cọc order đã trừ</span>
+                <span className='font-semibold'>{formatCurrency(checkoutData?.orderDepositPaidAmount)}</span>
+              </div>
+              <div className='border-border mt-2 flex items-center justify-between border-t pt-2'>
+                <span className='text-base font-semibold'>Khách cần thanh toán</span>
+                <span className='text-primary text-lg font-bold'>{formatCurrency(checkoutData?.finalAmount)}</span>
+              </div>
+            </div>
+          )}
+        </div>
         <div className='bg-muted/50 mb-2 flex flex-col gap-3 rounded-md p-4'>
           <div className='flex flex-col gap-1.5'>
             <label className='text-sm font-medium'>Số điện thoại khách (tùy chọn)</label>
@@ -196,7 +246,7 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
             variant='outline'
             className={`flex h-24 flex-col gap-2 border-2 transition-all ${method === 'CASH' && paymentMutation.isPending ? 'border-primary bg-primary/5' : 'hover:border-primary hover:bg-primary/5'}`}
             onClick={() => handlePay('CASH')}
-            disabled={paymentMutation.isPending}
+            disabled={paymentMutation.isPending || isCheckoutFetching}
           >
             <Banknote className='h-8 w-8 text-green-600' />
             <span className='font-semibold'>Tiền mặt</span>
@@ -205,7 +255,7 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
             variant='outline'
             className={`flex h-24 flex-col gap-2 border-2 transition-all ${method === 'PAYOS' && paymentMutation.isPending ? 'border-primary bg-primary/5' : 'hover:border-primary hover:bg-primary/5'}`}
             onClick={() => handlePay('PAYOS')}
-            disabled={paymentMutation.isPending}
+            disabled={paymentMutation.isPending || isCheckoutFetching}
           >
             <QrCode className='h-8 w-8 text-blue-600' />
             <span className='font-semibold'>Chuyển khoản (PayOS)</span>
