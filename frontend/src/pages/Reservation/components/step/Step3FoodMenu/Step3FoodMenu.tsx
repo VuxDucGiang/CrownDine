@@ -1,5 +1,5 @@
 import type { PreOrderCartItem } from '@/types/reservation.type'
-import { formatCurrency, getImageUrl } from '@/utils/utils'
+import { formatCurrency, getImageUrl, DEFAULT_PLACEHOLDER } from '@/utils/utils'
 import { Info, Minus, Plus, ShoppingCart, Trash2, PenLine } from 'lucide-react'
 import CountdownTimer from '@/pages/Reservation/components/CountdownTimer'
 import MenuSelector from '@/components/MenuSelector/MenuSelector'
@@ -94,6 +94,12 @@ const Step3FoodMenu = ({ cartItems, onAdd, onRemove, updateQuantity, onUpdateNot
                         src={getImageUrl(item.image)}
                         alt={item.name}
                         className='h-full w-full object-cover'
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement
+                          if (target.src !== DEFAULT_PLACEHOLDER) {
+                            target.src = DEFAULT_PLACEHOLDER
+                          }
+                        }}
                       />
                     </div>
                     <div className='flex flex-1 flex-col justify-between py-0.5'>
