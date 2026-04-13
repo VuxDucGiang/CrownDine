@@ -1,7 +1,7 @@
 import { MoreHorizontal, Mail, Phone, Calendar, Unlock, Trash2, Edit, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EStatus, type Staff } from '@/types/profile.type'
-import { getImageUrl } from '@/utils/utils'
+import { getImageUrl, DEFAULT_PLACEHOLDER } from '@/utils/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -54,6 +54,12 @@ export function StaffCard({ staff, onDelete, onEdit, ontoggleStatus }: StaffCard
               src={getImageUrl((staff as any).avatarUrl || (staff as any).avatar)}
               alt={`${staff.firstName} ${staff.lastName}` || 'Staff Member'}
               className='border-background h-14 w-14 rounded-full border-2 object-cover shadow-sm'
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                if (target.src !== DEFAULT_PLACEHOLDER) {
+                  target.src = DEFAULT_PLACEHOLDER
+                }
+              }}
             />
           </div>
           <div>

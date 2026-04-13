@@ -2,7 +2,7 @@ import RatingStart from '@/components/RatingStart'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useFavoriteStore } from '@/stores/useFavoriteStore'
 import type { MenuCardItem } from '@/types/item.type'
-import { formatCurrency, getImageUrl } from '@/utils/utils'
+import { formatCurrency, getImageUrl, DEFAULT_PLACEHOLDER } from '@/utils/utils'
 import { Eye, Heart } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -78,6 +78,12 @@ const ItemCard = ({ item, isCombo = false, onViewDetails }: Props) => {
           src={getImageUrl(item.imageUrl)}
           alt={item.name}
           className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-110'
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            if (target.src !== DEFAULT_PLACEHOLDER) {
+              target.src = DEFAULT_PLACEHOLDER
+            }
+          }}
         />
         {/* Badge category */}
         {item.status === 'SOLD_OUT' && (
