@@ -1,9 +1,9 @@
 package com.crowndine.service.order;
 
 import com.crowndine.common.enums.EOrderDetailStatus;
-import com.crowndine.dto.request.OrderItemRequest;
-import com.crowndine.dto.request.UpdateOrderDetailRequest;
-import com.crowndine.dto.response.UpdateStatusOrderDetailResponse;
+import com.crowndine.presentation.dto.request.OrderItemRequest;
+import com.crowndine.presentation.dto.request.UpdateOrderDetailRequest;
+import com.crowndine.presentation.dto.response.UpdateStatusOrderDetailResponse;
 import com.crowndine.model.Order;
 
 import java.util.List;

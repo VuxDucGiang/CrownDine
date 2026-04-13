@@ -1,9 +1,9 @@
 package com.crowndine.service.workschedule;
 
 import com.crowndine.common.enums.EWorkScheduleStatus;
-import com.crowndine.dto.request.WorkScheduleCreateRequest;
-import com.crowndine.dto.request.WorkScheduleUpdateRequest;
-import com.crowndine.dto.response.WorkScheduleResponse;
+import com.crowndine.presentation.dto.request.WorkScheduleCreateRequest;
+import com.crowndine.presentation.dto.request.WorkScheduleUpdateRequest;
+import com.crowndine.presentation.dto.response.WorkScheduleResponse;
 import com.crowndine.model.WorkSchedule;
 
 import java.time.LocalDate;

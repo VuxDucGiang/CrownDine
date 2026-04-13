@@ -1,7 +1,7 @@
 package com.crowndine.service.category;
 
-import com.crowndine.dto.request.CategoryRequest;
-import com.crowndine.dto.response.CategoryResponse;
+import com.crowndine.presentation.dto.request.CategoryRequest;
+import com.crowndine.presentation.dto.response.CategoryResponse;
 
 import java.util.List;
 

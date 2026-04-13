@@ -1,8 +1,8 @@
 package com.crowndine.service.staff;
 
-import com.crowndine.dto.request.StaffCreateRequest;
-import com.crowndine.dto.request.UpdateProfileRequest;
-import com.crowndine.dto.response.ProfileResponse;
+import com.crowndine.presentation.dto.request.StaffCreateRequest;
+import com.crowndine.presentation.dto.request.UpdateProfileRequest;
+import com.crowndine.presentation.dto.response.ProfileResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

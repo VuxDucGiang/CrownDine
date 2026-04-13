@@ -1,10 +1,10 @@
 package com.crowndine.service.impl.notification;
 
 import com.crowndine.common.enums.ENotificationType;
-import com.crowndine.dto.response.NotificationResponse;
-import com.crowndine.dto.response.PageResponse;
-import com.crowndine.dto.response.UnreadNotificationCountResponse;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.response.NotificationResponse;
+import com.crowndine.presentation.dto.response.PageResponse;
+import com.crowndine.presentation.dto.response.UnreadNotificationCountResponse;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Notification;
 import com.crowndine.model.Reservation;
 import com.crowndine.model.UserVoucher;

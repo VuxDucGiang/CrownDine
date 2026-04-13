@@ -1,7 +1,7 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.request.ShiftRequest;
-import com.crowndine.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.request.ShiftRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
 import com.crowndine.service.shift.ShiftService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;

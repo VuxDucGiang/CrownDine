@@ -3,7 +3,7 @@ package com.crowndine.ai.tool.function;
 import com.crowndine.ai.schema.request.RevenueReportRequest;
 import com.crowndine.ai.schema.response.RevenueReportResponse;
 import com.crowndine.ai.tool.AIToolNames;
-import com.crowndine.dto.response.DashboardSalesResponse;
+import com.crowndine.presentation.dto.response.DashboardSalesResponse;
 import com.crowndine.service.dashboard.DashboardService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

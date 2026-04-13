@@ -3,10 +3,10 @@ package com.crowndine.service.impl.attendance;
 import com.crowndine.common.enums.EAttendanceStatus;
 import com.crowndine.common.enums.EAttendanceType;
 import com.crowndine.common.enums.EWorkScheduleStatus;
-import com.crowndine.dto.request.AttendanceRecordRequest;
-import com.crowndine.dto.response.*;
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.AttendanceRecordRequest;
+import com.crowndine.presentation.dto.response.*;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Attendance;
 import com.crowndine.model.Shift;
 import com.crowndine.model.User;
@@ -47,7 +47,9 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     private static final List<String> THU = List.of("Thứ Hai", "Thứ Ba", "Thứ Tư", "Thứ Năm", "Thứ Sáu", "Thứ Bảy", "Chủ Nhật");
 
-    /** Một ô lịch: nhân viên + ca + ngày. workScheduleId = null nếu là ca ảo (từ lịch lặp). */
+    /**
+     * Một ô lịch: nhân viên + ca + ngày. workScheduleId = null nếu là ca ảo (từ lịch lặp).
+     */
     @Data
     @AllArgsConstructor
     @NoArgsConstructor
@@ -60,7 +62,9 @@ public class AttendanceServiceImpl implements AttendanceService {
         private Long workScheduleId;
     }
 
-    /** Thu thập tất cả ô lịch trong tuần: ca bình thường + ca lặp đã mở rộng (giống màn Lịch làm việc). */
+    /**
+     * Thu thập tất cả ô lịch trong tuần: ca bình thường + ca lặp đã mở rộng (giống màn Lịch làm việc).
+     */
     private List<ScheduleSlot> collectScheduleSlots(LocalDate weekStart, LocalDate weekEnd, String searchName) {
         List<WorkSchedule> normal = workScheduleRepository.findNormalSchedules(weekStart, weekEnd, null, null, EWorkScheduleStatus.APPROVED);
         Set<String> normalKeys = new HashSet<>();

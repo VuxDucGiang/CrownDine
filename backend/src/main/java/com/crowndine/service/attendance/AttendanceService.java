@@ -1,7 +1,10 @@
 package com.crowndine.service.attendance;
 
-import com.crowndine.dto.request.AttendanceRecordRequest;
-import com.crowndine.dto.response.*;
+import com.crowndine.presentation.dto.request.AttendanceRecordRequest;
+import com.crowndine.presentation.dto.response.AttendanceHistoryItemResponse;
+import com.crowndine.presentation.dto.response.AttendanceScheduleResponse;
+import com.crowndine.presentation.dto.response.AttendanceSummaryResponse;
+import com.crowndine.presentation.dto.response.EmployeeAttendanceInfoResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

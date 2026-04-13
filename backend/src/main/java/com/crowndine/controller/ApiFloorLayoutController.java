@@ -1,11 +1,11 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.request.AreaRequest;
-import com.crowndine.dto.request.FloorRequest;
-import com.crowndine.dto.request.TableRequest;
-import com.crowndine.dto.request.LayoutSaveRequest;
-import com.crowndine.dto.response.ApiResponse;
-import com.crowndine.dto.response.FloorLayoutResponse;
+import com.crowndine.presentation.dto.request.AreaRequest;
+import com.crowndine.presentation.dto.request.FloorRequest;
+import com.crowndine.presentation.dto.request.TableRequest;
+import com.crowndine.presentation.dto.request.LayoutSaveRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.FloorLayoutResponse;
 import com.crowndine.service.layout.AreaService;
 import com.crowndine.service.layout.FloorLayoutService;
 import com.crowndine.service.layout.FloorService;

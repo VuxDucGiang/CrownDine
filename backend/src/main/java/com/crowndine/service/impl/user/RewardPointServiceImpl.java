@@ -1,9 +1,9 @@
 package com.crowndine.service.impl.user;
 
 import com.crowndine.common.enums.EPointReason;
-import com.crowndine.dto.request.VoucherAssignUsersRequest;
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.VoucherAssignUsersRequest;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Order;
 import com.crowndine.model.PointHistory;
 import com.crowndine.model.User;
@@ -19,8 +19,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.crowndine.dto.response.PageResponse;
-import com.crowndine.dto.response.PointHistoryResponse;
+import com.crowndine.presentation.dto.response.PageResponse;
+import com.crowndine.presentation.dto.response.PointHistoryResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;

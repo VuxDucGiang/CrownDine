@@ -1,9 +1,10 @@
 package com.crowndine.service.impl.favorite;
 
-import com.crowndine.dto.response.ComboResponse;
-import com.crowndine.dto.response.FavoriteResponse;
-import com.crowndine.dto.response.ItemResponse;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.response.ComboItemResponse;
+import com.crowndine.presentation.dto.response.ComboResponse;
+import com.crowndine.presentation.dto.response.FavoriteResponse;
+import com.crowndine.presentation.dto.response.ItemResponse;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Combo;
 import com.crowndine.model.Favorite;
 import com.crowndine.model.Item;
@@ -147,7 +148,7 @@ public class FavoriteServiceImpl implements FavoriteService {
                     .averageRating(feedbackRepository.getAverageRatingByComboId(combo.getId()))
                     .feedbackCount((int) feedbackRepository.countByCombo_Id(combo.getId()))
                     .items(combo.getComboItems() != null ? combo.getComboItems().stream()
-                            .map(ci -> com.crowndine.dto.response.ComboItemResponse.builder()
+                            .map(ci -> ComboItemResponse.builder()
                                     .itemId(ci.getItem().getId())
                                     .itemName(ci.getItem().getName())
                                     .quantity(ci.getQuantity())

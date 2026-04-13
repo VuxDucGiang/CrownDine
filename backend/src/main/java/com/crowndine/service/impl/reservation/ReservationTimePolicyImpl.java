@@ -1,6 +1,6 @@
 package com.crowndine.service.impl.reservation;
 
-import com.crowndine.exception.InvalidDataException;
+import com.crowndine.presentation.exception.InvalidDataException;
 import com.crowndine.service.reservation.ReservationTimePolicy;
 import org.springframework.stereotype.Service;
 

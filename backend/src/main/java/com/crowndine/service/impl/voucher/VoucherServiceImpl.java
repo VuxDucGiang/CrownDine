@@ -1,11 +1,11 @@
 package com.crowndine.service.impl.voucher;
 
 import com.crowndine.common.enums.EVoucherType;
-import com.crowndine.dto.request.VoucherRequest;
-import com.crowndine.dto.response.PageResponse;
-import com.crowndine.dto.response.VoucherResponse;
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.VoucherRequest;
+import com.crowndine.presentation.dto.response.PageResponse;
+import com.crowndine.presentation.dto.response.VoucherResponse;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Voucher;
 import com.crowndine.repository.VoucherRepository;
 import com.crowndine.service.voucher.VoucherService;

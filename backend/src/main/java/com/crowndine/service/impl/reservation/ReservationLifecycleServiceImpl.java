@@ -5,12 +5,12 @@ import com.crowndine.common.enums.EReservationStatus;
 import com.crowndine.common.enums.ETableStatus;
 import com.crowndine.common.enums.ERole;
 import com.crowndine.common.utils.CodeUtils;
-import com.crowndine.dto.request.ReservationCreateRequest;
-import com.crowndine.dto.request.StaffReservationCreateRequest;
-import com.crowndine.dto.request.ReservationUpdateTableRequest;
-import com.crowndine.dto.response.ReservationCheckoutResponse;
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.ReservationCreateRequest;
+import com.crowndine.presentation.dto.request.StaffReservationCreateRequest;
+import com.crowndine.presentation.dto.request.ReservationUpdateTableRequest;
+import com.crowndine.presentation.dto.response.ReservationCheckoutResponse;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Order;
 import com.crowndine.model.Reservation;
 import com.crowndine.model.RestaurantTable;
@@ -248,8 +248,8 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
     }
 
     private ReservationCheckoutResponse createReservationInternal(ReservationCreateRequest request, User customer,
-                                                                User createdByStaff, String guestName, String guestPhone,
-                                                                EReservationStatus initialStatus, LocalDateTime startDateTime) {
+                                                                  User createdByStaff, String guestName, String guestPhone,
+                                                                  EReservationStatus initialStatus, LocalDateTime startDateTime) {
         LocalDateTime endDateTime = reservationTimePolicy.calculatePlannedEndTime(startDateTime);
         reservationTimePolicy.validateStartTime(startDateTime);
 

@@ -1,13 +1,12 @@
 package com.crowndine.config;
 
 import com.crowndine.common.enums.ETokenType;
-import com.crowndine.exception.ErrorResponse;
-import com.crowndine.exception.JwtAuthenticationException;
+import com.crowndine.presentation.exception.ErrorResponse;
+import com.crowndine.presentation.exception.JwtAuthenticationException;
 import com.crowndine.security.CustomUserDetailsService;
 import com.crowndine.service.auth.JwtService;
 import com.crowndine.repository.TokenRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.jsonwebtoken.JwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -17,8 +16,6 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.MediaType;
-import org.springframework.security.access.AccessDeniedException;
-import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;

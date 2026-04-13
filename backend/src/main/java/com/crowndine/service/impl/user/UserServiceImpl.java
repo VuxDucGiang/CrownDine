@@ -1,9 +1,9 @@
 package com.crowndine.service.impl.user;
 
-import com.crowndine.dto.request.ChangePasswordRequest;
-import com.crowndine.dto.request.UpdateProfileRequest;
-import com.crowndine.dto.response.ProfileResponse;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.ChangePasswordRequest;
+import com.crowndine.presentation.dto.request.UpdateProfileRequest;
+import com.crowndine.presentation.dto.response.ProfileResponse;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.User;
 import com.crowndine.repository.UserRepository;
 import com.crowndine.service.cloudinary.CloudinaryService;
@@ -13,7 +13,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import com.crowndine.service.mail.MailService;
-import com.crowndine.exception.InvalidDataException;
+import com.crowndine.presentation.exception.InvalidDataException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -175,7 +175,7 @@ public class UserServiceImpl implements UserService {
     @Override
     public void sendEmailOtp(String username, String newEmail) {
         log.info("Generating email OTP for user: {}", username);
-        
+
         if (userRepository.existsByEmail(newEmail)) {
             throw new InvalidDataException("auth.email_exists");
         }
@@ -185,7 +185,7 @@ public class UserServiceImpl implements UserService {
 
         // Generate 6-digit random OTP
         String otp = String.format("%06d", new java.util.Random().nextInt(1000000));
-        
+
         user.setVerificationCode(otp);
         user.setVerificationExpiration(java.time.LocalDateTime.now().plusMinutes(5));
         userRepository.save(user);

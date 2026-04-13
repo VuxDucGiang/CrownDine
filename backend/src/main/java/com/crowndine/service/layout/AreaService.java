@@ -1,7 +1,7 @@
 package com.crowndine.service.layout;
 
-import com.crowndine.dto.request.AreaRequest;
-import com.crowndine.dto.response.AreaResponse;
+import com.crowndine.presentation.dto.request.AreaRequest;
+import com.crowndine.presentation.dto.response.AreaResponse;
 
 public interface AreaService {
 

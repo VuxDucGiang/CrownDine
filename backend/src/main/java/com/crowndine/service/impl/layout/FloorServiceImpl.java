@@ -1,14 +1,13 @@
 package com.crowndine.service.impl.layout;
 
-import com.crowndine.dto.request.FloorRequest;
-import com.crowndine.dto.response.FloorResponse;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.FloorRequest;
+import com.crowndine.presentation.dto.response.FloorResponse;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Floor;
 import com.crowndine.repository.FloorRepository;
 import com.crowndine.service.layout.FloorService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

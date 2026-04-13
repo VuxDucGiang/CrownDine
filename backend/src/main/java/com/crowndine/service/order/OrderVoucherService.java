@@ -1,7 +1,7 @@
 package com.crowndine.service.order;
 
-import com.crowndine.dto.response.VoucherValidateResponse;
-import com.crowndine.dto.response.OrderApplyVoucherResponse;
+import com.crowndine.presentation.dto.response.VoucherValidateResponse;
+import com.crowndine.presentation.dto.response.OrderApplyVoucherResponse;
 
 public interface OrderVoucherService {
 

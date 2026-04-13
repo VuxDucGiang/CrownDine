@@ -10,13 +10,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
-import com.crowndine.dto.request.ForgotPasswordRequest;
-import com.crowndine.dto.request.GoogleLoginRequest;
-import com.crowndine.dto.request.LoginRequest;
-import com.crowndine.dto.request.RegisterRequest;
-import com.crowndine.dto.request.ResetPasswordRequest;
-import com.crowndine.dto.response.ApiResponse;
-import com.crowndine.dto.response.TokenResponse;
+import com.crowndine.presentation.dto.request.ForgotPasswordRequest;
+import com.crowndine.presentation.dto.request.GoogleLoginRequest;
+import com.crowndine.presentation.dto.request.LoginRequest;
+import com.crowndine.presentation.dto.request.RegisterRequest;
+import com.crowndine.presentation.dto.request.ResetPasswordRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.TokenResponse;
 import com.crowndine.service.auth.AuthenticationService;
 
 import jakarta.servlet.http.HttpServletRequest;

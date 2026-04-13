@@ -3,7 +3,7 @@ package com.crowndine.service.impl.cloudinary;
 import com.cloudinary.Cloudinary;
 import com.cloudinary.Transformation;
 import com.cloudinary.utils.ObjectUtils;
-import com.crowndine.exception.InvalidDataException;
+import com.crowndine.presentation.exception.InvalidDataException;
 import com.crowndine.service.cloudinary.CloudinaryService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

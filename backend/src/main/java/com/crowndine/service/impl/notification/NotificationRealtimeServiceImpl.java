@@ -1,6 +1,6 @@
 package com.crowndine.service.impl.notification;
 
-import com.crowndine.dto.response.NotificationRealtimeResponse;
+import com.crowndine.presentation.dto.response.NotificationRealtimeResponse;
 import com.crowndine.model.Notification;
 import com.crowndine.service.notification.NotificationRealtimeService;
 import lombok.RequiredArgsConstructor;

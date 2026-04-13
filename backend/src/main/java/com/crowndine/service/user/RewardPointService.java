@@ -1,7 +1,7 @@
 package com.crowndine.service.user;
 
-import com.crowndine.dto.response.PageResponse;
-import com.crowndine.dto.response.PointHistoryResponse;
+import com.crowndine.presentation.dto.response.PageResponse;
+import com.crowndine.presentation.dto.response.PointHistoryResponse;
 
 public interface RewardPointService {
     void addPointsFromOrder(Long orderId);

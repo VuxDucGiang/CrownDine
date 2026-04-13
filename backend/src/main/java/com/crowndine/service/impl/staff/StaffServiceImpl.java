@@ -2,11 +2,11 @@ package com.crowndine.service.impl.staff;
 
 import com.crowndine.common.enums.ERole;
 import com.crowndine.common.enums.EUserStatus;
-import com.crowndine.dto.request.StaffCreateRequest;
-import com.crowndine.dto.request.UpdateProfileRequest;
-import com.crowndine.dto.response.ProfileResponse;
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.StaffCreateRequest;
+import com.crowndine.presentation.dto.request.UpdateProfileRequest;
+import com.crowndine.presentation.dto.response.ProfileResponse;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Role;
 import com.crowndine.model.User;
 import com.crowndine.repository.RoleRepository;

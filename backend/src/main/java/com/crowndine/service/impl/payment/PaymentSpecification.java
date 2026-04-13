@@ -1,6 +1,6 @@
 package com.crowndine.service.impl.payment;
 
-import com.crowndine.dto.request.PaymentFilterRequest;
+import com.crowndine.presentation.dto.request.PaymentFilterRequest;
 import com.crowndine.model.Payment;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.JoinType;

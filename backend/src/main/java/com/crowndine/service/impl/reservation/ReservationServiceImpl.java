@@ -1,8 +1,8 @@
 package com.crowndine.service.impl.reservation;
 
 import com.crowndine.common.enums.EReservationStatus;
-import com.crowndine.dto.response.*;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.response.*;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Order;
 import com.crowndine.model.OrderDetail;
 import com.crowndine.model.Reservation;

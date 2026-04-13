@@ -1,10 +1,9 @@
 package com.crowndine.service.layout;
 
 import com.crowndine.common.enums.ETableStatus;
-import com.crowndine.dto.request.TableRequest;
-import com.crowndine.dto.response.RestaurantTableResponse;
-import com.crowndine.dto.response.TableLayoutResponse;
-import com.crowndine.dto.response.TableResponse;
+import com.crowndine.presentation.dto.request.TableRequest;
+import com.crowndine.presentation.dto.response.RestaurantTableResponse;
+import com.crowndine.presentation.dto.response.TableLayoutResponse;
 
 import java.time.LocalDate;
 import java.time.LocalTime;

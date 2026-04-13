@@ -1,7 +1,7 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.response.ApiResponse;
-import com.crowndine.dto.response.DashboardSalesResponse;
+import com.crowndine.presentation.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.DashboardSalesResponse;
 import com.crowndine.service.dashboard.DashboardService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

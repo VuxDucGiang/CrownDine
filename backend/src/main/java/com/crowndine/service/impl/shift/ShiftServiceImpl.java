@@ -1,9 +1,9 @@
 package com.crowndine.service.impl.shift;
 
-import com.crowndine.dto.request.ShiftRequest;
-import com.crowndine.dto.response.ShiftResponse;
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.ShiftRequest;
+import com.crowndine.presentation.dto.response.ShiftResponse;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Shift;
 import com.crowndine.repository.ShiftRepository;
 import com.crowndine.service.shift.ShiftService;

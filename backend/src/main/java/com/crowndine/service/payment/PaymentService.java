@@ -1,9 +1,9 @@
 package com.crowndine.service.payment;
 
-import com.crowndine.dto.request.PaymentFilterRequest;
-import com.crowndine.dto.response.PageResponse;
-import com.crowndine.dto.response.PaymentDetailResponse;
-import com.crowndine.dto.response.PaymentSummaryResponse;
+import com.crowndine.presentation.dto.request.PaymentFilterRequest;
+import com.crowndine.presentation.dto.response.PageResponse;
+import com.crowndine.presentation.dto.response.PaymentDetailResponse;
+import com.crowndine.presentation.dto.response.PaymentSummaryResponse;
 
 public interface PaymentService {
 

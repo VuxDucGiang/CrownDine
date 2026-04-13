@@ -1,7 +1,7 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.request.*;
-import com.crowndine.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.request.*;
+import com.crowndine.presentation.dto.response.ApiResponse;
 import com.crowndine.service.reservation.ReservationLifecycleService;
 import com.crowndine.service.reservation.ReservationOrderService;
 import com.crowndine.service.reservation.ReservationService;

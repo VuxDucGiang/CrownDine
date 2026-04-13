@@ -1,12 +1,12 @@
 package com.crowndine.service.order;
 
 import com.crowndine.common.enums.EOrderStatus;
-import com.crowndine.dto.request.OrderItemBatchRequest;
-import com.crowndine.dto.request.OrderItemRemoveRequest;
-import com.crowndine.dto.request.OrderItemRequest;
-import com.crowndine.dto.request.OrderRequest;
-import com.crowndine.dto.response.OrderResponse;
-import com.crowndine.dto.response.PageResponse;
+import com.crowndine.presentation.dto.request.OrderItemBatchRequest;
+import com.crowndine.presentation.dto.request.OrderItemRemoveRequest;
+import com.crowndine.presentation.dto.request.OrderItemRequest;
+import com.crowndine.presentation.dto.request.OrderRequest;
+import com.crowndine.presentation.dto.response.OrderResponse;
+import com.crowndine.presentation.dto.response.PageResponse;
 import com.crowndine.model.Order;
 import com.crowndine.model.Reservation;
 import com.crowndine.model.User;

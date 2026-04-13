@@ -1,8 +1,8 @@
 package com.crowndine.service.feedback;
 
-import com.crowndine.dto.request.FeedbackCreateRequest;
-import com.crowndine.dto.request.FeedbackUpdateRequest;
-import com.crowndine.dto.response.FeedbackResponse;
+import com.crowndine.presentation.dto.request.FeedbackCreateRequest;
+import com.crowndine.presentation.dto.request.FeedbackUpdateRequest;
+import com.crowndine.presentation.dto.response.FeedbackResponse;
 
 import java.util.List;
 

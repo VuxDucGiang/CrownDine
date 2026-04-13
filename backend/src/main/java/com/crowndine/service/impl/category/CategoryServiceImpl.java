@@ -1,8 +1,8 @@
 package com.crowndine.service.impl.category;
 
-import com.crowndine.dto.request.CategoryRequest;
-import com.crowndine.dto.response.CategoryResponse;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.CategoryRequest;
+import com.crowndine.presentation.dto.response.CategoryResponse;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Category;
 import com.crowndine.repository.CategoryRepository;
 import com.crowndine.service.category.CategoryService;

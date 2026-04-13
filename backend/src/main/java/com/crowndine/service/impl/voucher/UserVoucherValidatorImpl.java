@@ -1,6 +1,6 @@
 package com.crowndine.service.impl.voucher;
 
-import com.crowndine.exception.InvalidDataException;
+import com.crowndine.presentation.exception.InvalidDataException;
 import com.crowndine.model.UserVoucher;
 import com.crowndine.service.voucher.UserVoucherValidator;
 import org.springframework.stereotype.Service;

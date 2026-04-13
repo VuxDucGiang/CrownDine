@@ -1,11 +1,11 @@
 package com.crowndine.service.impl.combo;
 
-import com.crowndine.dto.request.ComboRequest;
-import com.crowndine.dto.response.ComboItemResponse;
-import com.crowndine.dto.response.ComboResponse;
-import com.crowndine.dto.response.TopSellingComboResponse;
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.ComboRequest;
+import com.crowndine.presentation.dto.response.ComboItemResponse;
+import com.crowndine.presentation.dto.response.ComboResponse;
+import com.crowndine.presentation.dto.response.TopSellingComboResponse;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Combo;
 import com.crowndine.model.ComboItem;
 import com.crowndine.model.Item;
@@ -161,8 +161,8 @@ public class ComboServiceImpl implements ComboService {
     private ComboResponse mapToResponse(Combo combo) {
         List<ComboItemResponse> items = (combo.getComboItems() == null) ? new ArrayList<>()
                 : combo.getComboItems().stream()
-                        .map(this::mapComboItemToResponse)
-                        .toList();
+                .map(this::mapComboItemToResponse)
+                .toList();
 
         return ComboResponse.builder()
                 .id(combo.getId())

@@ -1,9 +1,8 @@
 package com.crowndine.service.shift;
 
-import com.crowndine.dto.request.ShiftRequest;
-import com.crowndine.dto.response.ShiftResponse;
+import com.crowndine.presentation.dto.request.ShiftRequest;
+import com.crowndine.presentation.dto.response.ShiftResponse;
 
-import java.time.LocalTime;
 import java.util.List;
 
 public interface ShiftService {

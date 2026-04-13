@@ -1,12 +1,12 @@
 package com.crowndine.controller;
 
 import com.cloudinary.Cloudinary;
-import com.crowndine.dto.request.ChangePasswordRequest;
-import com.crowndine.dto.request.SendEmailOtpRequest;
-import com.crowndine.dto.request.UpdateProfileRequest;
-import com.crowndine.dto.request.VerifyEmailOtpRequest;
-import com.crowndine.dto.response.ApiResponse;
-import com.crowndine.dto.response.ProfileResponse;
+import com.crowndine.presentation.dto.request.ChangePasswordRequest;
+import com.crowndine.presentation.dto.request.SendEmailOtpRequest;
+import com.crowndine.presentation.dto.request.UpdateProfileRequest;
+import com.crowndine.presentation.dto.request.VerifyEmailOtpRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.ProfileResponse;
 import com.crowndine.service.user.RewardPointService;
 import com.crowndine.service.user.UserService;
 import jakarta.validation.Valid;

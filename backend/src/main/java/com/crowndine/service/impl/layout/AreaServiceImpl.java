@@ -1,8 +1,8 @@
 package com.crowndine.service.impl.layout;
 
-import com.crowndine.dto.request.AreaRequest;
-import com.crowndine.dto.response.AreaResponse;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.AreaRequest;
+import com.crowndine.presentation.dto.response.AreaResponse;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Area;
 import com.crowndine.model.Floor;
 import com.crowndine.repository.AreaRepository;
@@ -10,10 +10,7 @@ import com.crowndine.repository.FloorRepository;
 import com.crowndine.service.layout.AreaService;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-
-import java.util.List;
 
 @Service
 @RequiredArgsConstructor

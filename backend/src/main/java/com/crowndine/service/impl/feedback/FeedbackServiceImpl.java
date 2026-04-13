@@ -2,11 +2,11 @@ package com.crowndine.service.impl.feedback;
 
 import com.crowndine.common.enums.EOrderStatus;
 import com.crowndine.common.enums.EReservationStatus;
-import com.crowndine.dto.request.FeedbackCreateRequest;
-import com.crowndine.dto.request.FeedbackUpdateRequest;
-import com.crowndine.dto.response.FeedbackResponse;
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.FeedbackCreateRequest;
+import com.crowndine.presentation.dto.request.FeedbackUpdateRequest;
+import com.crowndine.presentation.dto.response.FeedbackResponse;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Feedback;
 import com.crowndine.model.Order;
 import com.crowndine.model.OrderDetail;
@@ -62,7 +62,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         if (order == null || order.getUser() == null) {
             throw new InvalidDataException("Order không hợp lệ");
         }
-        
+
         if (!order.getUser().getId().equals(user.getId())) {
             throw new InvalidDataException("Không có quyền feedback đơn này");
         }
@@ -78,15 +78,15 @@ public class FeedbackServiceImpl implements FeedbackService {
             }
         }
 
-        LocalDateTime completedAt = (detail != null) ? resolveCompletedAt(detail) : 
-                                    (order.getStatus() == EOrderStatus.COMPLETED ? order.getUpdatedAt() : null);
-        
+        LocalDateTime completedAt = (detail != null) ? resolveCompletedAt(detail) :
+                (order.getStatus() == EOrderStatus.COMPLETED ? order.getUpdatedAt() : null);
+
         if (completedAt == null && order.getReservation() != null) {
             Reservation res = order.getReservation();
             if (res.getStatus() == EReservationStatus.COMPLETED) {
-                completedAt = res.getUpdatedAt() != null ? res.getUpdatedAt() : 
-                              (res.getDate() != null && res.getEndTime() != null ? 
-                              LocalDateTime.of(res.getDate(), res.getEndTime()) : null);
+                completedAt = res.getUpdatedAt() != null ? res.getUpdatedAt() :
+                        (res.getDate() != null && res.getEndTime() != null ?
+                                LocalDateTime.of(res.getDate(), res.getEndTime()) : null);
             }
         }
 
@@ -107,7 +107,7 @@ public class FeedbackServiceImpl implements FeedbackService {
         feedback.setComment(request.getComment());
         feedback.setUser(user);
         feedback.setOrder(order);
-        
+
         if (detail != null) {
             feedback.setItem(detail.getItem());
             feedback.setCombo(detail.getCombo());

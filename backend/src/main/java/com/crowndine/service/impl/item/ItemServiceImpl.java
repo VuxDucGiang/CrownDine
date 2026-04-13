@@ -1,10 +1,10 @@
 package com.crowndine.service.impl.item;
 
 import com.crowndine.common.enums.EItemStatus;
-import com.crowndine.dto.request.ItemRequest;
-import com.crowndine.dto.response.ItemResponse;
-import com.crowndine.dto.response.PageResponse;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.ItemRequest;
+import com.crowndine.presentation.dto.response.ItemResponse;
+import com.crowndine.presentation.dto.response.PageResponse;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Category;
 import com.crowndine.model.Item;
 import com.crowndine.repository.CategoryRepository;

@@ -1,10 +1,8 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.request.ChatConversationRequest;
-import com.crowndine.dto.request.ChatMessageRequest;
-import com.crowndine.dto.response.ApiResponse;
-import com.crowndine.dto.response.ChatConversationResponse;
-import com.crowndine.dto.response.ChatMessageResponse;
+import com.crowndine.presentation.dto.request.ChatConversationRequest;
+import com.crowndine.presentation.dto.request.ChatMessageRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
 import com.crowndine.service.chat.ChatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -12,7 +10,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
-import java.util.List;
 
 @RestController
 @RequiredArgsConstructor

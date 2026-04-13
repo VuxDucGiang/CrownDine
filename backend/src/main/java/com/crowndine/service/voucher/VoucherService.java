@@ -1,9 +1,9 @@
 package com.crowndine.service.voucher;
 
 import com.crowndine.common.enums.EVoucherType;
-import com.crowndine.dto.request.VoucherRequest;
-import com.crowndine.dto.response.PageResponse;
-import com.crowndine.dto.response.VoucherResponse;
+import com.crowndine.presentation.dto.request.VoucherRequest;
+import com.crowndine.presentation.dto.response.PageResponse;
+import com.crowndine.presentation.dto.response.VoucherResponse;
 import com.crowndine.model.Voucher;
 
 public interface VoucherService {

@@ -1,9 +1,9 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.request.StaffCreateRequest;
-import com.crowndine.dto.request.UpdateProfileRequest;
-import com.crowndine.dto.response.ApiResponse;
-import com.crowndine.dto.response.ProfileResponse;
+import com.crowndine.presentation.dto.request.StaffCreateRequest;
+import com.crowndine.presentation.dto.request.UpdateProfileRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.ProfileResponse;
 import com.crowndine.service.staff.StaffService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,8 +1,8 @@
 package com.crowndine.service.impl.layout;
 
 import com.crowndine.common.enums.ETableStatus;
-import com.crowndine.dto.response.RestaurantTableResponse;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.response.RestaurantTableResponse;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.RestaurantTable;
 import com.crowndine.repository.RestaurantTableRepository;
 import com.crowndine.service.layout.RestaurantTableStateService;

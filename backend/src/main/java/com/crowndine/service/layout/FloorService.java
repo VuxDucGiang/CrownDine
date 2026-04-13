@@ -1,6 +1,6 @@
 package com.crowndine.service.layout;
-import com.crowndine.dto.request.FloorRequest;
-import com.crowndine.dto.response.FloorResponse;
+import com.crowndine.presentation.dto.request.FloorRequest;
+import com.crowndine.presentation.dto.response.FloorResponse;
 
 import java.util.List;
 

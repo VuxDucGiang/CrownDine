@@ -1,9 +1,9 @@
 package com.crowndine.controller;
 
 import com.crowndine.common.enums.EPaymentMethod;
-import com.crowndine.dto.request.PaymentFilterRequest;
-import com.crowndine.dto.request.PaymentRequest;
-import com.crowndine.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.request.PaymentFilterRequest;
+import com.crowndine.presentation.dto.request.PaymentRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
 import com.crowndine.service.payment.PaymentFactory;
 import com.crowndine.service.payment.PaymentService;
 import com.crowndine.service.payment.PaymentStrategy;

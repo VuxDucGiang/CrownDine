@@ -2,8 +2,8 @@ package com.crowndine.ai.service;
 
 import com.crowndine.ai.tool.AIToolNames;
 import com.crowndine.ai.tool.method.AdminProductMethodTools;
-import com.crowndine.exception.AiRateLimitException;
-import com.crowndine.exception.AiServiceException;
+import com.crowndine.presentation.exception.AiRateLimitException;
+import com.crowndine.presentation.exception.AiServiceException;
 import com.google.genai.errors.ApiException;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.ai.chat.client.ChatClient;
@@ -66,7 +66,8 @@ public class AIAdminChatService {
         }
 
         return switch (apiException.code()) {
-            case 429 -> new AiRateLimitException("AI da het quota hoac dang bi gioi han tan suat. Vui long thu lai sau it phut.", throwable);
+            case 429 ->
+                    new AiRateLimitException("AI da het quota hoac dang bi gioi han tan suat. Vui long thu lai sau it phut.", throwable);
             case 400 -> new AiServiceException("Yeu cau gui toi AI khong hop le. Vui long thu lai sau.", throwable);
             case 401, 403 -> new AiServiceException("AI service dang gap loi xac thuc hoac quyen truy cap.", throwable);
             case 404 -> new AiServiceException("Khong tim thay model AI hoac tai nguyen AI duoc cau hinh.", throwable);

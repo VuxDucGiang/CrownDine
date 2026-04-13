@@ -1,12 +1,12 @@
 package com.crowndine.service.impl.workschedule;
 
 import com.crowndine.common.enums.EWorkScheduleStatus;
-import com.crowndine.dto.request.WorkScheduleCreateRequest;
-import com.crowndine.dto.request.WorkScheduleUpdateRequest;
-import com.crowndine.dto.response.ShiftResponse;
-import com.crowndine.dto.response.WorkScheduleResponse;
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.WorkScheduleCreateRequest;
+import com.crowndine.presentation.dto.request.WorkScheduleUpdateRequest;
+import com.crowndine.presentation.dto.response.ShiftResponse;
+import com.crowndine.presentation.dto.response.WorkScheduleResponse;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Shift;
 import com.crowndine.model.User;
 import com.crowndine.model.WorkSchedule;
@@ -20,10 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.DayOfWeek;
 import java.time.LocalDate;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -40,7 +38,7 @@ public class WorkScheduleServiceImpl implements WorkScheduleService {
 
     @Override
     public List<WorkScheduleResponse> getWorkSchedules(LocalDate fromDate, LocalDate toDate, LocalDate date,
-            EWorkScheduleStatus status, Long userId, Long shiftId) {
+                                                       EWorkScheduleStatus status, Long userId, Long shiftId) {
         if (date != null) {
             fromDate = date;
             toDate = date;
@@ -149,6 +147,7 @@ public class WorkScheduleServiceImpl implements WorkScheduleService {
             throw new InvalidDataException("Không thể xếp lịch cho ngày trong quá khứ"); //
         }
     }
+
     private List<User> fetchAndValidateStaffs(List<Long> staffIds) {
         List<User> staffs = userRepository.findAllById(staffIds);
         if (staffs.size() != staffIds.size()) {
@@ -156,11 +155,13 @@ public class WorkScheduleServiceImpl implements WorkScheduleService {
         }
         return staffs;
     }
+
     private boolean shouldCreateTemplates(WorkScheduleCreateRequest request) {
         return Boolean.TRUE.equals(request.getRepeatWeekly())
                 && request.getDaysOfWeek() != null
                 && !request.getDaysOfWeek().isEmpty(); //
     }
+
     private long handleCreateTemplates(WorkScheduleCreateRequest request, List<User> staffs, Shift shift) {
         LocalDate endDate = request.getEndDate() != null ? request.getEndDate()
                 : request.getWorkDate().plusMonths(2); //

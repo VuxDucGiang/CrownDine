@@ -1,7 +1,7 @@
 package com.crowndine.controller;
 
 import com.crowndine.common.enums.ETableStatus;
-import com.crowndine.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.ApiResponse;
 import com.crowndine.service.layout.RestaurantTableService;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;

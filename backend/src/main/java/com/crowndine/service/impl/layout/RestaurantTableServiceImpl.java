@@ -1,10 +1,10 @@
 package com.crowndine.service.impl.layout;
 
 import com.crowndine.common.enums.ETableStatus;
-import com.crowndine.dto.request.TableRequest;
-import com.crowndine.dto.response.RestaurantTableResponse;
-import com.crowndine.dto.response.TableLayoutResponse;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.TableRequest;
+import com.crowndine.presentation.dto.response.RestaurantTableResponse;
+import com.crowndine.presentation.dto.response.TableLayoutResponse;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Area;
 import com.crowndine.model.RestaurantTable;
 import com.crowndine.repository.AreaRepository;
@@ -49,7 +49,7 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
                         : ETableStatus.AVAILABLE
         );
         table.setArea(area);
-        
+
         table.setBaseDeposit(request.getDeposit() != null ? request.getDeposit() : java.math.BigDecimal.ZERO);
         table.setPositionX(request.getX() != null ? request.getX() : 0);
         table.setPositionY(request.getY() != null ? request.getY() : 0);
@@ -72,7 +72,7 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
         table.setName(request.getName());
         table.setCapacity(request.getCapacity());
         table.setShape(request.getShape());
-        
+
         if (request.getStatus() != null) {
             table.setStatus(request.getStatus());
         }
@@ -83,7 +83,7 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
         if (request.getWidth() != null) table.setWidth(request.getWidth());
         if (request.getHeight() != null) table.setHeight(request.getHeight());
         if (request.getRotation() != null) table.setRotation(request.getRotation());
-        
+
         if (request.getImageUrl() != null) table.setImageUrl(request.getImageUrl());
         if (request.getDescription() != null) table.setDescription(request.getDescription());
 

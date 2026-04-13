@@ -1,7 +1,7 @@
 package com.crowndine.service.impl.reservation;
 
 import com.crowndine.common.enums.EReservationStatus;
-import com.crowndine.exception.InvalidDataException;
+import com.crowndine.presentation.exception.InvalidDataException;
 import com.crowndine.model.Reservation;
 import com.crowndine.repository.ReservationRepository;
 import com.crowndine.service.reservation.ReservationAvailabilityService;

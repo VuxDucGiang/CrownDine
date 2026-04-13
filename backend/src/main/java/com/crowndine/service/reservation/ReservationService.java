@@ -1,8 +1,8 @@
 package com.crowndine.service.reservation;
 
-import com.crowndine.dto.response.PageResponse;
-import com.crowndine.dto.response.ReservationHistoryResponse;
-import com.crowndine.dto.response.ReservationResponse;
+import com.crowndine.presentation.dto.response.PageResponse;
+import com.crowndine.presentation.dto.response.ReservationHistoryResponse;
+import com.crowndine.presentation.dto.response.ReservationResponse;
 import com.crowndine.model.Reservation;
 
 import com.crowndine.common.enums.EReservationStatus;

@@ -1,8 +1,8 @@
 package com.crowndine.service.item;
 
-import com.crowndine.dto.request.ItemRequest;
-import com.crowndine.dto.response.ItemResponse;
-import com.crowndine.dto.response.PageResponse;
+import com.crowndine.presentation.dto.request.ItemRequest;
+import com.crowndine.presentation.dto.response.ItemResponse;
+import com.crowndine.presentation.dto.response.PageResponse;
 
 import java.util.List;
 

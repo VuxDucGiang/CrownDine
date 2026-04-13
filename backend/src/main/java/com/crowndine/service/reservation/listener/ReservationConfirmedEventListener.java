@@ -1,6 +1,6 @@
 package com.crowndine.service.reservation.listener;
 
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Reservation;
 import com.crowndine.repository.OrderDetailRepository;
 import com.crowndine.repository.ReservationRepository;

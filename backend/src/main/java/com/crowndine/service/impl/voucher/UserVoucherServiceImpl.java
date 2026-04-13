@@ -1,10 +1,10 @@
 package com.crowndine.service.impl.voucher;
 
-import com.crowndine.dto.request.VoucherAssignUsersRequest;
-import com.crowndine.dto.response.MyVoucherResponse;
-import com.crowndine.dto.response.VoucherAssignmentResponse;
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.VoucherAssignUsersRequest;
+import com.crowndine.presentation.dto.response.MyVoucherResponse;
+import com.crowndine.presentation.dto.response.VoucherAssignmentResponse;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.User;
 import com.crowndine.model.UserVoucher;
 import com.crowndine.model.Voucher;

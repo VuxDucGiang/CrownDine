@@ -1,8 +1,8 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.request.ComboRequest;
-import com.crowndine.dto.response.ApiResponse;
-import com.crowndine.dto.response.ComboResponse;
+import com.crowndine.presentation.dto.request.ComboRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.ComboResponse;
 import com.crowndine.service.combo.ComboService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

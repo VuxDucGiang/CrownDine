@@ -2,8 +2,8 @@ package com.crowndine.service.impl.payment;
 
 import com.crowndine.common.enums.EPaymentMethod;
 import com.crowndine.common.enums.EPaymentStatus;
-import com.crowndine.dto.request.PaymentRequest;
-import com.crowndine.exception.InvalidDataException;
+import com.crowndine.presentation.dto.request.PaymentRequest;
+import com.crowndine.presentation.exception.InvalidDataException;
 import com.crowndine.model.Order;
 import com.crowndine.service.order.OrderPaymentService;
 import com.crowndine.service.payment.AbstractPaymentStrategy;

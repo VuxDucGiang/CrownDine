@@ -1,9 +1,9 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.request.ItemRequest;
-import com.crowndine.dto.response.ApiResponse;
-import com.crowndine.dto.response.ItemResponse;
-import com.crowndine.dto.response.PageResponse;
+import com.crowndine.presentation.dto.request.ItemRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.ItemResponse;
+import com.crowndine.presentation.dto.response.PageResponse;
 import com.crowndine.service.item.ItemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

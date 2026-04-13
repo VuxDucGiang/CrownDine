@@ -1,9 +1,9 @@
 package com.crowndine.service.reservation;
 
-import com.crowndine.dto.request.ReservationCreateRequest;
-import com.crowndine.dto.request.StaffReservationCreateRequest;
-import com.crowndine.dto.request.ReservationUpdateTableRequest;
-import com.crowndine.dto.response.ReservationCheckoutResponse;
+import com.crowndine.presentation.dto.request.ReservationCreateRequest;
+import com.crowndine.presentation.dto.request.StaffReservationCreateRequest;
+import com.crowndine.presentation.dto.request.ReservationUpdateTableRequest;
+import com.crowndine.presentation.dto.response.ReservationCheckoutResponse;
 import com.crowndine.model.Reservation;
 
 public interface ReservationLifecycleService {

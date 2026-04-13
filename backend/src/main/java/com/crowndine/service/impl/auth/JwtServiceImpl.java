@@ -2,8 +2,8 @@ package com.crowndine.service.impl.auth;
 
 import com.crowndine.common.enums.ETokenType;
 import com.crowndine.common.enums.ErrorCode;
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.JwtAuthenticationException;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.JwtAuthenticationException;
 import com.crowndine.service.auth.JwtService;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;

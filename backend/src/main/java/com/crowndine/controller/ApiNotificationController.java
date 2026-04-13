@@ -1,6 +1,6 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.ApiResponse;
 import com.crowndine.service.notification.NotificationService;
 import jakarta.validation.constraints.Min;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.crowndine.service.impl.token;
 
-import com.crowndine.exception.InvalidDataException;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.exception.InvalidDataException;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Token;
 import com.crowndine.repository.TokenRepository;
 import com.crowndine.service.token.TokenService;

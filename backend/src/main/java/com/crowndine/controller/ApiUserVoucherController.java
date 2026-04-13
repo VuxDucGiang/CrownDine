@@ -1,6 +1,6 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.ApiResponse;
 import com.crowndine.service.voucher.UserVoucherService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

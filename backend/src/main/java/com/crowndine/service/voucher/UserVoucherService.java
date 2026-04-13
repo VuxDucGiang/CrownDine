@@ -1,8 +1,8 @@
 package com.crowndine.service.voucher;
 
-import com.crowndine.dto.request.VoucherAssignUsersRequest;
-import com.crowndine.dto.response.MyVoucherResponse;
-import com.crowndine.dto.response.VoucherAssignmentResponse;
+import com.crowndine.presentation.dto.request.VoucherAssignUsersRequest;
+import com.crowndine.presentation.dto.response.MyVoucherResponse;
+import com.crowndine.presentation.dto.response.VoucherAssignmentResponse;
 import com.crowndine.model.Voucher;
 
 import java.util.List;

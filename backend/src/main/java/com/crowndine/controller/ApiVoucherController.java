@@ -1,10 +1,10 @@
 package com.crowndine.controller;
 
 import com.crowndine.common.enums.EVoucherType;
-import com.crowndine.dto.request.VoucherAssignUsersRequest;
-import com.crowndine.dto.request.VoucherRequest;
-import com.crowndine.dto.request.VoucherValidateRequest;
-import com.crowndine.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.request.VoucherAssignUsersRequest;
+import com.crowndine.presentation.dto.request.VoucherRequest;
+import com.crowndine.presentation.dto.request.VoucherValidateRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
 import com.crowndine.service.order.OrderVoucherService;
 import com.crowndine.service.voucher.UserVoucherService;
 import com.crowndine.service.voucher.VoucherService;

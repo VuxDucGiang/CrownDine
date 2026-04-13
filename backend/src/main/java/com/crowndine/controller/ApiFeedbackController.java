@@ -1,9 +1,8 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.request.FeedbackCreateRequest;
-import com.crowndine.dto.request.FeedbackUpdateRequest;
-import com.crowndine.dto.response.ApiResponse;
-import com.crowndine.dto.response.FeedbackResponse;
+import com.crowndine.presentation.dto.request.FeedbackCreateRequest;
+import com.crowndine.presentation.dto.request.FeedbackUpdateRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
 import com.crowndine.service.feedback.FeedbackService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

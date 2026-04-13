@@ -1,6 +1,6 @@
 package com.crowndine.service.favorite;
 
-import com.crowndine.dto.response.FavoriteResponse;
+import com.crowndine.presentation.dto.response.FavoriteResponse;
 import java.util.List;
 
 public interface FavoriteService {

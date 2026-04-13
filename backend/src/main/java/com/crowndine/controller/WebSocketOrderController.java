@@ -3,9 +3,9 @@ package com.crowndine.controller;
 import com.crowndine.common.enums.EOrderDetailStatus;
 import com.crowndine.common.enums.EOrderStatus;
 import com.crowndine.common.enums.ETableStatus;
-import com.crowndine.dto.response.RestaurantTableResponse;
-import com.crowndine.dto.response.UpdateStatusOrderDetailResponse;
-import com.crowndine.dto.response.UpdateStatusOrderResponse;
+import com.crowndine.presentation.dto.response.RestaurantTableResponse;
+import com.crowndine.presentation.dto.response.UpdateStatusOrderDetailResponse;
+import com.crowndine.presentation.dto.response.UpdateStatusOrderResponse;
 import com.crowndine.service.layout.RestaurantTableService;
 import com.crowndine.service.order.OrderDetailService;
 import com.crowndine.service.order.OrderStatusService;
@@ -17,8 +17,6 @@ import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
-
-import java.security.Principal;
 
 @Controller
 @RequiredArgsConstructor

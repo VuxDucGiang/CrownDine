@@ -1,7 +1,7 @@
 package com.crowndine.service.impl.dashboard;
 
 import com.crowndine.common.enums.EOrderStatus;
-import com.crowndine.dto.response.DashboardSalesResponse;
+import com.crowndine.presentation.dto.response.DashboardSalesResponse;
 import com.crowndine.repository.OrderRepository;
 import com.crowndine.service.dashboard.DashboardService;
 import lombok.RequiredArgsConstructor;
@@ -12,8 +12,8 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 
-import com.crowndine.dto.response.ChartDataResponse;
-import com.crowndine.dto.response.RecentActivityResponse;
+import com.crowndine.presentation.dto.response.ChartDataResponse;
+import com.crowndine.presentation.dto.response.RecentActivityResponse;
 import com.crowndine.model.Order;
 import com.crowndine.model.OrderDetail;
 import java.util.ArrayList;

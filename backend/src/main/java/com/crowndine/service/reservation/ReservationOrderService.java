@@ -1,8 +1,8 @@
 package com.crowndine.service.reservation;
 
-import com.crowndine.dto.request.OrderItemRemoveRequest;
-import com.crowndine.dto.request.OrderItemRequest;
-import com.crowndine.dto.response.ReservationCheckoutResponse;
+import com.crowndine.presentation.dto.request.OrderItemRemoveRequest;
+import com.crowndine.presentation.dto.request.OrderItemRequest;
+import com.crowndine.presentation.dto.response.ReservationCheckoutResponse;
 
 public interface ReservationOrderService {
     ReservationCheckoutResponse getReservationCheckout(Long reservationId);

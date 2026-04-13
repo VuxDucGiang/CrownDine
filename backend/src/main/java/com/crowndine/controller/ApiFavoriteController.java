@@ -1,7 +1,7 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.response.ApiResponse;
-import com.crowndine.dto.response.FavoriteResponse;
+import com.crowndine.presentation.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.FavoriteResponse;
 import com.crowndine.service.favorite.FavoriteService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;

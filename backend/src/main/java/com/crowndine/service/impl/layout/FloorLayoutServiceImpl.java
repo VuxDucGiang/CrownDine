@@ -1,12 +1,12 @@
 package com.crowndine.service.impl.layout;
 
-import com.crowndine.dto.request.AreaLayoutSaveRequest;
-import com.crowndine.dto.request.LayoutObjectSaveRequest;
-import com.crowndine.dto.request.LayoutSaveRequest;
-import com.crowndine.dto.response.AreaLayoutResponse;
-import com.crowndine.dto.response.FloorLayoutResponse;
-import com.crowndine.dto.response.TableLayoutResponse;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.request.AreaLayoutSaveRequest;
+import com.crowndine.presentation.dto.request.LayoutObjectSaveRequest;
+import com.crowndine.presentation.dto.request.LayoutSaveRequest;
+import com.crowndine.presentation.dto.response.AreaLayoutResponse;
+import com.crowndine.presentation.dto.response.FloorLayoutResponse;
+import com.crowndine.presentation.dto.response.TableLayoutResponse;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Area;
 import com.crowndine.model.Floor;
 import com.crowndine.model.RestaurantTable;

@@ -1,10 +1,10 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.request.AttendanceRecordRequest;
-import com.crowndine.dto.response.ApiResponse;
-import com.crowndine.dto.response.AttendanceScheduleResponse;
-import com.crowndine.dto.response.AttendanceSummaryResponse;
-import com.crowndine.dto.response.EmployeeAttendanceInfoResponse;
+import com.crowndine.presentation.dto.request.AttendanceRecordRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.response.AttendanceScheduleResponse;
+import com.crowndine.presentation.dto.response.AttendanceSummaryResponse;
+import com.crowndine.presentation.dto.response.EmployeeAttendanceInfoResponse;
 import com.crowndine.service.attendance.AttendanceService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

@@ -1,7 +1,7 @@
 package com.crowndine.config;
 
 import com.crowndine.common.enums.ETokenType;
-import com.crowndine.exception.JwtAuthenticationException;
+import com.crowndine.presentation.exception.JwtAuthenticationException;
 import com.crowndine.security.CustomUserDetailsService;
 import com.crowndine.service.auth.JwtService;
 import lombok.RequiredArgsConstructor;

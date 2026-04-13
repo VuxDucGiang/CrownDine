@@ -1,7 +1,7 @@
 package com.crowndine.service.payment;
 
 import com.crowndine.common.enums.EPaymentMethod;
-import com.crowndine.exception.InvalidDataException;
+import com.crowndine.presentation.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

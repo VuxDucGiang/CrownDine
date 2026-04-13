@@ -1,7 +1,7 @@
 package com.crowndine.controller;
 
-import com.crowndine.dto.request.UpdateOrderDetailRequest;
-import com.crowndine.dto.response.ApiResponse;
+import com.crowndine.presentation.dto.request.UpdateOrderDetailRequest;
+import com.crowndine.presentation.dto.response.ApiResponse;
 import com.crowndine.service.order.OrderDetailService;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.Min;

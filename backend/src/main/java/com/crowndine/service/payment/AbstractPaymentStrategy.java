@@ -2,8 +2,8 @@ package com.crowndine.service.payment;
 
 import com.crowndine.common.enums.EPaymentMethod;
 import com.crowndine.common.enums.EPaymentStatus;
-import com.crowndine.dto.request.PaymentRequest;
-import com.crowndine.exception.InvalidDataException;
+import com.crowndine.presentation.dto.request.PaymentRequest;
+import com.crowndine.presentation.exception.InvalidDataException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;

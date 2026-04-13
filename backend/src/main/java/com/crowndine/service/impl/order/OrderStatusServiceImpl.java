@@ -1,8 +1,8 @@
 package com.crowndine.service.impl.order;
 
 import com.crowndine.common.enums.EOrderStatus;
-import com.crowndine.dto.response.UpdateStatusOrderResponse;
-import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.presentation.dto.response.UpdateStatusOrderResponse;
+import com.crowndine.presentation.exception.ResourceNotFoundException;
 import com.crowndine.model.Order;
 import com.crowndine.repository.OrderRepository;
 import com.crowndine.service.layout.RestaurantTableStateService;
