@@ -38,7 +38,7 @@ const Step3FoodMenu = ({ cartItems, onAdd, onRemove, updateQuantity, onUpdateNot
       <div className='bg-muted/10 flex flex-1 flex-col overflow-hidden border-r p-4 lg:p-6'>
         <div className='mb-4 flex items-center justify-between'>
           <div>
-            <h3 className='text-lg font-bold text-gray-900'>Chọn món ăn & combo</h3>
+            <h3 className='text-lg font-bold dark:text-white-900 '>Chọn món ăn & combo</h3>
             <p className='text-muted-foreground text-xs'>Sẵn sàng phục vụ khi bạn tới nhà hàng</p>
           </div>
           {expiratedAt && (
@@ -67,7 +67,7 @@ const Step3FoodMenu = ({ cartItems, onAdd, onRemove, updateQuantity, onUpdateNot
             <div className='bg-primary/10 text-primary flex h-8 w-8 items-center justify-center rounded-lg'>
               <ShoppingCart size={18} />
             </div>
-            <h4 className='font-bold text-gray-900'>Món đã chọn</h4>
+            <h4 className='font-bold '>Món đã chọn</h4>
           </div>
           <span className='bg-primary text-primary-foreground flex h-6 min-w-[24px] items-center justify-center rounded-full px-1.5 text-[10px] font-bold'>
             {cartItems.reduce((sum, item) => sum + item.quantity, 0)}
@@ -150,14 +150,14 @@ const Step3FoodMenu = ({ cartItems, onAdd, onRemove, updateQuantity, onUpdateNot
         {/* Cart Footer / Summary */}
         <div className='bg-muted/30 border-border border-t p-4 lg:p-6'>
           <div className='mb-4 space-y-2'>
-            <div className='flex items-center justify-between text-xs text-gray-500'>
+            <div className='flex items-center justify-between text-xs'>
               <span>Tạm tính món ăn</span>
               <span>{formatCurrency(foodTotal)}</span>
             </div>
           </div>
           
-          <div className='mb-4 flex items-center justify-between border-t border-dashed border-gray-300 pt-4'>
-            <span className='text-sm font-bold text-gray-900 uppercase tracking-tight'>Tổng cộng</span>
+          <div className='mb-4 flex items-center justify-between border-t border-dashed border-white-300 pt-4'>
+            <span className='text-sm font-bold uppercase tracking-tight'>Tổng cộng</span>
             <span className='text-primary text-xl font-black'>{formatCurrency(foodTotal)}</span>
           </div>
 

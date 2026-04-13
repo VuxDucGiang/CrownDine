@@ -39,7 +39,8 @@ const Step1DateTime = ({
           <label className='flex items-center gap-2 text-sm font-bold'>
             <Users size={16} /> Số lượng khách
           </label>
-          <div className='flex w-fit items-center gap-4 rounded-lg border bg-white p-1'>
+          <div className='flex w-fit items-center gap-4 rounded-lg border p-1 bg-white border-zinc-200
+                dark:bg-zinc-950 dark:border-zinc-800 transition-colors duration-300'>
             <button
               onClick={() => setGuests(Math.max(1, guests - 1))}
               disabled={guests <= 1}
