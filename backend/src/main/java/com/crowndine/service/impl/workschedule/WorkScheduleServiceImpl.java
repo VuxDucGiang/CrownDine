@@ -132,7 +132,8 @@ public class WorkScheduleServiceImpl implements WorkScheduleService {
     @Transactional(rollbackFor = Exception.class)
     public long createWorkSchedule(WorkScheduleCreateRequest request) {
         log.info("Processing to create work schedule in: {} ", request.getWorkDate());
-        Shift shift = shiftRepository.findById(request.getShiftId()).orElseThrow(() -> new ResourceNotFoundException("Shift Not Found"));
+        Shift shift = shiftRepository.findById(request.getShiftId())
+                .orElseThrow(() -> new ResourceNotFoundException("Shift Not Found"));
         List<User> staffs = userRepository.findAllById(request.getStaffIds());
 
         // 3. Phân luồng xử lý chính
@@ -149,6 +150,7 @@ public class WorkScheduleServiceImpl implements WorkScheduleService {
             throw new InvalidDataException("Không thể xếp lịch cho ngày trong quá khứ"); //
         }
     }
+
     private List<User> fetchAndValidateStaffs(List<Long> staffIds) {
         List<User> staffs = userRepository.findAllById(staffIds);
         if (staffs.size() != staffIds.size()) {
@@ -156,11 +158,13 @@ public class WorkScheduleServiceImpl implements WorkScheduleService {
         }
         return staffs;
     }
+
     private boolean shouldCreateTemplates(WorkScheduleCreateRequest request) {
         return Boolean.TRUE.equals(request.getRepeatWeekly())
                 && request.getDaysOfWeek() != null
                 && !request.getDaysOfWeek().isEmpty(); //
     }
+
     private long handleCreateTemplates(WorkScheduleCreateRequest request, List<User> staffs, Shift shift) {
         LocalDate endDate = request.getEndDate() != null ? request.getEndDate()
                 : request.getWorkDate().plusMonths(2); //
@@ -169,6 +173,21 @@ public class WorkScheduleServiceImpl implements WorkScheduleService {
         }
         String daysOfWeekStr = request.getDaysOfWeek().stream()
                 .map(String::valueOf).collect(Collectors.joining(",")); //
+
+        List<WorkSchedule> existingList = workScheduleRepository.findByStaffInAndShiftAndWorkDate(staffs, shift,
+                request.getWorkDate());
+        List<WorkSchedule> singlesToDelete = new ArrayList<>();
+        for (WorkSchedule existing : existingList) {
+            if (Boolean.TRUE.equals(existing.getIsRepeated())) {
+                advanceTemplateStartDate(existing);
+            } else {
+                singlesToDelete.add(existing);
+            }
+        }
+        if (!singlesToDelete.isEmpty()) {
+            workScheduleRepository.deleteAll(singlesToDelete);
+            workScheduleRepository.flush();
+        }
 
         List<WorkSchedule> templates = staffs.stream().map(staff -> {
             WorkSchedule t = new WorkSchedule();
@@ -183,8 +202,7 @@ public class WorkScheduleServiceImpl implements WorkScheduleService {
         }).toList(); //
 
         List<WorkSchedule> savedTemplates = workScheduleRepository.saveAll(templates);
-        // Sau khi lưu, gán repeatGroupId = ID của chính nó để việc quản lý group dễ
-        // dàng hơn.
+
         savedTemplates.forEach(t -> t.setRepeatGroupId("TEMPLATE-" + t.getId()));
         workScheduleRepository.saveAll(savedTemplates);
 
@@ -192,24 +210,46 @@ public class WorkScheduleServiceImpl implements WorkScheduleService {
         return savedTemplates.size();
     }
 
-
     private long handleCreateSingleSchedules(WorkScheduleCreateRequest request, List<User> staffs, Shift shift) {
         LocalDate date = request.getWorkDate();
-        Set<Long> duplicateUserIds = workScheduleRepository.findByStaffInAndShiftAndWorkDate(staffs, shift, date)
-                .stream().map(ws -> ws.getStaff().getId()).collect(Collectors.toSet()); //
+        List<WorkSchedule> existingList = workScheduleRepository.findByStaffInAndShiftAndWorkDate(staffs, shift, date);
 
-        List<WorkSchedule> workSchedules = staffs.stream()
-                .filter(staff -> !duplicateUserIds.contains(staff.getId())) //
-                .map(staff -> {
+        List<WorkSchedule> toSave = new ArrayList<>();
+
+        for (User staff : staffs) {
+            WorkSchedule existing = existingList.stream()
+                    .filter(w -> w.getStaff().getId().equals(staff.getId()))
+                    .findFirst().orElse(null);
+
+            if (existing != null) {
+                if (Boolean.TRUE.equals(existing.getIsRepeated())) {
+                    advanceTemplateStartDate(existing);
+
                     WorkSchedule ws = new WorkSchedule();
                     ws.setWorkDate(date);
                     ws.setShift(shift);
                     ws.setStaff(staff);
                     ws.setStatus(EWorkScheduleStatus.APPROVED);
-                    return ws;
-                }).toList(); //
+                    ws.setIsRepeated(false);
+                    toSave.add(ws);
+                } else {
+                    existing.setStatus(EWorkScheduleStatus.APPROVED);
+                    existing.setNote(null);
+                    existing.setIsRepeated(false);
+                    toSave.add(existing);
+                }
+            } else {
+                WorkSchedule ws = new WorkSchedule();
+                ws.setWorkDate(date);
+                ws.setShift(shift);
+                ws.setStaff(staff);
+                ws.setStatus(EWorkScheduleStatus.APPROVED);
+                ws.setIsRepeated(false);
+                toSave.add(ws);
+            }
+        }
 
-        return workScheduleRepository.saveAll(workSchedules).size();
+        return workScheduleRepository.saveAll(toSave).size();
     }
 
     @Override
@@ -350,7 +390,6 @@ public class WorkScheduleServiceImpl implements WorkScheduleService {
         return workScheduleRepository.findById(id)
                 .orElseThrow(() -> new ResourceNotFoundException("Work Schedule Not Found"));
     }
-
 
     private ShiftResponse toShiftResponse(Shift shift) {
         return ShiftResponse.builder()
