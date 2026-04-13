@@ -74,14 +74,7 @@ public class GeminiAIService {
             try {
                 String url = apiUrl + "?key=" + apiKey;
 
-                Map<String, Object> requestBody = new HashMap<>();
-                requestBody.put("contents", convertMessagesToGeminiFormat(messages));
-
-                Map<String, Object> generationConfig = new HashMap<>();
-                generationConfig.put("temperature", 0.7);
-                generationConfig.put("topP", 0.95);
-                generationConfig.put("topK", 40);
-                requestBody.put("generationConfig", generationConfig);
+                Map<String, Object> requestBody = buildGeminiRequestBody(messages);
 
                 HttpHeaders headers = new HttpHeaders();
                 headers.set("Content-Type", "application/json");
@@ -113,14 +106,7 @@ public class GeminiAIService {
                     apiKey = getNextApiKey();
                     try {
                         String url = apiUrl + "?key=" + apiKey;
-                        Map<String, Object> requestBody = new HashMap<>();
-                        requestBody.put("contents", convertMessagesToGeminiFormat(messages));
-
-                        Map<String, Object> generationConfig = new HashMap<>();
-                        generationConfig.put("temperature", 0.7);
-                        generationConfig.put("topP", 0.95);
-                        generationConfig.put("topK", 40);
-                        requestBody.put("generationConfig", generationConfig);
+                        Map<String, Object> requestBody = buildGeminiRequestBody(messages);
 
                         HttpHeaders headers = new HttpHeaders();
                         headers.set("Content-Type", "application/json");
@@ -209,6 +195,41 @@ public class GeminiAIService {
             log.error("Error calling OpenRouter API", e);
             return "Xin lỗi, tôi không thể trả lời ngay lúc này. Vui lòng thử lại sau.";
         }
+    }
+
+    private Map<String, Object> buildGeminiRequestBody(List<Map<String, String>> messages) {
+        Map<String, Object> requestBody = new HashMap<>();
+
+        // Extract system instructions
+        String systemInstructionText = messages.stream()
+                .filter(m -> "system".equals(m.get("role")))
+                .map(m -> m.get("content"))
+                .collect(java.util.stream.Collectors.joining("\n\n"));
+
+        // Filter chat messages (user/model only)
+        List<Map<String, String>> chatMessages = messages.stream()
+                .filter(m -> !"system".equals(m.get("role")))
+                .collect(java.util.stream.Collectors.toList());
+
+        requestBody.put("contents", convertMessagesToGeminiFormat(chatMessages));
+
+        // Set system instruction if present
+        if (!systemInstructionText.isEmpty()) {
+            Map<String, Object> siPart = new HashMap<>();
+            siPart.put("text", systemInstructionText);
+            Map<String, Object> si = new HashMap<>();
+            si.put("parts", java.util.Collections.singletonList(siPart));
+            requestBody.put("system_instruction", si);
+        }
+
+        // Generation config
+        Map<String, Object> generationConfig = new HashMap<>();
+        generationConfig.put("temperature", 0.7);
+        generationConfig.put("topP", 0.95);
+        generationConfig.put("topK", 40);
+        requestBody.put("generationConfig", generationConfig);
+
+        return requestBody;
     }
 
     private List<Map<String, Object>> convertMessagesToGeminiFormat(List<Map<String, String>> messages) {

@@ -39,7 +39,8 @@ public class ReservationServiceImpl implements ReservationService {
 
     @Override
     public PageResponse<ReservationResponse> getAllReservations(LocalDate fromDate, LocalDate toDate, EReservationStatus status, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Order.desc("date"), Sort.Order.desc("startTime")));
+        int pageNumber = (page > 0) ? page - 1 : 0;
+        Pageable pageable = PageRequest.of(pageNumber, size, Sort.by(Sort.Order.desc("date"), Sort.Order.desc("startTime")));
         Page<Reservation> reservationPage = reservationRepository.findReservations(fromDate, toDate, status, pageable);
 
         List<ReservationResponse> data = reservationPage.getContent().stream()
@@ -206,12 +207,13 @@ public class ReservationServiceImpl implements ReservationService {
             response.setOrderStatus(order.getStatus());
             response.setFinalPrice(order.getFinalPrice());
 
+            Long userId = reservation.getUser() != null ? reservation.getUser().getId() : null;
             List<OrderLineResponse> items = orderDetailRepository.findByOrder_Id(order.getId()).stream()
-                    .map(orderDetail -> toLineResponse(orderDetail, reservation.getUser().getId()))
+                    .map(orderDetail -> toLineResponse(orderDetail, userId))
                     .toList();
             response.setItems(items);
             response.setHasGeneralFeedback(
-                    feedbackRepository.existsByUser_IdAndOrder_IdAndOrderDetailIsNull(reservation.getUser().getId(), order.getId())
+                    userId != null && feedbackRepository.existsByUser_IdAndOrder_IdAndOrderDetailIsNull(userId, order.getId())
             );
         }
 
@@ -240,12 +242,13 @@ public class ReservationServiceImpl implements ReservationService {
         response.setOrderStatus(order.getStatus());
         response.setFinalPrice(order.getFinalPrice());
 
+        Long userId = order.getUser() != null ? order.getUser().getId() : null;
         List<OrderLineResponse> items = orderDetailRepository.findByOrder_Id(order.getId()).stream()
-                .map(orderDetail -> toLineResponse(orderDetail, order.getUser().getId()))
+                .map(orderDetail -> toLineResponse(orderDetail, userId))
                 .toList();
         response.setItems(items);
         response.setHasGeneralFeedback(
-                feedbackRepository.existsByUser_IdAndOrder_IdAndOrderDetailIsNull(order.getUser().getId(), order.getId())
+                userId != null && feedbackRepository.existsByUser_IdAndOrder_IdAndOrderDetailIsNull(userId, order.getId())
         );
         return response;
     }

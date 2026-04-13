@@ -56,10 +56,8 @@ export default function TableShape({
     // Trạng thái Unavailable do khung giờ / khách
     let isUnavailable = false;
     let isFull = false;
-    if (statusKey === 'AVAILABLE') {
-      if (!isAvailableInTimeSlot) isUnavailable = true;
-      else if (guests !== undefined && capacity < guests) isFull = true;
-    }
+    if (!isAvailableInTimeSlot) isUnavailable = true;
+    else if (guests !== undefined && capacity < guests) isFull = true;
 
     if (isUnavailable) {
       style = { fill: '#d9534f', text: '#fff' } // Đỏ
@@ -178,9 +176,9 @@ export default function TableShape({
   // Xác định bàn có thể chọn được không
   const isSelectable = isPaid
     ? selected
-    : (statusKey === 'AVAILABLE'
+    : (statusKey === 'AVAILABLE' || statusKey === 'OCCUPIED' || statusKey === 'RESERVED')
       ? (isAvailableInTimeSlot && (guests === undefined || capacity >= guests))
-      : (statusKey === 'OCCUPIED' || statusKey === 'RESERVED'))
+      : false
   const isDisabled = !isSelectable
   
   const minDim = Math.min(width, height)
