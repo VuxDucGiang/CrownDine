@@ -71,13 +71,35 @@ const KitchenDisplay = () => {
   const stompClient = useStompClient()
   const prevOrderCount = useRef(0)
 
-  // Live clock
+  // Live clock — mỗi giây cập nhật, sync ngay khi quay lại tab
   useEffect(() => {
-    const id = setInterval(() => {
+    let id: ReturnType<typeof setInterval>
+
+    const tick = () => {
       setClock(new Date())
-      forceUpdate((n) => n + 1) // re-render for elapsed timers
-    }, 60000)
-    return () => clearInterval(id)
+      forceUpdate((n) => n + 1)
+    }
+
+    const startInterval = () => {
+      tick()
+      id = setInterval(tick, 1000)
+    }
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        clearInterval(id)
+      } else {
+        startInterval()
+      }
+    }
+
+    startInterval()
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
   }, [])
 
   // Fetch active kitchen orders
