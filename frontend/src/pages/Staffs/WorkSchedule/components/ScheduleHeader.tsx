@@ -1,4 +1,4 @@
-import { Search, ChevronLeft, ChevronRight, User, Upload, Download, X, Check, ChevronDown } from 'lucide-react'
+import { Search, ChevronLeft, ChevronRight, User, Upload, Download, X, Check, ChevronDown, Plus } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { format, getWeek } from 'date-fns'
 import { vi } from 'date-fns/locale'
@@ -14,6 +14,7 @@ interface ScheduleHeaderProps {
   onNextWeek: () => void
   onPrevWeek: () => void
   onThisWeek: () => void
+  onCreateShift?: () => void
 }
 
 export function ScheduleHeader({
@@ -24,7 +25,8 @@ export function ScheduleHeader({
   onStaffSelect,
   onNextWeek,
   onPrevWeek,
-  onThisWeek
+  onThisWeek,
+  onCreateShift
 }: ScheduleHeaderProps) {
   const weekNumber = getWeek(currentDate, { weekStartsOn: 1 })
   const month = format(currentDate, 'M', { locale: vi })
@@ -158,9 +160,7 @@ export function ScheduleHeader({
           </Button>
         </div>
 
-        <Button variant='outline' onClick={onThisWeek}>
-          Tuần này
-        </Button>
+
         <Button variant='outline' className='flex items-center gap-2'>
           <User className='h-4 w-4' />
           Xem theo nhân viên
@@ -168,6 +168,9 @@ export function ScheduleHeader({
 
         {isAdmin && (
           <>
+            <Button onClick={onCreateShift} className='flex items-center gap-2'>
+              <Plus className='h-4 w-4' /> Thêm Ca
+            </Button>
             <Button variant='outline' className='flex items-center gap-2'>
               <Upload className='h-4 w-4' /> Import
             </Button>

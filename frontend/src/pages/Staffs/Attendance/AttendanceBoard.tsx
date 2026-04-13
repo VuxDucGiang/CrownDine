@@ -8,9 +8,7 @@ import { ScheduleByShiftTable } from './components/ScheduleByShiftTable'
 import { SummaryByEmployeeTable } from './components/SummaryByEmployeeTable'
 import { AttendanceLegend } from './components/AttendanceLegend'
 import { AttendanceModal } from './components/AttendanceModal'
-import { CreateShiftModal } from './components/CreateShiftModal'
 import { Button } from '@/components/ui/button'
-import { Plus } from 'lucide-react'
 
 type ViewMode = 'shift' | 'employee'
 
@@ -24,7 +22,6 @@ export default function AttendanceBoard() {
   const [modalUserId, setModalUserId] = useState<number | null>(null)
   const [modalShiftId, setModalShiftId] = useState<number | null>(null)
   const [modalWorkDate, setModalWorkDate] = useState<string | null>(null)
-  const [isCreateShiftOpen, setIsCreateShiftOpen] = useState(false)
 
   const weekStartStr = format(weekStart, 'yyyy-MM-dd')
   const periodLabel = useMemo(() => {
@@ -107,7 +104,6 @@ export default function AttendanceBoard() {
               <ChevronRight className='h-5 w-5' />
             </button>
           </div>
-          <div className='flex items-center gap-3 mt-2 sm:mt-0'>
             <select
               className='border-input bg-background h-9 rounded-md border px-3 text-sm'
               value={viewMode}
@@ -116,10 +112,6 @@ export default function AttendanceBoard() {
               <option value='shift'>Xem theo ca</option>
               <option value='employee'>Xem theo nhân viên</option>
             </select>
-            <Button onClick={() => setIsCreateShiftOpen(true)} className='h-9 shadow-sm'>
-              <Plus className='mr-1.5 h-4 w-4' /> Thêm Ca
-            </Button>
-          </div>
         </div>
       </div>
 
@@ -133,7 +125,7 @@ export default function AttendanceBoard() {
           onCellClick={(userId, shiftId, workDate) => openModal(userId, shiftId, workDate)}
         />
       ) : summaryData ? (
-        <SummaryByEmployeeTable data={summaryData} onChamCong={openModal} />
+        <SummaryByEmployeeTable data={summaryData} />
       ) : (
         <div className='rounded-xl border border-border bg-card py-12 text-center text-muted-foreground'>
           Không có dữ liệu
@@ -152,11 +144,7 @@ export default function AttendanceBoard() {
         />
       )}
 
-      {isCreateShiftOpen && (
-        <CreateShiftModal
-          onClose={() => setIsCreateShiftOpen(false)}
-        />
-      )}
+
     </div>
   )
 }

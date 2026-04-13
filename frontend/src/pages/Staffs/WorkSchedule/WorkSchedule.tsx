@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns'
 import { ScheduleHeader } from './components/ScheduleHeader'
 import { ScheduleTable } from './components/ScheduleTable'
+import { CreateShiftModal } from '../Attendance/components/CreateShiftModal'
 import useWorkSchedule from '@/hooks/useWorkSchedule'
 import useStaffs from '@/hooks/useStaffs'
 
@@ -12,6 +13,7 @@ interface WorkScheduleProps {
 const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date())
   const [selectedStaffSearchIds, setSelectedStaffSearchIds] = useState<string[]>([])
+  const [isCreateShiftOpen, setIsCreateShiftOpen] = useState(false)
 
   // Bắt đầu tuần từ Thứ Hai
   const fromDate = format(startOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
@@ -46,6 +48,7 @@ const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
             onNextWeek={nextWeek}
             onPrevWeek={prevWeek}
             onThisWeek={thisWeek}
+            onCreateShift={() => setIsCreateShiftOpen(true)}
           />
         </div>
         <div className='shadow-sm'>
@@ -58,6 +61,9 @@ const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
           />
         </div>
       </div>
+      {isCreateShiftOpen && (
+        <CreateShiftModal onClose={() => setIsCreateShiftOpen(false)} />
+      )}
     </div>
   )
 }
