@@ -35,7 +35,7 @@ export function AttendanceModal({
     ? format(parseISO(defaultWorkDate), 'dd/MM/yyyy')
     : format(new Date(), 'dd/MM/yyyy')
 
-  const [workDate, setWorkDate] = useState(workDateDefault)
+  const [workDate] = useState(workDateDefault)
   const [shiftId, setShiftId] = useState<number>(defaultShiftId ?? 0)
   const [note, setNote] = useState('')
   const [attendanceType, setAttendanceType] = useState<EAttendanceType>('WORKING')

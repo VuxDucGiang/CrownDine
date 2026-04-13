@@ -13,7 +13,6 @@ interface ScheduleHeaderProps {
   onStaffSelect: (ids: string[]) => void
   onNextWeek: () => void
   onPrevWeek: () => void
-  onThisWeek: () => void
   onCreateShift?: () => void
 }
 
@@ -25,7 +24,6 @@ export function ScheduleHeader({
   onStaffSelect,
   onNextWeek,
   onPrevWeek,
-  onThisWeek,
   onCreateShift
 }: ScheduleHeaderProps) {
   const weekNumber = getWeek(currentDate, { weekStartsOn: 1 })

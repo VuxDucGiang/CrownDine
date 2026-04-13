@@ -29,7 +29,6 @@ const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
 
   const nextWeek = () => setCurrentDate((prev) => addWeeks(prev, 1))
   const prevWeek = () => setCurrentDate((prev) => subWeeks(prev, 1))
-  const thisWeek = () => setCurrentDate(new Date())
 
   // Filter logic for ScheduleTable
   const filteredStaffs = staffs ? (selectedStaffSearchIds.length > 0 ? staffs.filter(s => selectedStaffSearchIds.includes(s.id)) : staffs) : []
@@ -47,7 +46,6 @@ const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
             onStaffSelect={setSelectedStaffSearchIds}
             onNextWeek={nextWeek}
             onPrevWeek={prevWeek}
-            onThisWeek={thisWeek}
             onCreateShift={() => setIsCreateShiftOpen(true)}
           />
         </div>

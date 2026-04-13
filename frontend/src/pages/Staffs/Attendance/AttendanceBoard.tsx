@@ -8,7 +8,6 @@ import { ScheduleByShiftTable } from './components/ScheduleByShiftTable'
 import { SummaryByEmployeeTable } from './components/SummaryByEmployeeTable'
 import { AttendanceLegend } from './components/AttendanceLegend'
 import { AttendanceModal } from './components/AttendanceModal'
-import { Button } from '@/components/ui/button'
 
 type ViewMode = 'shift' | 'employee'
 
