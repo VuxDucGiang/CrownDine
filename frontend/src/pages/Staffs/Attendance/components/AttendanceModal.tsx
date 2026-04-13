@@ -1,13 +1,13 @@
-import { useState, useEffect } from 'react'
-import { X, User, CalendarDays } from 'lucide-react'
+import { useState, useEffect, useMemo } from 'react'
+import { X, User, CalendarDays, AlertCircle } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { format, parseISO } from 'date-fns'
+import { format, parseISO, parse, isAfter, startOfDay } from 'date-fns'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { cn } from '@/lib/utils'
 import attendanceApi from '@/apis/attendance.api'
-import { ATTENDANCE_STATUS_LABELS, ATTENDANCE_TYPE_LABELS, type EAttendanceType } from '@/types/attendance.type'
+import { ATTENDANCE_STATUS_LABELS, type EAttendanceType } from '@/types/attendance.type'
 import type { ShiftResponse } from '@/types/attendance.type'
 import { toast } from 'sonner'
 
@@ -35,7 +35,7 @@ export function AttendanceModal({
     ? format(parseISO(defaultWorkDate), 'dd/MM/yyyy')
     : format(new Date(), 'dd/MM/yyyy')
 
-  const [workDate, setWorkDate] = useState(workDateDefault)
+  const [workDate] = useState(workDateDefault)
   const [shiftId, setShiftId] = useState<number>(defaultShiftId ?? 0)
   const [note, setNote] = useState('')
   const [attendanceType, setAttendanceType] = useState<EAttendanceType>('WORKING')
@@ -87,10 +87,26 @@ export function AttendanceModal({
     }
   }, [shiftId, shifts])
 
+  // Kiểm tra ngày tương lai
+  const isFutureDate = useMemo(() => {
+    try {
+      const parts = workDate.split('/')
+      if (parts.length !== 3) return false
+      const parsed = parse(workDate, 'dd/MM/yyyy', new Date())
+      return isAfter(startOfDay(parsed), startOfDay(new Date()))
+    } catch {
+      return false
+    }
+  }, [workDate])
+
   const handleSave = () => {
     const [d, m, y] = workDate.split('/').map(Number)
     if (!d || !m || !y) {
       toast.error('Chọn ngày hợp lệ')
+      return
+    }
+    if (isFutureDate) {
+      toast.error('Không thể chấm công cho ngày trong tương lai')
       return
     }
     const dateStr = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`
@@ -183,26 +199,31 @@ export function AttendanceModal({
             <div className='space-y-4'>
               <div>
                 <Label className='mb-1.5 block'>Thời gian</Label>
-                <Input
-                  value={workDate}
-                  onChange={(e) => setWorkDate(e.target.value)}
-                  placeholder='dd/MM/yyyy'
-                />
+                <div
+                  className={cn(
+                    'border-input bg-muted/30 h-9 w-full rounded-md border px-3 text-sm flex items-center select-none',
+                    isFutureDate ? 'border-destructive' : ''
+                  )}
+                >
+                  {workDate}
+                </div>
+                {isFutureDate && (
+                  <div className='mt-1.5 flex items-center gap-1.5 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+                    <AlertCircle className='h-4 w-4 shrink-0' />
+                    <span>Không thể chấm công cho ngày trong tương lai</span>
+                  </div>
+                )}
               </div>
               <div>
                 <Label className='mb-1.5 block'>Ca làm việc</Label>
-                <select
-                  className='border-input bg-background h-9 w-full rounded-md border px-3 text-sm'
-                  value={shiftId}
-                  onChange={(e) => setShiftId(Number(e.target.value))}
-                >
-                  <option value={0}>Chọn ca</option>
-                  {shifts.map((s: ShiftResponse) => (
-                    <option key={s.id} value={s.id}>
-                      {s.name} ({s.startTime?.slice(0, 5)} - {s.endTime?.slice(0, 5)})
-                    </option>
-                  ))}
-                </select>
+                <div className='border-input bg-muted/30 h-9 w-full rounded-md border px-3 text-sm flex items-center select-none'>
+                  {(() => {
+                    const shift = shifts.find((s: ShiftResponse) => s.id === shiftId)
+                    return shift
+                      ? `${shift.name} (${shift.startTime?.slice(0, 5)} - ${shift.endTime?.slice(0, 5)})`
+                      : 'Chưa chọn ca'
+                  })()}
+                </div>
               </div>
               <div>
                 <Label className='mb-1.5 block'>Ghi chú</Label>
@@ -216,20 +237,26 @@ export function AttendanceModal({
               <div>
                 <Label className='mb-2 block'>Hình thức</Label>
                 <div className='flex flex-wrap gap-4'>
-                  {(['WORKING', 'LEAVE_WITH_PERMISSION', 'LEAVE_WITHOUT_PERMISSION'] as const).map(
-                    (type) => (
-                      <label key={type} className='flex cursor-pointer items-center gap-2'>
-                        <input
-                          type='radio'
-                          name='attendanceType'
-                          checked={attendanceType === type}
-                          onChange={() => setAttendanceType(type)}
-                          className='border-primary text-primary h-4 w-4'
-                        />
-                        <span className='text-sm'>{ATTENDANCE_TYPE_LABELS[type]}</span>
-                      </label>
-                    )
-                  )}
+                  <label className='flex cursor-pointer items-center gap-2'>
+                    <input
+                      type='radio'
+                      name='attendanceType'
+                      checked={attendanceType === 'WORKING'}
+                      onChange={() => setAttendanceType('WORKING')}
+                      className='border-primary text-primary h-4 w-4'
+                    />
+                    <span className='text-sm'>Đi làm</span>
+                  </label>
+                  <label className='flex cursor-pointer items-center gap-2'>
+                    <input
+                      type='radio'
+                      name='attendanceType'
+                      checked={attendanceType !== 'WORKING'}
+                      onChange={() => setAttendanceType('LEAVE_WITHOUT_PERMISSION')}
+                      className='border-primary text-primary h-4 w-4'
+                    />
+                    <span className='text-sm'>Nghỉ làm</span>
+                  </label>
                 </div>
               </div>
               {attendanceType === 'WORKING' && (
@@ -324,7 +351,7 @@ export function AttendanceModal({
           </Button>
           <Button
             onClick={handleSave}
-            disabled={saveMutation.isPending || !shiftId}
+            disabled={saveMutation.isPending || !shiftId || isFutureDate}
           >
             Lưu
           </Button>

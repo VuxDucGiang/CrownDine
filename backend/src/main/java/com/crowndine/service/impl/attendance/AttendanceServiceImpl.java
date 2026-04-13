@@ -102,6 +102,10 @@ public class AttendanceServiceImpl implements AttendanceService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void saveRecord(AttendanceRecordRequest request) {
+        if (request.getWorkDate() != null && request.getWorkDate().isAfter(LocalDate.now())) {
+            throw new InvalidDataException("Không thể chấm công cho ngày trong tương lai");
+        }
+
         User user = userRepository.findById(request.getUserId())
                 .orElseThrow(() -> new ResourceNotFoundException("Nhân viên không tồn tại"));
         Shift shift = shiftRepository.findById(request.getShiftId())
@@ -225,7 +229,15 @@ public class AttendanceServiceImpl implements AttendanceService {
                 List<AttendanceScheduleResponse.AttendanceScheduleEmployeeResponse> employees = slots.stream()
                         .filter(s -> s.getShiftId().equals(shift.getId()) && s.getWorkDate().equals(workDate))
                         .map(s -> {
-                            Attendance att = s.getWorkScheduleId() != null ? attendanceByWorkScheduleId.get(s.getWorkScheduleId()) : null;
+                            Attendance att;
+                            if (s.getWorkScheduleId() != null) {
+                                // Ca bình thường: lookup qua workScheduleId
+                                att = attendanceByWorkScheduleId.get(s.getWorkScheduleId());
+                            } else {
+                                // Ca lặp (repeating): workScheduleId = null vì là slot ảo.
+                                // Sau khi chấm công, saveRecord tạo WorkSchedule mới nên lookup bằng userId+shiftId+date
+                                att = attendanceRepository.findByUserShiftAndDate(s.getUserId(), s.getShiftId(), s.getWorkDate()).orElse(null);
+                            }
                             String status = att != null && att.getStatus() != null ? att.getStatus().name() : EAttendanceStatus.NOT_PUNCHED.name();
                             return AttendanceScheduleResponse.AttendanceScheduleEmployeeResponse.builder()
                                     .userId(s.getUserId())
@@ -289,13 +301,16 @@ public class AttendanceServiceImpl implements AttendanceService {
             long earlyMinutes = 0;
 
             for (ScheduleSlot slot : userSlots) {
-                if (slot.getWorkScheduleId() == null) {
-                    leaveShiftCount++;
-                    continue;
+                Attendance att;
+                if (slot.getWorkScheduleId() != null) {
+                    att = attByWsId.get(slot.getWorkScheduleId());
+                } else {
+                    // Repeating slot (ảo) – lookup bằng userId + shiftId + workDate
+                    att = attendanceRepository.findByUserShiftAndDate(slot.getUserId(), slot.getShiftId(), slot.getWorkDate()).orElse(null);
                 }
-                Attendance att = attByWsId.get(slot.getWorkScheduleId());
+
                 if (att == null) {
-                    leaveShiftCount++;
+                    // Chưa chấm công – không count vào đi làm hay nghỉ, bỏ qua
                     continue;
                 }
                 if (att.getStatus() == EAttendanceStatus.ABSENT_OFF || att.getAttendanceType() != EAttendanceType.WORKING) {

@@ -1,35 +1,19 @@
 import type { AttendanceSummaryResponse, EmployeeAttendanceSummaryResponse } from '@/types/attendance.type'
-import { Button } from '@/components/ui/button'
 
 interface SummaryByEmployeeTableProps {
   data: AttendanceSummaryResponse
-  onChamCong?: (userId: number) => void
 }
 
-function EmployeeRow({
-  emp,
-  onChamCong
-}: {
-  emp: EmployeeAttendanceSummaryResponse
-  onChamCong?: (userId: number) => void
-}) {
-  const colspan = onChamCong ? 6 : 5
+function EmployeeRow({ emp }: { emp: EmployeeAttendanceSummaryResponse }) {
   if (emp.noData) {
     return (
       <tr className='border-b border-border bg-muted/10'>
         <td className='px-4 py-3 font-medium'>
           {emp.fullName} ({emp.staffCode})
         </td>
-        <td colSpan={colspan} className='text-muted-foreground py-4 text-center'>
+        <td colSpan={5} className='text-muted-foreground py-4 text-center'>
           Nhân viên chưa có dữ liệu chấm công
         </td>
-        {onChamCong && (
-          <td className='px-4 py-3'>
-            <Button variant='outline' size='sm' onClick={() => onChamCong(emp.userId)}>
-              Chấm công
-            </Button>
-          </td>
-        )}
       </tr>
     )
   }
@@ -53,21 +37,11 @@ function EmployeeRow({
           ? `${emp.earlyLeaveCount} lần, ${emp.earlyLeaveDuration}`
           : '-'}
       </td>
-      <td className='px-4 py-3 text-muted-foreground'>
-        {emp.overtime ?? '-'}
-      </td>
-      {onChamCong && (
-        <td className='px-4 py-3'>
-          <Button variant='outline' size='sm' onClick={() => onChamCong(emp.userId)}>
-            Chấm công
-          </Button>
-        </td>
-      )}
     </tr>
   )
 }
 
-export function SummaryByEmployeeTable({ data, onChamCong }: SummaryByEmployeeTableProps) {
+export function SummaryByEmployeeTable({ data }: SummaryByEmployeeTableProps) {
   return (
     <div className='overflow-x-auto rounded-xl border border-border bg-card shadow-sm'>
       <table className='w-full min-w-[600px] border-collapse text-sm'>
@@ -88,17 +62,12 @@ export function SummaryByEmployeeTable({ data, onChamCong }: SummaryByEmployeeTa
             <th className='border-r border-border px-4 py-3 text-left font-medium'>
               Về sớm
             </th>
-            <th className='border-r border-border px-4 py-3 text-left font-medium'>
-              Làm thêm
-            </th>
-            {onChamCong && (
-              <th className='px-4 py-3 text-left font-medium'>Thao tác</th>
-            )}
+
           </tr>
         </thead>
         <tbody>
           {data.employees.map((emp) => (
-            <EmployeeRow key={emp.userId} emp={emp} onChamCong={onChamCong} />
+            <EmployeeRow key={emp.userId} emp={emp} />
           ))}
         </tbody>
       </table>
