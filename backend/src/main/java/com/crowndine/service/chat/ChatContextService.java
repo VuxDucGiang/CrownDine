@@ -15,6 +15,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -41,7 +43,7 @@ public class ChatContextService {
         context.append("- Địa chỉ: [Cập nhật địa chỉ]\n");
         context.append("- Số điện thoại: [Cập nhật số điện thoại]\n\n");
         
-        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+        DecimalFormat df = new DecimalFormat("#,###");
         
         // Categories and Menu Items
         context.append("MENU:\n");
@@ -56,7 +58,7 @@ public class ChatContextService {
                 .collect(Collectors.groupingBy(item -> item.getCategory().getId()));
 
         for (Category category : categories) {
-            List<Item> items = itemsByCategory.getOrDefault(category.getId(), java.util.Collections.emptyList());
+            List<Item> items = itemsByCategory.getOrDefault(category.getId(), Collections.emptyList());
             if (items.isEmpty()) continue;
 
             context.append("\n").append(category.getName()).append(":\n");
@@ -187,7 +189,7 @@ public class ChatContextService {
             }
             
             if (table.getBaseDeposit() != null) {
-                java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+                DecimalFormat df = new DecimalFormat("#,###");
                 info.append("\n   - Đặt cọc: ").append(df.format(table.getBaseDeposit())).append(" VNĐ");
             }
             info.append("\n");
@@ -217,7 +219,7 @@ public class ChatContextService {
             return "Không tìm thấy món nào với từ khóa \"" + keyword + "\"";
         }
         
-        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+        DecimalFormat df = new DecimalFormat("#,###");
         StringBuilder result = new StringBuilder("Kết quả tìm kiếm cho \"" + keyword + "\":\n");
         for (Item item : items) {
             result.append("  - ").append(item.getName());

@@ -24,10 +24,15 @@ import org.springframework.transaction.support.TransactionSynchronization;
 import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -49,13 +54,13 @@ public class ChatService {
     private String getSystemPrompt() {
         String restaurantContext = contextService.getRestaurantContext();
         // Get current date and time for AI context
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
-        String currentDateTime = now.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-        String currentDate = now.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        String tomorrowDate = now.plusDays(1).format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        String dayAfterTomorrow = now.plusDays(2).format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
-        String tomorrowDateISO = now.plusDays(1).format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
-        String dayAfterTomorrowISO = now.plusDays(2).format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        LocalDateTime now = LocalDateTime.now();
+        String currentDateTime = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        String currentDate = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String tomorrowDate = now.plusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String dayAfterTomorrow = now.plusDays(2).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String tomorrowDateISO = now.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String dayAfterTomorrowISO = now.plusDays(2).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         return String.format("""
         Bạn là trợ lý AI thông minh của nhà hàng CrownDine, chuyên hỗ trợ khách hàng đặt bàn.
@@ -339,7 +344,7 @@ public class ChatService {
 
             // Reverse to get chronological order
             List<ChatMessage> messages = new ArrayList<>(recentMessages);
-            java.util.Collections.reverse(messages);
+            Collections.reverse(messages);
 
             // Convert to format for AI
             List<Map<String, String>> aiMessages = new ArrayList<>();
@@ -388,8 +393,8 @@ public class ChatService {
                     aiMessages.add(lastUserIndex, contextMsg);
                 } else if (lowerMessage.contains("bàn") || lowerMessage.contains("đặt bàn") ||
                         lowerMessage.matches(".*\\d+.*người.*") || lowerMessage.matches(".*\\d+.*khách.*")) {
-                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)\\s*(người|khách)");
-                    java.util.regex.Matcher matcher = pattern.matcher(lowerMessage);
+                    Pattern pattern = Pattern.compile("(\\d+)\\s*(người|khách)");
+                    Matcher matcher = pattern.matcher(lowerMessage);
                     if (matcher.find()) {
                         int guestNumber = Integer.parseInt(matcher.group(1));
                         String tableInfo = contextService.getAvailableTablesInfo(guestNumber);
@@ -431,7 +436,7 @@ public class ChatService {
                     assistantMessage.setModel("google/gemini-2.0-flash-001");
                     messageRepository.save(assistantMessage);
 
-                    conv.setUpdatedAt(java.time.LocalDateTime.now());
+                    conv.setUpdatedAt(LocalDateTime.now());
                     conversationRepository.save(conv);
 
                     log.info("Assistant message saved successfully");
