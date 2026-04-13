@@ -329,116 +329,115 @@ public class ChatService {
         try {
             log.info("Processing AI response for conversation: {}, user: {}", conversationId, userId);
 
-            // Use transaction template for async method
-            transactionTemplate.execute(status -> {
-                try {
-                    ChatConversation conversation = conversationRepository.findById(conversationId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
+            // 1. Fetch data for prompt building (read-only or short transaction)
+            ChatConversation conversation = conversationRepository.findById(conversationId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
 
-                    // Get last 20 messages for context - use conversation ID instead of entity
-                    org.springframework.data.domain.Pageable pageable = PageRequest.of(0, 20);
-                    List<ChatMessage> recentMessages = messageRepository.findLastMessagesByConversationId(conversationId, pageable);
+            // Get last 20 messages for context
+            org.springframework.data.domain.Pageable pageable = PageRequest.of(0, 20);
+            List<ChatMessage> recentMessages = messageRepository.findLastMessagesByConversationId(conversationId, pageable);
 
-                    // Reverse to get chronological order
-                    List<ChatMessage> messages = new ArrayList<>(recentMessages);
-                    java.util.Collections.reverse(messages);
+            // Reverse to get chronological order
+            List<ChatMessage> messages = new ArrayList<>(recentMessages);
+            java.util.Collections.reverse(messages);
 
-                    // Convert to format for AI
-                    List<Map<String, String>> aiMessages = new ArrayList<>();
-                    
-                    // Always inject the fresh system prompt FIRST so time is correct, and old rules are removed
-                    Map<String, String> sysMap = new HashMap<>();
-                    sysMap.put("role", "system");
-                    sysMap.put("content", getSystemPrompt());
-                    aiMessages.add(sysMap);
+            // Convert to format for AI
+            List<Map<String, String>> aiMessages = new ArrayList<>();
+            
+            // Always inject the fresh system prompt FIRST
+            Map<String, String> sysMap = new HashMap<>();
+            sysMap.put("role", "system");
+            sysMap.put("content", getSystemPrompt());
+            aiMessages.add(sysMap);
 
-                    // Add all other messages, carefully IGNORING any old "system" messages from the database
-                    aiMessages.addAll(messages.stream()
-                            .filter(msg -> !"system".equals(msg.getRole()))
-                            .map(msg -> {
-                                Map<String, String> map = new HashMap<>();
-                                map.put("role", msg.getRole());
-                                map.put("content", msg.getContent());
-                                return map;
-                            })
-                            .collect(Collectors.toList()));
+            // Add all other messages
+            aiMessages.addAll(messages.stream()
+                    .filter(msg -> !"system".equals(msg.getRole()))
+                    .map(msg -> {
+                        Map<String, String> map = new HashMap<>();
+                        map.put("role", msg.getRole());
+                        map.put("content", msg.getContent());
+                        return map;
+                    })
+                    .collect(Collectors.toList()));
 
-                    // Add context if user asks about menu, tables, or prices
-                    String lastUserMessage = messages.stream()
-                            .filter(m -> "user".equals(m.getRole()))
-                            .reduce((first, second) -> second)
-                            .map(ChatMessage::getContent)
-                            .orElse("");
+            // Add context if user asks about menu, tables, or prices
+            String lastUserMessage = messages.stream()
+                    .filter(m -> "user".equals(m.getRole()))
+                    .reduce((first, second) -> second)
+                    .map(ChatMessage::getContent)
+                    .orElse("");
 
-                    // Enhance context based on user query - add before the last user message
-                    if (lastUserMessage != null && !lastUserMessage.isEmpty()) {
-                        String lowerMessage = lastUserMessage.toLowerCase();
-                        if (lowerMessage.contains("menu") || lowerMessage.contains("món") ||
-                                lowerMessage.contains("giá") || lowerMessage.contains("combo") ||
-                                lowerMessage.contains("ăn") || lowerMessage.contains("thức ăn")) {
-                            // Add menu context before last user message
-                            String menuContext = contextService.getRestaurantContext();
-                            Map<String, String> contextMsg = new HashMap<>();
-                            contextMsg.put("role", "system");
-                            contextMsg.put("content", "Thông tin cập nhật về menu và bàn:\n" + menuContext);
-                            // Find index of last user message and insert before it
-                            int lastUserIndex = aiMessages.size() - 1;
-                            for (int i = aiMessages.size() - 1; i >= 0; i--) {
-                                if ("user".equals(aiMessages.get(i).get("role"))) {
-                                    lastUserIndex = i;
-                                    break;
-                                }
-                            }
-                            aiMessages.add(lastUserIndex, contextMsg);
-                        } else if (lowerMessage.contains("bàn") || lowerMessage.contains("đặt bàn") ||
-                                lowerMessage.matches(".*\\d+.*người.*") || lowerMessage.matches(".*\\d+.*khách.*")) {
-                            // Extract guest number if mentioned
-                            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)\\s*(người|khách)");
-                            java.util.regex.Matcher matcher = pattern.matcher(lowerMessage);
-                            if (matcher.find()) {
-                                int guestNumber = Integer.parseInt(matcher.group(1));
-                                String tableInfo = contextService.getAvailableTablesInfo(guestNumber);
-                                Map<String, String> contextMsg = new HashMap<>();
-                                contextMsg.put("role", "system");
-                                contextMsg.put("content", "Thông tin bàn phù hợp (CHỈ báo cho khách danh sách này NẾU khách đã chốt đủ Số khách, Ngày đến, và Giờ đến. Nếu khách chưa cho biết Giờ đến thì tuyệt đối giữ bí mật và hỏi Giờ đến trước):\n" + tableInfo);
-                                // Find index of last user message and insert before it
-                                int lastUserIndex = aiMessages.size() - 1;
-                                for (int i = aiMessages.size() - 1; i >= 0; i--) {
-                                    if ("user".equals(aiMessages.get(i).get("role"))) {
-                                        lastUserIndex = i;
-                                        break;
-                                    }
-                                }
-                                aiMessages.add(lastUserIndex, contextMsg);
-                            }
+            // Enhance context based on user query
+            if (lastUserMessage != null && !lastUserMessage.isEmpty()) {
+                String lowerMessage = lastUserMessage.toLowerCase();
+                if (lowerMessage.contains("menu") || lowerMessage.contains("món") ||
+                        lowerMessage.contains("giá") || lowerMessage.contains("combo") ||
+                        lowerMessage.contains("ăn") || lowerMessage.contains("thức ăn")) {
+                    String menuContext = contextService.getRestaurantContext();
+                    Map<String, String> contextMsg = new HashMap<>();
+                    contextMsg.put("role", "system");
+                    contextMsg.put("content", "Thông tin cập nhật về menu và bàn:\n" + menuContext);
+                    int lastUserIndex = aiMessages.size() - 1;
+                    for (int i = aiMessages.size() - 1; i >= 0; i--) {
+                        if ("user".equals(aiMessages.get(i).get("role"))) {
+                            lastUserIndex = i;
+                            break;
                         }
                     }
+                    aiMessages.add(lastUserIndex, contextMsg);
+                } else if (lowerMessage.contains("bàn") || lowerMessage.contains("đặt bàn") ||
+                        lowerMessage.matches(".*\\d+.*người.*") || lowerMessage.matches(".*\\d+.*khách.*")) {
+                    java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)\\s*(người|khách)");
+                    java.util.regex.Matcher matcher = pattern.matcher(lowerMessage);
+                    if (matcher.find()) {
+                        int guestNumber = Integer.parseInt(matcher.group(1));
+                        String tableInfo = contextService.getAvailableTablesInfo(guestNumber);
+                        Map<String, String> contextMsg = new HashMap<>();
+                        contextMsg.put("role", "system");
+                        contextMsg.put("content", "Thông tin bàn phù hợp (CHỈ báo cho khách danh sách này NẾU khách đã chốt đủ Số khách, Ngày đến, và Giờ đến. Nếu khách chưa cho biết Giờ đến thì tuyệt đối giữ bí mật và hỏi Giờ đến trước):\n" + tableInfo);
+                        int lastUserIndex = aiMessages.size() - 1;
+                        for (int i = aiMessages.size() - 1; i >= 0; i--) {
+                            if ("user".equals(aiMessages.get(i).get("role"))) {
+                                lastUserIndex = i;
+                                break;
+                            }
+                        }
+                        aiMessages.add(lastUserIndex, contextMsg);
+                    }
+                }
+            }
 
-                    // Call Gemini AI
-                    log.info("Calling Gemini AI for conversation: {}", conversationId);
-                    String aiResponse = geminiAIService.generateContent(aiMessages, "google/gemini-2.0-flash-001");
-                    log.info("Gemini AI response received");
+            // 2. Call AI API OUTSIDE of any transaction
+            log.info("Calling Gemini AI for conversation: {}", conversationId);
+            String aiResponse = geminiAIService.generateContent(aiMessages, "google/gemini-2.0-flash-001");
+            log.info("Gemini AI response received");
 
-                    // Remove emoji and special characters from AI response, then format with line breaks
-                    String cleanedResponse = cleanText(aiResponse);
-                    cleanedResponse = formatTextWithLineBreaks(cleanedResponse);
+            // Cleaning and formatting (still outside transaction)
+            String cleanedResponse = cleanText(aiResponse);
+            cleanedResponse = formatTextWithLineBreaks(cleanedResponse);
 
-                    // Save assistant message
+            // 3. Save results in a short transaction
+            final String finalResponse = cleanedResponse;
+            transactionTemplate.execute(status -> {
+                try {
+                    ChatConversation conv = conversationRepository.findById(conversationId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
+
                     ChatMessage assistantMessage = new ChatMessage();
-                    assistantMessage.setConversation(conversation);
+                    assistantMessage.setConversation(conv);
                     assistantMessage.setRole("assistant");
-                    assistantMessage.setContent(cleanedResponse);
+                    assistantMessage.setContent(finalResponse);
                     assistantMessage.setModel("google/gemini-2.0-flash-001");
                     messageRepository.save(assistantMessage);
 
-                    // Update conversation's updatedAt timestamp
-                    conversation.setUpdatedAt(java.time.LocalDateTime.now());
-                    conversationRepository.save(conversation);
+                    conv.setUpdatedAt(java.time.LocalDateTime.now());
+                    conversationRepository.save(conv);
 
-                    log.info("Assistant message saved successfully, conversation updated");
+                    log.info("Assistant message saved successfully");
                     return null;
                 } catch (Exception e) {
-                    log.error("Error in transaction for AI response", e);
+                    log.error("Error saving AI response", e);
                     status.setRollbackOnly();
                     throw new RuntimeException(e);
                 }
