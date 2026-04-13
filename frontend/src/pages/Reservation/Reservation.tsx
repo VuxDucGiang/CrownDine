@@ -423,8 +423,6 @@ export default function Reservation() {
           // Vẫn cho phép tiếp tục với checkoutSummary = null (Step4Payment có fallback logic)
           // Nhưng hiện thông báo lỗi nếu sync thất bại
           toast.error('Có lỗi xảy ra khi lưu thông tin món ăn. Vui lòng thử lại.')
-          setCheckoutSummary(null)
-          setCurrentStep(4)
         } finally {
           setIsLoadingOrderDetails(false)
         }
