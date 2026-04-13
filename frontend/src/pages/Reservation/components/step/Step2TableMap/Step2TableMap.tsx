@@ -107,7 +107,8 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
     }
 
     // Không cho xem chi tiết bàn đã được đặt (trừ bàn đang chọn)
-    if (tableLayout.status === 'AVAILABLE' && !availableTableIds.has(tableLayout.id) && selectedTable?.id !== tableLayout.id.toString()) {
+    const isInteractive = tableLayout.status === 'AVAILABLE' || tableLayout.status === 'OCCUPIED' || tableLayout.status === 'RESERVED'
+    if (isInteractive && !availableTableIds.has(tableLayout.id) && selectedTable?.id !== tableLayout.id.toString()) {
       return
     }
 
@@ -116,8 +117,9 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
 
   // Xác nhận chọn bàn từ ngăn kéo
   const handleConfirmSelect = (tableLayout: TableLayout) => {
-    // Không cho chọn bàn AVAILABLE nhưng capacity < guests
-    if (tableLayout.status === 'AVAILABLE') {
+    // Không cho chọn bàn nếu capacity < guests
+    const isInteractive = tableLayout.status === 'AVAILABLE' || tableLayout.status === 'OCCUPIED' || tableLayout.status === 'RESERVED'
+    if (isInteractive) {
       const capacity = tableLayout.capacity || 2
       if (capacity < guests) {
         return
