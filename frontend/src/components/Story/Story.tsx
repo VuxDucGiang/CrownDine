@@ -1,5 +1,10 @@
 'use client'
+import { RESTAURANT_CONFIG } from '@/pages/Reservation/data'
+
 const Story = () => {
+  const openTime = `${String(RESTAURANT_CONFIG.openHour).padStart(2, '0')}:00`
+  const closeTime = `${String(RESTAURANT_CONFIG.closeHour).padStart(2, '0')}:00`
+
   return (
     <section id='story' className='bg-card py-20'>
       <div className='container mx-auto px-4'>
@@ -18,7 +23,7 @@ const Story = () => {
               <p className='mb-4 text-sm italic'>
                 "Nấu ăn là về đam mê, vì vậy tôi luôn muốn đưa tất cả trái tim và linh hồn vào từng món ăn"
               </p>
-              <p className='font-bold'>— Đầu Bếp Marco</p>
+              <p className='font-bold'>— Đầu Bếp Trần Văn Đức</p>
             </div>
           </div>
 
@@ -41,10 +46,15 @@ const Story = () => {
                 món ăn kể chuyện và gắn kết mọi người.
               </p>
               <p>
-                Dưới sự hướng dẫn của Đầu bếp Điều hành Marco Bellini, bếp của chúng tôi biến những nguyên liệu theo mùa
+                Dưới sự hướng dẫn của Bếp trưởng Trần Văn Đức, bếp của chúng tôi biến những nguyên liệu theo mùa
                 tốt nhất thành những trải nghiệm ăn uống đáng nhớ. Mỗi món ăn đều là một sự kiện của truyền thống, đổi
                 mới và đam mê.
               </p>
+            </div>
+
+            <div className='mb-8 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm'>
+              <p className='text-foreground font-semibold'>Địa chỉ: 123 Gourmet Street, Da Nang</p>
+              <p className='text-foreground/70 mt-1'>Giờ mở cửa: {openTime} - {closeTime} (hằng ngày)</p>
             </div>
 
             {/* Stats */}

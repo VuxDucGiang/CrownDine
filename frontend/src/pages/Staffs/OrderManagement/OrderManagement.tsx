@@ -174,12 +174,8 @@ const OrderManagement = () => {
     setIsDrawerOpen(true)
   }
 
-  const handlePayment = (order: Order) => {
-    setPaymentOrder(order)
-  }
-
   const cancelOrderMutation = useMutation({
-    mutationFn: ({ orderId, cancelReason }: { orderId: number; cancelReason: string }) => 
+    mutationFn: ({ orderId, cancelReason }: { orderId: number; cancelReason: string }) =>
       orderApi.updateOrderStatus(orderId, 'CANCELLED', cancelReason),
     onSuccess: () => {
       toast.success('Hủy đơn hàng thành công')
@@ -196,9 +192,12 @@ const OrderManagement = () => {
 
   const confirmCancelOrder = (reason: string) => {
     if (cancelingOrder) {
-      cancelOrderMutation.mutate({ orderId: cancelingOrder.id, cancelReason: reason }, {
-        onSuccess: () => setCancelingOrder(null)
-      })
+      cancelOrderMutation.mutate(
+        { orderId: cancelingOrder.id, cancelReason: reason },
+        {
+          onSuccess: () => setCancelingOrder(null)
+        }
+      )
     }
   }
 
