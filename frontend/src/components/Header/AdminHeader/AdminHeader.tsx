@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { Menu, X, Moon, Sun, LogOut, User, Settings } from 'lucide-react'
+import { Menu, X, Moon, Sun, LogOut, User } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -73,9 +73,7 @@ export default function AdminHeader() {
         { label: 'Phòng bàn', href: '/admin/layout' },
         { label: 'Thanh toán', href: '/admin/payment-management' }
       ]
-    },
-
-    { label: 'Trợ lý AI', href: '/admin/ai-assistant' }
+    }
   ]
 
   const isActive = (item: any) => {
@@ -198,12 +196,6 @@ export default function AdminHeader() {
                   <Link to='/profile' className='cursor-pointer'>
                     <User className='mr-2 h-4 w-4' />
                     <span>Hồ sơ của tôi</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to='/settings' className='cursor-pointer'>
-                    <Settings className='mr-2 h-4 w-4' />
-                    <span>Cài đặt</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
