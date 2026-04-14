@@ -16,6 +16,24 @@ interface ProfileSidebarProps {
 const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const setUser = useAuthStore((state) => state.setUser)
+  const authRoles = useAuthStore((state) => state.roles)
+
+  const normalizedRoles = Array.from(
+    new Set(
+      [...authRoles, user.role]
+        .filter(Boolean)
+        .map((role) => role.toUpperCase().replace('ROLE_', ''))
+    )
+  )
+
+  const getPrimaryRole = () => {
+    if (normalizedRoles.includes('ADMIN')) return 'ADMIN'
+    if (normalizedRoles.includes('STAFF')) return 'STAFF'
+    return 'USER'
+  }
+
+  const primaryRole = getPrimaryRole()
+  const roleLabel = primaryRole === 'ADMIN' ? 'Admin' : primaryRole === 'STAFF' ? 'Staff' : 'User'
 
   const uploadAvatarMutation = useMutation({
     mutationFn: (file: File) => userApi.uploadAvatar(file),
@@ -93,7 +111,7 @@ const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) =
         </h3>
 
         {/* Membership Tier Badge */}
-        {user.role === 'customer' && user.totalSpent !== undefined && (
+        {primaryRole === 'USER' && user.totalSpent !== undefined && (
           <div className='mt-3 w-full'>
             {(() => {
               const tier = calculateMembershipTier(user.totalSpent)
@@ -109,7 +127,7 @@ const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) =
           </div>
         )}
 
-        <p className='text-foreground/60 mt-2 text-sm'>{user.role.charAt(0).toUpperCase() + user.role.slice(1)}</p>
+        <p className='text-foreground/60 mt-2 text-sm'>{roleLabel}</p>
       </div>
 
       {/* Navigation Tabs */}
