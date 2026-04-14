@@ -179,7 +179,7 @@ const OrderManagement = () => {
   }
 
   const cancelOrderMutation = useMutation({
-    mutationFn: ({ orderId, cancelReason }: { orderId: number; cancelReason: string }) => 
+    mutationFn: ({ orderId, cancelReason }: { orderId: number; cancelReason: string }) =>
       orderApi.updateOrderStatus(orderId, 'CANCELLED', cancelReason),
     onSuccess: () => {
       toast.success('Hủy đơn hàng thành công')
@@ -344,16 +344,7 @@ const OrderManagement = () => {
                       </td>
                       <td className='px-6 py-4'>{getStatusBadge(order.status)}</td>
                       <td className='px-6 py-4 text-right'>
-                        <div className='flex items-center justify-end gap-2'>
-                          <Button
-                            variant='outline'
-                            size='sm'
-                            className='rounded-lg border-orange-200 font-semibold text-orange-600 shadow-sm hover:bg-orange-50 hover:text-orange-700'
-                            onClick={() => handlePayment(order)}
-                            disabled={order.status === 'CANCELLED' || order.status === 'COMPLETED'}
-                          >
-                            Thanh toán
-                          </Button>
+                        <div className='flex items-center justify-end gap-2 '>
                           <Button
                             variant='outline'
                             size='sm'
