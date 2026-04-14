@@ -84,3 +84,20 @@ function getStatusColor(status: OrderStatus) {
       return 'bg-background text-foreground'
   }
 }
+
+function getStatusLabel(status: OrderStatus) {
+  switch (status) {
+    case 'PRE_ORDER':
+      return 'Đặt trước'
+    case 'CONFIRMED':
+      return 'Đã xác nhận'
+    case 'IN_PROGRESS':
+      return 'Đang phục vụ'
+    case 'COMPLETED':
+      return 'Hoàn thành'
+    case 'CANCELLED':
+      return 'Đã hủy'
+    default:
+      return status
+  }
+}
