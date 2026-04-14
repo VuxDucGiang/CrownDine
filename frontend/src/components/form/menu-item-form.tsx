@@ -44,17 +44,17 @@ export const MenuItemForm = ({ initialData, onSubmit, onCancel }: MenuItemFormPr
           ) : (
             <>
               <ImagePlus className='mb-2 h-6 w-6' />
-              <span className='text-xs'>Upload Image</span>
+              <span className='text-xs'>Tải ảnh lên</span>
             </>
           )}
         </div>
       </div>
 
       <div className='space-y-2'>
-        <Label htmlFor='item-name'>Item Name</Label>
+        <Label htmlFor='item-name'>Tên món ăn</Label>
         <Input
           id='item-name'
-          placeholder='e.g. Garlic Bread'
+          placeholder='VD: Bánh mì bơ tỏi'
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
@@ -63,7 +63,7 @@ export const MenuItemForm = ({ initialData, onSubmit, onCancel }: MenuItemFormPr
 
       <div className='grid grid-cols-2 gap-4'>
         <div className='space-y-2'>
-          <Label htmlFor='item-price'>Price ($)</Label>
+          <Label htmlFor='item-price'>Giá (đ)</Label>
           <Input
             id='item-price'
             type='number'
@@ -74,25 +74,25 @@ export const MenuItemForm = ({ initialData, onSubmit, onCancel }: MenuItemFormPr
           />
         </div>
         <div className='space-y-2'>
-          <Label htmlFor='item-status'>Status</Label>
+          <Label htmlFor='item-status'>Trạng thái</Label>
           <select
             id='item-status'
             className='border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
             value={formData.status}
             onChange={(e) => setFormData({ ...formData, status: e.target.value })}
           >
-            <option value='AVAILABLE'>Available</option>
-            <option value='UNAVAILABLE'>Unavailable</option>
+            <option value='AVAILABLE'>Sẵn sàng</option>
+            <option value='UNAVAILABLE'>Hết hàng</option>
           </select>
         </div>
       </div>
 
       <div className='space-y-2'>
-        <Label htmlFor='item-description'>Description</Label>
+        <Label htmlFor='item-description'>Mô tả</Label>
         <textarea
           id='item-description'
           className='border-input placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
-          placeholder='Brief description...'
+          placeholder='Mô tả ngắn gọn...'
           rows={3}
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -100,11 +100,11 @@ export const MenuItemForm = ({ initialData, onSubmit, onCancel }: MenuItemFormPr
       </div>
       <div className='flex justify-end gap-3 pt-4'>
         <Button type='button' variant='outline' onClick={onCancel}>
-          Cancel
+          Hủy
         </Button>
         <Button type='submit'>
           <Save className='mr-2 h-4 w-4' />
-          Save Item
+          Lưu món ăn
         </Button>
       </div>
     </form>

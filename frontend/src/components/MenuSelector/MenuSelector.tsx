@@ -15,9 +15,10 @@ import { useAuthStore } from '@/stores/useAuthStore'
 
 interface MenuSelectorProps {
   onSelectItem: (item: MenuCardItem, type: 'item' | 'combo') => void
+  isSidebar?: boolean
 }
 
-export default function MenuSelector({ onSelectItem }: MenuSelectorProps) {
+export default function MenuSelector({ onSelectItem, isSidebar = false }: MenuSelectorProps) {
   const [searchQuery, setSearchQuery] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('Tất cả')
   const { isAuthenticated } = useAuthStore()
@@ -126,57 +127,102 @@ export default function MenuSelector({ onSelectItem }: MenuSelectorProps) {
 
   return (
     <div className='flex h-full flex-col'>
-      {/* Search Input */}
-      <div className='mb-4 relative'>
-        <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
-        <Input
-          placeholder='Tìm món hoặc combo...'
-          className='bg-background pl-9 shadow-sm'
-          value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
-        />
-      </div>
+      {/* Top Search only if not sidebar (if sidebar, we might put it elsewhere or keep it) */}
+      {!isSidebar && (
+        <div className='mb-4 relative'>
+          <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
+          <Input
+            placeholder='Tìm món hoặc combo...'
+            className='bg-background pl-9 shadow-sm'
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      )}
 
-      {/* Category Tabs (Horizontal Scroll) */}
-      <div className='mb-4'>
-        <div className='w-full overflow-x-auto scrollbar-hide'>
-          <div className='flex w-max gap-2 pb-2'>
+      {isSidebar ? (
+        <div className='flex-1 flex gap-4 overflow-hidden'>
+          {/* Vertical Sidebar Categories */}
+          <div className='w-40 flex flex-col gap-1.5 overflow-y-auto pr-1 scrollbar-thin'>
+            <div className='relative mb-2'>
+                <Search className='text-muted-foreground absolute top-1/2 left-3 h-3.5 w-3.5 -translate-y-1/2' />
+                <Input
+                    placeholder='Tìm...'
+                    className='h-8 pl-8 text-xs bg-white border-slate-200'
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                />
+            </div>
             {categoryNames.map((cat) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat)}
-                className={`flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors ${
+                className={`flex items-center gap-2 rounded-lg px-3 py-2 text-[11px] font-bold transition-all ${
                   selectedCategory === cat
-                    ? 'border-primary bg-primary text-primary-foreground'
-                    : 'bg-background hover:bg-muted text-foreground border-border'
+                    ? 'bg-primary text-white shadow-md'
+                    : 'bg-white hover:bg-slate-100 text-slate-500 border border-slate-100'
                 }`}
               >
-                {cat === 'Yêu thích' && <Heart size={12} className={selectedCategory === cat ? 'fill-current' : 'text-red-500'} />}
-                {cat}
+                {cat === 'Yêu thích' && <Heart size={10} className={selectedCategory === cat ? 'fill-current' : 'text-red-500'} />}
+                <span className='truncate'>{cat}</span>
               </button>
             ))}
           </div>
-        </div>
-      </div>
 
-      {/* Grid Menu */}
-      <div className='flex-1 overflow-y-auto pr-2'>
-        {displayList.length > 0 ? (
-          <div className='grid grid-cols-2 gap-4 pb-4 sm:grid-cols-3 md:grid-cols-4'>
-            {displayList.map(({ key, item, type }) => (
-              <MenuCard 
-                key={key} 
-                item={item} 
-                onClick={() => onSelectItem(item, type)} 
-              />
-            ))}
+          {/* Grid Menu (Vertical Scroll) */}
+          <div className='flex-1 overflow-y-auto pr-1 scrollbar-thin'>
+            {displayList.length > 0 ? (
+              <div className='grid grid-cols-2 gap-3 pb-3 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5'>
+                {displayList.map(({ key, item, type }) => (
+                  <MenuCard key={key} item={item} onClick={() => onSelectItem(item, type)} />
+                ))}
+              </div>
+            ) : (
+              <div className='flex h-40 flex-col items-center justify-center text-center'>
+                <p className='text-muted-foreground text-sm font-medium'>Không tìm thấy món ăn nào</p>
+              </div>
+            )}
           </div>
-        ) : (
-          <div className='flex h-40 flex-col items-center justify-center text-center'>
-            <p className='text-muted-foreground text-sm font-medium'>Không tìm thấy món ăn nào</p>
+        </div>
+      ) : (
+        <>
+          {/* Category Tabs (Horizontal Scroll) */}
+          <div className='mb-4'>
+            <div className='w-full overflow-x-auto scrollbar-hide'>
+              <div className='flex w-max gap-2 pb-2'>
+                {categoryNames.map((cat) => (
+                  <button
+                    key={cat}
+                    onClick={() => setSelectedCategory(cat)}
+                    className={`flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-xs font-semibold transition-colors ${
+                      selectedCategory === cat
+                        ? 'border-primary bg-primary text-primary-foreground'
+                        : 'bg-background hover:bg-muted text-foreground border-border'
+                    }`}
+                  >
+                    {cat === 'Yêu thích' && <Heart size={12} className={selectedCategory === cat ? 'fill-current' : 'text-red-500'} />}
+                    {cat}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
-        )}
-      </div>
+
+          <div className='flex-1 overflow-y-auto pr-2'>
+            {displayList.length > 0 ? (
+              <div className='grid grid-cols-2 gap-4 pb-4 sm:grid-cols-3 md:grid-cols-4'>
+                {displayList.map(({ key, item, type }) => (
+                  <MenuCard key={key} item={item} onClick={() => onSelectItem(item, type)} />
+                ))}
+              </div>
+            ) : (
+              <div className='flex h-40 flex-col items-center justify-center text-center'>
+                <p className='text-muted-foreground text-sm font-medium'>Không tìm thấy món ăn nào</p>
+              </div>
+            )}
+          </div>
+        </>
+      )}
     </div>
   )
 }
@@ -208,9 +254,9 @@ function MenuCard({ item, onClick }: { item: MenuCardItem; onClick: () => void }
           </div>
         )}
       </div>
-      <div className='p-3 text-center'>
-        <h3 className='text-foreground line-clamp-1 mb-1 text-sm font-bold'>{item.name}</h3>
-        <div className='bg-primary/10 text-primary mx-auto inline-block rounded-md px-2 py-1 text-xs font-semibold'>
+      <div className='p-2 text-center' title={item.name}>
+        <h3 className='text-foreground line-clamp-1 mb-0.5 text-[11px] font-bold'>{item.name}</h3>
+        <div className='text-primary mx-auto inline-block text-[10px] font-black'>
           {formatCurrency(Number(currentPrice))}
         </div>
       </div>

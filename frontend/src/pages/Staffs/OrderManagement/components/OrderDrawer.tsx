@@ -377,13 +377,15 @@ export default function OrderDrawer({
                 <span className='text-primary'>{finalPrice.toLocaleString()} VND</span>
               </div>
               <div className='mt-2 flex items-center justify-between gap-2 xl:justify-end xl:gap-4'>
-                <Button
-                  onClick={order ? handlePayment : handleSave}
-                  disabled={isSaving || order?.status === 'CANCELLED' || order?.status === 'COMPLETED'}
-                  className='h-11 flex-1 xl:flex-none'
-                >
-                  {isSaving ? 'Đang lưu...' : order ? 'Thanh toán' : 'Tạo đơn'}
-                </Button>
+                {!order && (
+                  <Button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className='h-11 flex-1 xl:flex-none'
+                  >
+                    {isSaving ? 'Đang lưu...' : 'Tạo đơn'}
+                  </Button>
+                )}
                 {order && (
                   <Button
                     onClick={handleSave}

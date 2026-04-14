@@ -348,15 +348,6 @@ const OrderManagement = () => {
                           <Button
                             variant='outline'
                             size='sm'
-                            className='rounded-lg border-orange-200 font-semibold text-orange-600 shadow-sm hover:bg-orange-50 hover:text-orange-700'
-                            onClick={() => handlePayment(order)}
-                            disabled={order.status === 'CANCELLED' || order.status === 'COMPLETED'}
-                          >
-                            Thanh toán
-                          </Button>
-                          <Button
-                            variant='outline'
-                            size='sm'
                             className='text-foreground hover:bg-muted rounded-lg font-medium shadow-sm'
                             onClick={() => handleViewOrder(order)}
                           >

@@ -63,6 +63,7 @@ const ReservationList = () => {
       toast.success('Check in đặt bàn thành công')
       setSelectedReservation(null)
       queryClient.invalidateQueries({ queryKey: ['staff-reservations'] })
+      queryClient.invalidateQueries({ queryKey: ['staff-reservations-calendar'] })
     }
   })
 
@@ -70,7 +71,9 @@ const ReservationList = () => {
     mutationFn: (reservationId: number) => reservationApi.cancelReservationByStaff(reservationId),
     onSuccess: () => {
       toast.success('Huỷ đặt bàn thành công')
+      setSelectedReservation(null)
       queryClient.invalidateQueries({ queryKey: ['staff-reservations'] })
+      queryClient.invalidateQueries({ queryKey: ['staff-reservations-calendar'] })
     }
   })
 
@@ -152,15 +155,6 @@ const ReservationList = () => {
                </div>
             </div>
 
-            {/* Table count */}
-            <div className='pt-6 border-t border-slate-100'>
-               <label className='block text-[10px] font-bold text-slate-400 uppercase mb-3 px-1'>Bản ghi hiển thị</label>
-               <select className='w-full h-10 bg-slate-50 border-slate-200 rounded-lg text-sm px-2 outline-none cursor-pointer'>
-                  <option>15 bản ghi</option>
-                  <option>30 bản ghi</option>
-                  <option>50 bản ghi</option>
-               </select>
-            </div>
          </div>
       </aside>
 
@@ -216,17 +210,13 @@ const ReservationList = () => {
            ) : (
              <div className='bg-white flex-1 overflow-hidden flex flex-col h-full border-b border-slate-200'>
                 {/* Table Top Actions */}
-                <div className='p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50/30'>
-                   <div className='flex items-center gap-3'>
-                      <input type='checkbox' className='w-4 h-4 rounded border-slate-300' />
-                      <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest'>Tất cả</span>
-                   </div>
+                <div className='p-4 border-b border-slate-100 flex justify-end items-center bg-slate-50/30'>
                    <div className='flex gap-2'>
                       <Button 
                          onClick={() => setIsCreateModalOpen(true)}
                          className='bg-primary gap-2 h-9 text-xs font-bold px-4 rounded-lg shadow-lg shadow-primary/20 hover:scale-105 transition-transform'
                       >
-                         <PlusCircle size={14} /> TẠO ĐẶT BÀN (F1)
+                         <PlusCircle size={14} /> TẠO ĐẶT BÀN
                       </Button>
                    </div>
                 </div>
