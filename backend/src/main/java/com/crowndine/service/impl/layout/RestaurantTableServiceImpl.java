@@ -9,6 +9,7 @@ import com.crowndine.model.Area;
 import com.crowndine.model.RestaurantTable;
 import com.crowndine.repository.AreaRepository;
 import com.crowndine.repository.RestaurantTableRepository;
+import com.crowndine.service.layout.RestaurantTableStateService;
 import com.crowndine.service.layout.RestaurantTableService;
 import com.crowndine.service.reservation.ReservationAvailabilityService;
 import com.crowndine.service.reservation.ReservationTimePolicy;
@@ -31,6 +32,7 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
     private final AreaRepository areaRepository;
     private final ReservationTimePolicy reservationTimePolicy;
     private final ReservationAvailabilityService reservationAvailabilityService;
+    private final RestaurantTableStateService restaurantTableStateService;
 
     @Override
     public TableLayoutResponse create(Long areaId, TableRequest request) {
@@ -123,14 +125,7 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
     @Override
     public RestaurantTableResponse updateTableStatus(Long id, ETableStatus status) {
-        RestaurantTable table = tableRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
-
-        table.setStatus(status);
-        tableRepository.save(table);
-        log.info("Table id {} updated successfully to status {}", id, status);
-
-        return toResponse(table);
+        return restaurantTableStateService.changeStatus(id, status);
     }
 
     private RestaurantTableResponse toResponse(RestaurantTable restaurantTable) {

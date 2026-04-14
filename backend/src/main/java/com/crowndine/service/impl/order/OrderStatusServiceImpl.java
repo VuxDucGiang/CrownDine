@@ -1,6 +1,7 @@
 package com.crowndine.service.impl.order;
 
 import com.crowndine.common.enums.EOrderStatus;
+import com.crowndine.common.enums.ETableStatus;
 import com.crowndine.dto.response.UpdateStatusOrderResponse;
 import com.crowndine.exception.ResourceNotFoundException;
 import com.crowndine.model.Order;
@@ -61,8 +62,8 @@ public class OrderStatusServiceImpl implements OrderStatusService {
 
         Long tableId = order.getRestaurantTable().getId();
         switch (order.getStatus()) {
-            case CONFIRMED, IN_PROGRESS -> restaurantTableStateService.markOccupied(tableId);
-            case COMPLETED, CANCELLED -> restaurantTableStateService.markAvailable(tableId);
+            case CONFIRMED, IN_PROGRESS -> restaurantTableStateService.changeStatus(tableId, ETableStatus.OCCUPIED);
+            case COMPLETED, CANCELLED -> restaurantTableStateService.changeStatus(tableId, ETableStatus.AVAILABLE);
             case PRE_ORDER, SERVED -> {
                 // PRE_ORDER reserve is handled by reservation scheduler; SERVED keeps current table state.
             }

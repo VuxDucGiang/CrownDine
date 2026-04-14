@@ -33,15 +33,13 @@ const Cashier = () => {
   // Fetch Tables
   const { data: tableData, isLoading: isLoadingTables } = useQuery({
     queryKey: ['tables'],
-    queryFn: () => tableApi.getAllTables(),
-    refetchInterval: 2500
+    queryFn: () => tableApi.getAllTables()
   })
 
   // Fetch Active Orders (all to ensure matching regardless of specific served status)
   const { data: orderData } = useQuery({
     queryKey: ['orders-active'],
     queryFn: () => orderApi.getAllOrders({}),
-    refetchInterval: 5000,
     select: (response) => {
       const all = response?.data?.data?.data ?? []
       return all.filter(
