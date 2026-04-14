@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -51,7 +52,7 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public ReservationCheckoutResponse createReservationByCustomer(String username, ReservationCreateRequest request) {
         LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(request.getDate(), request.getStartTime());
         User customer = getUserByUserName(username);
@@ -59,7 +60,7 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public ReservationCheckoutResponse createWalkInReservationByStaff(String staffUsername, StaffReservationCreateRequest request) {
         LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(request.getDate(), request.getStartTime());
         User staff = getUserByUserName(staffUsername);
@@ -201,7 +202,10 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
             throw new InvalidDataException("reservation.update_table_only_pending");
         }
 
-        RestaurantTable newTable = tableRepository.findById(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
+        /*
+         * Lock bàn đích trước khi check availability để tránh 2 request đổi/chọn cùng 1 bàn trong cùng thời điểm.
+         */
+        RestaurantTable newTable = tableRepository.findByIdForUpdate(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
 
         validateTableForReservation(newTable, reservation.getGuestNumber());
 
@@ -262,7 +266,7 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
         LocalDateTime endDateTime = reservationTimePolicy.calculatePlannedEndTime(startDateTime);
         reservationTimePolicy.validateStartTime(startDateTime);
 
-        RestaurantTable table = tableRepository.findById(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
+        RestaurantTable table = tableRepository.findByIdForUpdate(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
 
         validateTableForReservation(table, request.getGuestNumber());
         reservationAvailabilityService.ensureTableAvailable(request.getDate(), request.getStartTime(), table.getId());
