@@ -31,8 +31,8 @@ const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
   const prevWeek = () => setCurrentDate((prev) => subWeeks(prev, 1))
 
   // Filter logic for ScheduleTable
-  const filteredStaffs = staffs ? (selectedStaffSearchIds.length > 0 ? staffs.filter(s => selectedStaffSearchIds.includes(s.id)) : staffs) : []
-  const filteredSchedules = schedules ? (selectedStaffSearchIds.length > 0 ? schedules.filter(s => selectedStaffSearchIds.includes(s.user.id.toString())) : schedules) : []
+  const filteredStaffs = staffs ? (selectedStaffSearchIds.length > 0 ? staffs.filter(s => selectedStaffSearchIds.some(id => String(id) === String(s.id))) : staffs) : []
+  const filteredSchedules = schedules ? (selectedStaffSearchIds.length > 0 ? schedules.filter(s => selectedStaffSearchIds.some(id => String(id) === String(s.user.id))) : schedules) : []
 
   return (
     <div className='bg-muted/10 h-full min-h-[calc(100vh-64px)] p-6'>
