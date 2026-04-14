@@ -1,5 +1,6 @@
 package com.crowndine.service.impl.order;
 
+import com.crowndine.common.enums.EOrderDetailStatus;
 import com.crowndine.common.enums.EOrderStatus;
 import com.crowndine.common.enums.EPaymentStatus;
 import com.crowndine.common.enums.EPaymentTarget;
@@ -286,10 +287,21 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> getKitchenOrders() {
-        List<EOrderStatus> activeStatuses = List.of(EOrderStatus.CONFIRMED, EOrderStatus.IN_PROGRESS);
+        List<EOrderStatus> activeStatuses = List.of(EOrderStatus.CONFIRMED, EOrderStatus.IN_PROGRESS, EOrderStatus.COMPLETED);
         List<Order> orders = orderRepository.findByStatusIn(activeStatuses);
-        log.info("Found {} active kitchen orders", orders.size());
-        return orders.stream().map(this::toResponse).toList();
+        
+        List<Order> kitchenOrders = orders.stream()
+                .filter(o -> {
+                    if (o.getStatus() == EOrderStatus.COMPLETED) {
+                        return o.getOrderDetails().stream()
+                                .anyMatch(d -> d.getStatus() == EOrderDetailStatus.PENDING || d.getStatus() == EOrderDetailStatus.COOKING);
+                    }
+                    return true;
+                })
+                .toList();
+
+        log.info("Found {} active kitchen orders", kitchenOrders.size());
+        return kitchenOrders.stream().map(this::toResponse).toList();
     }
 
     @Override
