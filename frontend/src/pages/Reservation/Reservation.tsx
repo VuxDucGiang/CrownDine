@@ -502,6 +502,11 @@ export default function Reservation() {
         {/* Progress Steps */}
         <Progress currentStep={currentStep} steps={['Thời gian', 'Chọn bàn', 'Món ăn', 'Thanh toán']} />
 
+        <div className='mt-4 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800'>
+          Lưu ý: Vui lòng đến nhà hàng trong vòng <strong>15 phút</strong> tính từ giờ bắt đầu đặt bàn. Nếu quá thời
+          gian này, hệ thống có thể giải phóng bàn cho khách khác.
+        </div>
+
         {/* Main Content Area */}
         <div className='min-h-100'>
           {currentStep === 1 && (

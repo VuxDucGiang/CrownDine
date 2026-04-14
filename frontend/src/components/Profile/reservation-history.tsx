@@ -159,6 +159,9 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
     <div className='bg-card border-border rounded-lg border p-8'>
       {/* Header */}
       <h2 className='mb-8 text-2xl font-bold'>Lịch Sử Đặt Bàn & Đơn Hàng</h2>
+      <div className='mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800'>
+        Lưu ý: Bàn được giữ trong vòng <strong>15 phút</strong> tính từ giờ bắt đầu đặt bàn, không phải từ lúc tạo đơn.
+      </div>
 
       {/* Reservations List */}
       <div className='space-y-4'>

@@ -39,6 +39,7 @@ import java.time.LocalDateTime;
 public class ReservationLifecycleServiceImpl implements ReservationLifecycleService {
     private static final long HOLD_TABLE_MINUTES = 10;
     private static final long CHECK_IN_WINDOW_MINUTES = 15;
+    private static final long NO_SHOW_GRACE_MINUTES = 15;
 
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
@@ -150,6 +151,14 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
             throw new InvalidDataException("reservation.no_show_only_confirmed");
         }
 
+        LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(reservation.getDate(), reservation.getStartTime());
+        LocalDateTime threshold = startDateTime.plusMinutes(NO_SHOW_GRACE_MINUTES);
+        LocalDateTime now = LocalDateTime.now();
+
+        if (now.isBefore(threshold)) {
+            throw new InvalidDataException("reservation.no_show_only_after_15_minutes");
+        }
+
         cancelReservationWithStatus(reservation, EReservationStatus.NO_SHOW);
         log.info("Reservation id {} has been marked as no-show", reservationId);
     }
@@ -248,8 +257,8 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
     }
 
     private ReservationCheckoutResponse createReservationInternal(ReservationCreateRequest request, User customer,
-                                                                User createdByStaff, String guestName, String guestPhone,
-                                                                EReservationStatus initialStatus, LocalDateTime startDateTime) {
+                                                                  User createdByStaff, String guestName, String guestPhone,
+                                                                  EReservationStatus initialStatus, LocalDateTime startDateTime) {
         LocalDateTime endDateTime = reservationTimePolicy.calculatePlannedEndTime(startDateTime);
         reservationTimePolicy.validateStartTime(startDateTime);
 

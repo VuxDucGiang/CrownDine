@@ -250,6 +250,11 @@ export default function PaymentResult() {
               <p className='mt-2 text-base font-semibold text-neutral-900'>{transactionDate}</p>
             </div>
 
+            <div className='rounded-2xl border border-amber-200 bg-amber-50 p-4 text-sm text-amber-800'>
+              Lưu ý: Bàn được giữ trong vòng <strong>15 phút</strong> tính từ giờ bắt đầu đặt bàn. Vui lòng đến đúng
+              giờ để tránh bị giải phóng bàn.
+            </div>
+
             {hasMismatchBetweenCallbackAndDb && (
               <div className='rounded-2xl border border-orange-200 bg-orange-50 p-4 text-sm text-orange-800'>
                 Kết quả trả về từ cổng thanh toán khác với dữ liệu hệ thống. Giao diện đang ưu tiên trạng thái trong DB
