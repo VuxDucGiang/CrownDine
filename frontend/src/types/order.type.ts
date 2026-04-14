@@ -24,13 +24,16 @@ export interface Order {
   updatedAt: string
   createdAt: string
   cancelReason?: string
+  manualDiscountValue?: number
+  isManualDiscountPercentage?: boolean
 }
 
 export interface OrderCheckout {
   orderId: number
   orderCode: string
   totalAmount: number
-  discountAmount: number
+  voucherDiscount: number
+  manualDiscountAmount: number
   depositedAmount: number
   tableDepositPaidAmount: number
   orderDepositPaidAmount: number

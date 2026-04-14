@@ -138,6 +138,27 @@ public class ApiOrderController {
     }
 
     @PreAuthorize("hasAnyAuthority('STAFF', 'ADMIN')")
+    @PatchMapping("/{orderId}/discount")
+    public ApiResponse applyManualDiscount(@Min(1) @PathVariable Long orderId,
+                                           @Valid @RequestBody com.crowndine.dto.request.OrderManualDiscountRequest request) {
+        orderService.applyManualDiscount(orderId, request.getDiscountValue(), request.getIsPercentage());
+        return ApiResponse.builder()
+                .status(200)
+                .message("Successfully applied manual discount")
+                .build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('STAFF', 'ADMIN')")
+    @DeleteMapping("/{orderId}/discount")
+    public ApiResponse removeManualDiscount(@Min(1) @PathVariable Long orderId) {
+        orderService.removeManualDiscount(orderId);
+        return ApiResponse.builder()
+                .status(200)
+                .message("Successfully removed manual discount")
+                .build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('STAFF', 'ADMIN')")
     @GetMapping("/kitchen")
     public ApiResponse getKitchenOrders() {
         return ApiResponse.builder()

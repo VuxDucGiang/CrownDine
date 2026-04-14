@@ -30,6 +30,12 @@ public class Order extends AbstractEntity<Long> {
     @Column(name = "final_price")
     private BigDecimal finalPrice;
 
+    @Column(name = "manual_discount_value")
+    private BigDecimal manualDiscountValue = BigDecimal.ZERO;
+
+    @Column(name = "is_manual_discount_percentage")
+    private Boolean isManualDiscountPercentage = false;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private EOrderStatus status;

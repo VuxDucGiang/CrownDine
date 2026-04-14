@@ -444,11 +444,6 @@ const OrderManagement = () => {
         }}
         order={selectedOrder}
         reservationId={reservationIdForNewOrder}
-        onPaymentClick={(order) => {
-          setIsDrawerOpen(false)
-          setReservationIdForNewOrder(null)
-          setPaymentOrder(order)
-        }}
         onCancelClick={(order) => {
           setIsDrawerOpen(false)
           setReservationIdForNewOrder(null)

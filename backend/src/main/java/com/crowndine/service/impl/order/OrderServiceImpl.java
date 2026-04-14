@@ -309,8 +309,20 @@ public class OrderServiceImpl implements OrderService {
         Order order = getOrder(orderId);
 
         BigDecimal totalAmount = defaultMoney(order.getTotalPrice());
-        BigDecimal discountAmount = defaultMoney(order.getDiscountPrice());
-        BigDecimal orderFinalAmount = defaultMoney(order.getFinalPrice());
+        
+        // Detailed discount breakdown
+        BigDecimal voucherDiscount = (order.getVoucher() == null) ? BigDecimal.ZERO 
+                : calculationService.calculateVoucherDiscount(totalAmount, order.getVoucher());
+        
+        BigDecimal manualDiscountVal = defaultMoney(order.getManualDiscountValue());
+        BigDecimal manualDiscountAmount = BigDecimal.ZERO;
+        if (manualDiscountVal.compareTo(BigDecimal.ZERO) > 0) {
+            if (Boolean.TRUE.equals(order.getIsManualDiscountPercentage())) {
+                manualDiscountAmount = totalAmount.multiply(manualDiscountVal).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
+            } else {
+                manualDiscountAmount = manualDiscountVal;
+            }
+        }
 
         BigDecimal depositedAmount = BigDecimal.ZERO;
         BigDecimal tableDepositPaidAmount = BigDecimal.ZERO;
@@ -335,6 +347,8 @@ public class OrderServiceImpl implements OrderService {
             orderDepositPaidAmount = BigDecimal.ZERO;
         }
 
+        // Final price after ALL discounts and reservation deposits
+        BigDecimal orderFinalAmount = defaultMoney(order.getFinalPrice());
         BigDecimal finalAmount = orderFinalAmount.subtract(orderDepositPaidAmount);
         if (finalAmount.compareTo(BigDecimal.ZERO) < 0) {
             finalAmount = BigDecimal.ZERO;
@@ -344,7 +358,8 @@ public class OrderServiceImpl implements OrderService {
         response.setOrderId(order.getId());
         response.setOrderCode(order.getCode());
         response.setTotalAmount(totalAmount);
-        response.setDiscountAmount(discountAmount);
+        response.setVoucherDiscount(voucherDiscount);
+        response.setManualDiscountAmount(manualDiscountAmount);
         response.setDepositedAmount(depositedAmount);
         response.setTableDepositPaidAmount(tableDepositPaidAmount);
         response.setOrderDepositPaidAmount(orderDepositPaidAmount);
@@ -405,6 +420,16 @@ public class OrderServiceImpl implements OrderService {
         return response;
     }
 
+    private boolean isSameProduct(OrderDetail detail, Long itemId, Long comboId) {
+        if (itemId != null && detail.getItem() != null) {
+            return detail.getItem().getId().equals(itemId);
+        }
+        if (comboId != null && detail.getCombo() != null) {
+            return detail.getCombo().getId().equals(comboId);
+        }
+        return false;
+    }
+
     private ComboResponse toComboResponse(Combo combo) {
         return ComboResponse.builder()
                 .id(combo.getId())
@@ -423,14 +448,26 @@ public class OrderServiceImpl implements OrderService {
                 .build();
     }
 
-    private boolean isSameProduct(OrderDetail detail, Long itemId, Long comboId) {
-        if (itemId != null && detail.getItem() != null) {
-            return detail.getItem().getId().equals(itemId);
-        }
-        if (comboId != null && detail.getCombo() != null) {
-            return detail.getCombo().getId().equals(comboId);
-        }
-        return false;
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void applyManualDiscount(Long orderId, BigDecimal discountValue, Boolean isPercentage) {
+        log.info("Applying manual discount {} (percentage: {}) to order {}", discountValue, isPercentage, orderId);
+        Order order = getOrder(orderId);
+        order.setManualDiscountValue(discountValue);
+        order.setIsManualDiscountPercentage(isPercentage);
+        recalculateOrderPricing(order);
+        orderRepository.save(order);
+    }
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void removeManualDiscount(Long orderId) {
+        log.info("Removing manual discount from order {}", orderId);
+        Order order = getOrder(orderId);
+        order.setManualDiscountValue(BigDecimal.ZERO);
+        order.setIsManualDiscountPercentage(false);
+        recalculateOrderPricing(order);
+        orderRepository.save(order);
     }
 
     private BigDecimal defaultMoney(BigDecimal amount) {
