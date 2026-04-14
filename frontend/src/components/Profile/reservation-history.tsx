@@ -127,6 +127,19 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
     }
   }
 
+  const translateStatus = (status: string | undefined | null) => {
+    if (!status) return ''
+    switch (status) {
+      case 'PENDING': return 'Chờ xử lý'
+      case 'CONFIRMED': return 'Đã xác nhận'
+      case 'IN_PROGRESS': return 'Đang phục vụ'
+      case 'COMPLETED': return 'Hoàn thành'
+      case 'CANCELLED': return 'Đã hủy'
+      case 'PRE_ORDER': return 'Đặt trước'
+      default: return status
+    }
+  }
+
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('vi-VN', {
       year: 'numeric',
@@ -211,7 +224,7 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                       </Button>
                     )}
                     <Badge className={getReservationStatusColor(reservation.reservationStatus)}>
-                      {reservation.reservationStatus}
+                      {translateStatus(reservation.reservationStatus)}
                     </Badge>
                     <ChevronDown
                       className={`text-foreground/60 h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
@@ -270,7 +283,7 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                               </Badge>
                             )}
                             <Badge variant='outline' className={getOrderStatusColor(reservation.orderStatus || '')}>
-                              Order #{reservation.orderId} • {reservation.orderStatus}
+                              Order #{reservation.orderId} • {translateStatus(reservation.orderStatus)}
                             </Badge>
                           </div>
                         </div>

@@ -57,7 +57,7 @@ function OrderStatusSelectView({
       >
         {statusOptions.map((status) => (
           <option key={status} value={status} className='text-secondary bg-white font-bold'>
-            {status}
+            {getStatusLabel(status)}
           </option>
         ))}
       </select>
