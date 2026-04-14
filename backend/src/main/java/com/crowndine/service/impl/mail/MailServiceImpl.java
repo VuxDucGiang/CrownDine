@@ -102,6 +102,7 @@ public class MailServiceImpl implements MailService {
             log.error("Failed to send reservation success email to {}: {}", emailTo, e.getMessage(), e);
         }
     }
+
     @Override
     public void sendOtpEmail(String emailTo, String otp) {
         try {
@@ -114,7 +115,7 @@ public class MailServiceImpl implements MailService {
             helper.setFrom(emailFrom, "CrownDine Restaurant");
             helper.setTo(emailTo);
             helper.setSubject("Mã xác thực OTP - CrownDine");
-            
+
             String html = templateEngine.process("email-otp.html", context);
             helper.setText(html, true);
 

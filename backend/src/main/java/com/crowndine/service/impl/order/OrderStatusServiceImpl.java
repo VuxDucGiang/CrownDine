@@ -31,7 +31,6 @@ public class OrderStatusServiceImpl implements OrderStatusService {
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public UpdateStatusOrderResponse updateOrderStatus(Long orderId, EOrderStatus status, String cancelReason) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException(ORDER_NOT_FOUND_MESSAGE));
         Order updatedOrder = transitionOrderStatus(order, status, cancelReason);
