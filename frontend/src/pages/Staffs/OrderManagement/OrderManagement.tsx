@@ -174,10 +174,6 @@ const OrderManagement = () => {
     setIsDrawerOpen(true)
   }
 
-  const handlePayment = (order: Order) => {
-    setPaymentOrder(order)
-  }
-
   const cancelOrderMutation = useMutation({
     mutationFn: ({ orderId, cancelReason }: { orderId: number; cancelReason: string }) =>
       orderApi.updateOrderStatus(orderId, 'CANCELLED', cancelReason),
@@ -196,9 +192,12 @@ const OrderManagement = () => {
 
   const confirmCancelOrder = (reason: string) => {
     if (cancelingOrder) {
-      cancelOrderMutation.mutate({ orderId: cancelingOrder.id, cancelReason: reason }, {
-        onSuccess: () => setCancelingOrder(null)
-      })
+      cancelOrderMutation.mutate(
+        { orderId: cancelingOrder.id, cancelReason: reason },
+        {
+          onSuccess: () => setCancelingOrder(null)
+        }
+      )
     }
   }
 
@@ -344,7 +343,7 @@ const OrderManagement = () => {
                       </td>
                       <td className='px-6 py-4'>{getStatusBadge(order.status)}</td>
                       <td className='px-6 py-4 text-right'>
-                        <div className='flex items-center justify-end gap-2 '>
+                        <div className='flex items-center justify-end gap-2'>
                           <Button
                             variant='outline'
                             size='sm'
