@@ -96,30 +96,6 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
     applyVoucherMutation.mutate(voucherCode.trim())
   }
 
-  const applyManualDiscountMutation = useMutation({
-    mutationFn: () => {
-      if (!order?.id) throw new Error('Không tìm thấy đơn hàng')
-      return orderApi.applyManualDiscount(order.id, {
-        discountValue: manualDiscount,
-        isPercentage: discountType === 'PERCENT'
-      })
-    },
-    onSuccess: () => {
-      toast.success('Áp dụng giảm giá thủ công thành công!')
-      refetchCheckout()
-    },
-    onError: (err: any) => {
-      toast.error('Lỗi khi áp dụng giảm giá: ' + (err.response?.data?.message || err.message))
-    }
-  })
-
-  const handleApplyManualDiscount = () => {
-    if (manualDiscount < 0) {
-       toast.error('Giá trị giảm giá không hợp lệ')
-       return
-    }
-    applyManualDiscountMutation.mutate()
-  }
 
   const paymentMutation = useMutation({
     mutationFn: (paymentMethod: 'CASH' | 'PAYOS') => {
