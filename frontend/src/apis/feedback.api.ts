@@ -16,6 +16,9 @@ const feedbackApi = {
   },
   createFeedback(body: { rating: number; comment: string; orderId?: number; orderDetailId?: number; itemId?: number; comboId?: number }) {
     return http.post<ApiResponse<Feedback>>(FEEDBACK_URL, body)
+  },
+  updateFeedback(id: number, body: { rating: number; comment: string }) {
+    return http.put<ApiResponse<Feedback>>(`${FEEDBACK_URL}/${id}`, body)
   }
 }
 

@@ -54,6 +54,7 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
     @Override
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public ReservationCheckoutResponse createReservationByCustomer(String username, ReservationCreateRequest request) {
+        log.info("Processing create reservation for user: {}", username);
         LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(request.getDate(), request.getStartTime());
         User customer = getUserByUserName(username);
         return createReservationInternal(request, customer, null, null, null, EReservationStatus.PENDING, startDateTime);
@@ -142,26 +143,47 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void markReservationNoShow(Long reservationId, String username) {
-        log.info("Staff/Admin {} marking reservation id {} as no-show", username, reservationId);
+    public void markNoShowDueReservations() {
+        LocalDateTime threshold = LocalDateTime.now().minusMinutes(NO_SHOW_GRACE_MINUTES);
+        var candidates = reservationRepository.findNoShowCandidates(
+                EReservationStatus.CONFIRMED,
+                threshold.toLocalDate(),
+                threshold.toLocalTime()
+        );
 
-        Reservation reservation = getReservationById(reservationId);
-        getUserByUserName(username);
-
-        if (reservation.getStatus() != EReservationStatus.CONFIRMED) {
-            throw new InvalidDataException("reservation.no_show_only_confirmed");
+        if (candidates.isEmpty()) {
+            return;
         }
 
-        LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(reservation.getDate(), reservation.getStartTime());
-        LocalDateTime threshold = startDateTime.plusMinutes(NO_SHOW_GRACE_MINUTES);
-        LocalDateTime now = LocalDateTime.now();
+        int updatedCount = 0;
+        for (Reservation reservation : candidates) {
+            markReservationNoShow(reservation.getId());
+            updatedCount++;
+        }
+        log.info("Auto-marked {} reservation(s) as no-show", updatedCount);
+    }
 
-        if (now.isBefore(threshold)) {
-            throw new InvalidDataException("reservation.no_show_only_after_15_minutes");
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public void markReservationNoShow(Long reservationId) {
+        Reservation reservation = getReservationById(reservationId);
+
+        if (reservation.getStatus() != EReservationStatus.CONFIRMED) {
+            return;
+        }
+
+        if (!isNoShowGraceElapsed(reservation)) {
+            return;
         }
 
         cancelReservationWithStatus(reservation, EReservationStatus.NO_SHOW);
-        log.info("Reservation id {} has been marked as no-show", reservationId);
+        log.info("Reservation id {} has been auto-marked as no-show by scheduler", reservationId);
+    }
+
+    private boolean isNoShowGraceElapsed(Reservation reservation) {
+        LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(reservation.getDate(), reservation.getStartTime());
+        LocalDateTime threshold = startDateTime.plusMinutes(NO_SHOW_GRACE_MINUTES);
+        return !LocalDateTime.now().isBefore(threshold);
     }
 
     @Override
