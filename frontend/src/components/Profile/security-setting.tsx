@@ -82,42 +82,38 @@ const SecuritySetting = () => {
       )
   }
 
-  const handleSendOTP = async (type: 'email' | 'phone') => {
-    if (type === 'email') {
-      if (!emailForm.newEmail) {
-        toast.error('Vui lòng nhập email mới')
-        return
-      }
-      if (!validateEmail(emailForm.newEmail)) {
-        toast.error('Email không đúng định dạng')
-        return
-      }
-      sendEmailOtpMutation.mutate(emailForm.newEmail, {
-        onSuccess: () => {
-          setOtpSent(true)
-          setCountdown(30)
-        }
-      })
+  const handleSendOTP = async () => {
+    if (!emailForm.newEmail) {
+      toast.error('Vui lòng nhập email mới')
+      return
     }
+    if (!validateEmail(emailForm.newEmail)) {
+      toast.error('Email không đúng định dạng')
+      return
+    }
+    sendEmailOtpMutation.mutate(emailForm.newEmail, {
+      onSuccess: () => {
+        setOtpSent(true)
+        setCountdown(30)
+      }
+    })
   }
 
-  const handleVerifyOTP = async (type: 'email' | 'phone') => {
-    if (type === 'email') {
-      if (!emailForm.otp) {
-        toast.error('Vui lòng nhập mã OTP')
-        return
-      }
-      verifyEmailOtpMutation.mutate({
-        otp: emailForm.otp,
-        newEmail: emailForm.newEmail
-      }, {
-        onSuccess: () => {
-          setOtpVerified(true)
-          setOtpSent(false)
-          setEmailForm({ newEmail: '', otp: '' })
-        }
-      })
+  const handleVerifyOTP = async () => {
+    if (!emailForm.otp) {
+      toast.error('Vui lòng nhập mã OTP')
+      return
     }
+    verifyEmailOtpMutation.mutate({
+      otp: emailForm.otp,
+      newEmail: emailForm.newEmail
+    }, {
+      onSuccess: () => {
+        setOtpVerified(true)
+        setOtpSent(false)
+        setEmailForm({ newEmail: '', otp: '' })
+      }
+    })
   }
 
   const handlePasswordSubmit = async () => {
@@ -274,7 +270,7 @@ const SecuritySetting = () => {
 
           {!otpSent && !otpVerified && (
             <Button
-              onClick={() => handleSendOTP('email')}
+              onClick={handleSendOTP}
               disabled={sendEmailOtpMutation.isPending || !emailForm.newEmail}
               className='bg-primary hover:bg-primary/90 w-full text-white'
             >
@@ -307,7 +303,7 @@ const SecuritySetting = () => {
               </div>
 
               <Button
-                onClick={() => handleVerifyOTP('email')}
+                onClick={handleVerifyOTP}
                 disabled={verifyEmailOtpMutation.isPending || emailForm.otp.length !== 6}
                 className='bg-primary hover:bg-primary/90 w-full text-white'
               >
@@ -317,7 +313,7 @@ const SecuritySetting = () => {
               <button
                 type='button'
                 disabled={countdown > 0 || sendEmailOtpMutation.isPending}
-                onClick={() => handleSendOTP('email')}
+                onClick={handleSendOTP}
                 className='text-primary hover:text-primary/80 disabled:text-foreground/40 w-full text-center text-sm font-medium transition-colors'
               >
                 {countdown > 0 ? `Gửi lại mã OTP sau ${countdown}s` : 'Gửi lại mã OTP'}
