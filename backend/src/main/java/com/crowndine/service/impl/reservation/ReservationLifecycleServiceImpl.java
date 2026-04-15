@@ -54,6 +54,7 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
     @Override
     @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public ReservationCheckoutResponse createReservationByCustomer(String username, ReservationCreateRequest request) {
+        log.info("Processing create reservation for user: {}", username);
         LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(request.getDate(), request.getStartTime());
         User customer = getUserByUserName(username);
         return createReservationInternal(request, customer, null, null, null, EReservationStatus.PENDING, startDateTime);
