@@ -1,10 +1,9 @@
 package com.crowndine.service.layout;
 
+import com.crowndine.common.enums.ETableStatus;
+import com.crowndine.dto.response.RestaurantTableResponse;
+
 public interface RestaurantTableStateService {
 
-    void markAvailable(Long tableId);
-
-    void markReserved(Long tableId);
-
-    void markOccupied(Long tableId);
+    RestaurantTableResponse changeStatus(Long tableId, ETableStatus targetStatus);
 }

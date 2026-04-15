@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Moon, Sun, User, LogOut, Settings, Heart, Trash2, Bell } from 'lucide-react'
+import { Menu, X, Moon, Sun, User, LogOut, Heart, Trash2, Bell } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/useAuthStore'
@@ -315,12 +315,6 @@ const Header = () => {
                   <Link to='/profile' className='cursor-pointer'>
                     <User className='mr-2 h-4 w-4' />
                     <span>Hồ sơ của tôi</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to='/settings' className='cursor-pointer'>
-                    <Settings className='mr-2 h-4 w-4' />
-                    <span>Cài đặt</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

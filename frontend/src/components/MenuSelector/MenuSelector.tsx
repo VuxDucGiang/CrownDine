@@ -6,7 +6,7 @@ import type { Category } from '@/types/category.type'
 import type { Item } from '@/types/item.type'
 import { comboToCardItem, type MenuCardItem } from '@/types/item.type'
 import type { Combo } from '@/types/combo.type'
-import { formatCurrency, getImageUrl } from '@/utils/utils'
+import { formatCurrency, getImageUrl, DEFAULT_PLACEHOLDER } from '@/utils/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
 import { Search, Heart } from 'lucide-react'
@@ -196,7 +196,10 @@ function MenuCard({ item, onClick }: { item: MenuCardItem; onClick: () => void }
           alt={item.name} 
           className='h-full w-full object-cover transition-transform duration-300 hover:scale-110'
           onError={(e) => {
-            ;(e.target as HTMLImageElement).src = '/placeholder-food.png' // Fallback image if any
+            const target = e.target as HTMLImageElement
+            if (target.src !== DEFAULT_PLACEHOLDER) {
+              target.src = DEFAULT_PLACEHOLDER
+            }
           }}
         />
         {item.status === 'SOLD_OUT' && (

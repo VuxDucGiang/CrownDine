@@ -33,15 +33,13 @@ const Cashier = () => {
   // Fetch Tables
   const { data: tableData, isLoading: isLoadingTables } = useQuery({
     queryKey: ['tables'],
-    queryFn: () => tableApi.getAllTables(),
-    refetchInterval: 2500
+    queryFn: () => tableApi.getAllTables()
   })
 
   // Fetch Active Orders (all to ensure matching regardless of specific served status)
   const { data: orderData } = useQuery({
     queryKey: ['orders-active'],
     queryFn: () => orderApi.getAllOrders({}),
-    refetchInterval: 5000,
     select: (response) => {
       const all = response?.data?.data?.data ?? []
       return all.filter(
@@ -89,12 +87,14 @@ const Cashier = () => {
     const total = rawTables.length
     const using = rawTables.filter((t: any) => t.status === 'OCCUPIED').length
     const empty = rawTables.filter((t: any) => t.status === 'AVAILABLE').length
-    return { total, using, empty }
+    const reserved = rawTables.filter((t: any) => t.status === 'RESERVED').length
+    return { total, using, empty, reserved }
   }, [rawTables])
 
   const filters = [
     { label: 'Tất cả', icon: LayoutGrid, count: stats.total, color: 'text-primary' },
     { label: 'Sử dụng', icon: Users, count: stats.using, color: 'text-orange-600' },
+    { label: 'Đã đặt trước', icon: Clock, count: stats.reserved, color: 'text-amber-600' },
     { label: 'Còn trống', icon: CheckCircle2, count: stats.empty, color: 'text-emerald-600' }
   ]
 
@@ -109,6 +109,7 @@ const Cashier = () => {
 
       // 3. Status Filter
       if (activeFilter === 'Sử dụng' && table.status !== 'OCCUPIED') return false
+      if (activeFilter === 'Đã đặt trước' && table.status !== 'RESERVED') return false
       if (activeFilter === 'Còn trống' && table.status !== 'AVAILABLE') return false
 
       return true
@@ -265,6 +266,8 @@ const Cashier = () => {
           <div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'>
             {paginatedTables.map((table: any) => {
               const isOccupied = table.status === 'OCCUPIED'
+              const isReserved = table.status === 'RESERVED'
+              const isUnavailable = table.status === 'UNAVAILABLE'
               const order = isOccupied ? getTableOrder(table.name) : null
               const itemCount = order?.orderDetails?.reduce((acc: number, d: any) => acc + d.quantity, 0) || 0
 
@@ -279,20 +282,40 @@ const Cashier = () => {
                       'relative flex h-44 w-full cursor-pointer flex-col items-center justify-center rounded-[2rem] transition-all duration-500 hover:-translate-y-2',
                       isOccupied
                         ? 'bg-primary text-white shadow-2xl shadow-primary/40 ring-4 ring-primary/20 active:scale-95'
-                        : 'border border-slate-200 bg-white hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 active:scale-95'
+                        : isReserved
+                          ? 'border border-amber-200 bg-amber-50 text-amber-900 hover:border-amber-300 hover:shadow-xl hover:shadow-amber-100 active:scale-95'
+                          : isUnavailable
+                            ? 'border border-slate-300 bg-slate-100 text-slate-600 hover:border-slate-400 hover:shadow-xl hover:shadow-slate-100 active:scale-95'
+                            : 'border border-slate-200 bg-white hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 active:scale-95'
                     )}
                   >
                     <div className='relative flex flex-col items-center'>
                       {/* Detailed Table Icon */}
                       <div className='flex gap-5 mb-1'>
-                        <div className={cn('h-2 w-7 rounded-t-full transition-all', isOccupied ? 'bg-white/40' : 'bg-slate-100')} />
-                        <div className={cn('h-2 w-7 rounded-t-full transition-all', isOccupied ? 'bg-white/40' : 'bg-slate-100')} />
+                        <div
+                          className={cn(
+                            'h-2 w-7 rounded-t-full transition-all',
+                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                          )}
+                        />
+                        <div
+                          className={cn(
+                            'h-2 w-7 rounded-t-full transition-all',
+                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                          )}
+                        />
                       </div>
 
                       <div
                         className={cn(
                           'relative h-20 w-32 rounded-[1.5rem] border-2 shadow-inner flex items-center justify-center p-3 z-10 transition-all duration-500',
-                          isOccupied ? 'border-white/50 bg-white/15' : 'border-slate-100 bg-slate-50/50'
+                          isOccupied
+                            ? 'border-white/50 bg-white/15'
+                            : isReserved
+                              ? 'border-amber-200 bg-amber-100/60'
+                              : isUnavailable
+                                ? 'border-slate-300 bg-slate-200/60'
+                                : 'border-slate-100 bg-slate-50/50'
                         )}
                       >
                         {isOccupied && order ? (
@@ -318,14 +341,37 @@ const Cashier = () => {
                           </div>
                         ) : (
                           <div className='h-full w-full rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center'>
-                             <span className={cn('text-[10px] font-black tracking-widest uppercase', isOccupied ? 'text-white/40' : 'text-slate-300')}>Phòng: {table.capacity}</span>
+                             <span
+                               className={cn(
+                                 'text-[10px] font-black tracking-widest uppercase',
+                                 isOccupied
+                                   ? 'text-white/40'
+                                   : isReserved
+                                     ? 'text-amber-400'
+                                     : isUnavailable
+                                       ? 'text-slate-400'
+                                       : 'text-slate-300'
+                               )}
+                             >
+                               Phòng: {table.capacity}
+                             </span>
                           </div>
                         )}
                       </div>
 
                       <div className='flex gap-5 mt-1'>
-                        <div className={cn('h-2 w-7 rounded-b-full transition-all', isOccupied ? 'bg-white/40' : 'bg-slate-100')} />
-                        <div className={cn('h-2 w-7 rounded-b-full transition-all', isOccupied ? 'bg-white/40' : 'bg-slate-100')} />
+                        <div
+                          className={cn(
+                            'h-2 w-7 rounded-b-full transition-all',
+                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                          )}
+                        />
+                        <div
+                          className={cn(
+                            'h-2 w-7 rounded-b-full transition-all',
+                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                          )}
+                        />
                       </div>
                     </div>
 

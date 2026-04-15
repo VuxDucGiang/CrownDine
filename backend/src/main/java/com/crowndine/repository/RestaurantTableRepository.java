@@ -2,13 +2,16 @@ package com.crowndine.repository;
 
 import com.crowndine.common.enums.ETableStatus;
 import com.crowndine.model.RestaurantTable;
+import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.repository.query.Param;
 
 import java.util.List;
+import java.util.Optional;
 
 @Repository
 public interface RestaurantTableRepository
@@ -25,4 +28,11 @@ public interface RestaurantTableRepository
     @EntityGraph(attributePaths = {"area", "area.floor"})
     @Override
     List<RestaurantTable> findAll();
+
+    /**
+     * Khóa bản ghi bàn để serialize các request đặt/cập nhật cùng một bàn.
+     */
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT t FROM RestaurantTable t WHERE t.id = :id")
+    Optional<RestaurantTable> findByIdForUpdate(@Param("id") Long id);
 }

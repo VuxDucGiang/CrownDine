@@ -147,6 +147,14 @@ export default function ReservationDetailModal({
            </div>
         )}
 
+        <div className='rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800'>
+           <p className='font-bold uppercase tracking-wider text-[10px] mb-1'>Lưu ý check-in</p>
+           <p>
+              Chỉ được check-in trong khoảng <strong>15 phút trước</strong> đến <strong>15 phút sau</strong> thời điểm hẹn
+              đặt bàn. Quá 15 phút sau giờ hẹn, bàn có thể được giải phóng để phục vụ khách khác.
+           </p>
+        </div>
+
         {/* Actions */}
         <div className='pt-6 flex gap-4'>
            {canCancel && (

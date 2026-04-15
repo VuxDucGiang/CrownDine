@@ -1,5 +1,6 @@
 import type {
   Order,
+  OrderCheckout,
   OrderStatus,
   OrderRequest,
   OrderItemBatchRequest,
@@ -25,6 +26,10 @@ const orderApi = {
 
   addOrderDetails(orderId: number, body: OrderItemBatchRequest) {
     return http.post<ApiResponse<null>>(`${TABLE_URL}/${orderId}/details`, body)
+  },
+
+  getOrderCheckout(orderId: number) {
+    return http.get<ApiResponse<OrderCheckout>>(`${TABLE_URL}/${orderId}/checkout`)
   },
 
   updateOrderDetail(detailId: number, body: UpdateOrderDetailRequest) {

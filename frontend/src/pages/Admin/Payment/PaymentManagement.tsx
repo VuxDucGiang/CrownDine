@@ -58,7 +58,7 @@ const PaymentManagement = () => {
   const [status, setStatus] = useState('')
   const [type, setType] = useState('')
   const [target, setTarget] = useState('')
-  const [source, setSource] = useState('')
+  const [method, setMethod] = useState('')
   const [dateFilterType, setDateFilterType] = useState('ALL') // ALL, TODAY, YESTERDAY, CUSTOM
   const [customStartDate, setCustomStartDate] = useState('')
   const [customEndDate, setCustomEndDate] = useState('')
@@ -100,7 +100,7 @@ const PaymentManagement = () => {
 
   // React Query Fetch Data
   const { data, isLoading, refetch } = useQuery({
-    queryKey: ['payments', { page, size, search, status, type, target, source, fromDate, toDate }],
+    queryKey: ['payments', { page, size, search, status, type, target, method, fromDate, toDate }],
     queryFn: () =>
       paymentApi.getPayments({
         page,
@@ -109,7 +109,7 @@ const PaymentManagement = () => {
         status: status || undefined,
         type: type || undefined,
         target: target || undefined,
-        source: source || undefined,
+        method: method || undefined,
         fromDate: fromDate || undefined,
         toDate: toDate || undefined
       })
@@ -159,26 +159,17 @@ const PaymentManagement = () => {
 
   const renderTypeTargetBadge = (type: string, target: string) => {
     // Lable mapping format: Type - Target
-    const typeStr =
-      type === 'INCOME'
-        ? 'Thu'
-        : type === 'OUTCOME'
-          ? 'Chi'
-          : type === 'DEPOSIT'
-            ? 'Cọc'
-            : type === 'REFUND'
-              ? 'Hoàn'
-              : type
+    const typeStr = type === 'SETTLEMENT' ? 'Thu' : type === 'DEPOSIT' ? 'Cọc' : type === 'REFUND' ? 'Hoàn' : type
     const targetStr = target === 'RESERVATION' ? 'Bàn' : target === 'ORDER' ? 'Đơn hàng' : target
 
     let colorClass =
       'bg-stone-100 text-stone-700 border-stone-200 dark:bg-stone-800 dark:text-stone-300 dark:border-stone-700'
-    if (type === 'INCOME')
+    if (type === 'SETTLEMENT')
       colorClass = 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-400'
     else if (type === 'DEPOSIT')
       colorClass = 'bg-purple-50 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-400'
-    else if (type === 'OUTCOME' || type === 'REFUND')
-      colorClass = 'bg-orange-50 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-400'
+    else if (type === 'REFUND')
+      colorClass = 'bg-rose-50 text-rose-700 border-rose-200 dark:bg-rose-900/30 dark:text-rose-400'
 
     return (
       <Badge
@@ -193,7 +184,7 @@ const PaymentManagement = () => {
   // Reset pagination when filter changes
   useEffect(() => {
     setPage(1)
-  }, [search, status, type, target, source, dateFilterType, customStartDate, customEndDate])
+  }, [search, status, type, target, method, dateFilterType, customStartDate, customEndDate])
 
   return (
     <div className='bg-background mx-auto flex min-h-screen w-full max-w-[1400px] flex-col p-6 md:p-8'>
@@ -244,7 +235,6 @@ const PaymentManagement = () => {
               <option value='SUCCESS'>Thành công</option>
               <option value='PENDING'>Đang chờ xử lý</option>
               <option value='FAILED'>Thất bại</option>
-              <option value='REFUNDED'>Hoàn tiền</option>
             </select>
           </div>
 
@@ -256,9 +246,9 @@ const PaymentManagement = () => {
               className='bg-background border-border rounded-md border px-3 py-2 text-sm font-medium shadow-sm outline-none'
             >
               <option value=''>Tất cả Type</option>
-              <option value='INCOME'>Doanh thu (INCOME)</option>
+              <option value='SETTLEMENT'>Doanh thu (SETTLEMENT)</option>
               <option value='DEPOSIT'>Tiền cọc (DEPOSIT)</option>
-              <option value='OUTCOME'>Hoàn trả (OUTCOME)</option>
+              <option value='REFUND'>Hoàn trả (REFUND)</option>
             </select>
           </div>
 
@@ -276,17 +266,17 @@ const PaymentManagement = () => {
           </div>
 
           <div className='flex flex-col gap-1.5'>
-            <label className='text-muted-foreground text-[11px] font-semibold uppercase'>Nguồn (Source)</label>
+            <label className='text-muted-foreground text-[11px] font-semibold uppercase'>Kênh (Method)</label>
             <select
-              value={source}
-              onChange={(e) => setSource(e.target.value)}
+              value={method}
+              onChange={(e) => setMethod(e.target.value)}
               className='bg-background border-border rounded-md border px-3 py-2 text-sm font-medium shadow-sm outline-none'
             >
-              <option value=''>Mọi nguồn</option>
+              <option value=''>Mọi kênh</option>
               <option value='CASH'>Tiền mặt</option>
-              <option value='VNPAY'>VNPAY</option>
               <option value='PAYOS'>PayOS</option>
               <option value='MOMO'>Momo</option>
+              <option value='ZALOPAY'>ZaloPay</option>
             </select>
           </div>
 

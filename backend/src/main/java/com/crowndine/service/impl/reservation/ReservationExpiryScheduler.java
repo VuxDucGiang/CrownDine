@@ -1,8 +1,10 @@
 package com.crowndine.service.impl.reservation;
 
 import com.crowndine.common.enums.EReservationStatus;
+import com.crowndine.common.enums.ETableStatus;
 import com.crowndine.model.Reservation;
 import com.crowndine.repository.ReservationRepository;
+import com.crowndine.service.layout.RestaurantTableStateService;
 import com.crowndine.service.reservation.event.ReservationCancelledEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -20,6 +22,7 @@ import java.util.List;
 public class ReservationExpiryScheduler {
 
     private final ReservationRepository reservationRepository;
+    private final RestaurantTableStateService restaurantTableStateService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Scheduled(fixedRate = 60000)
@@ -36,7 +39,7 @@ public class ReservationExpiryScheduler {
         expired.forEach(reservation -> {
             reservation.setStatus(EReservationStatus.CANCELLED);
             if (reservation.getTable() != null) {
-                reservation.getTable().setStatus(com.crowndine.common.enums.ETableStatus.AVAILABLE);
+                restaurantTableStateService.changeStatus(reservation.getTable().getId(), ETableStatus.AVAILABLE);
             }
             eventPublisher.publishEvent(new ReservationCancelledEvent(reservation.getId(), reservation.getOrder() != null ? reservation.getOrder().getId() : null));
         });

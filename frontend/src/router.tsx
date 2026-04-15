@@ -23,16 +23,16 @@ import ReservationList from './pages/Staffs/ReservationList'
 import OrderManagement from './pages/Staffs/OrderManagement'
 import KitchenDisplay from './pages/Staffs/KitchenDisplay'
 import WorkSchedule from './pages/Staffs/WorkSchedule'
-import StaffChat from './pages/Staffs/StaffChat'
 import AttendanceBoard from './pages/Staffs/Attendance'
 import PaymentManagement from './pages/Admin/Payment/PaymentManagement'
 import Cashier from './pages/Staffs/Cashier'
+import NotFound from './pages/NotFound'
 
 const router = createBrowserRouter([
   {
     path: path.home,
     element: <MainLayout />,
-    errorElement: <div>404 Not Found</div>,
+    errorElement: <NotFound />,
     children: [
       { index: true, element: <Home /> },
       { path: '/menu', element: <Menu /> },
@@ -141,14 +141,14 @@ const router = createBrowserRouter([
           {
             path: 'work-schedule',
             element: <WorkSchedule />
-          },
-          {
-            path: 'chat',
-            element: <StaffChat />
           }
         ]
       }
     ]
+  },
+  {
+    path: '*',
+    element: <NotFound />
   }
 ])
 

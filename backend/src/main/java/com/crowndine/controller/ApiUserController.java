@@ -1,6 +1,5 @@
 package com.crowndine.controller;
 
-import com.cloudinary.Cloudinary;
 import com.crowndine.dto.request.ChangePasswordRequest;
 import com.crowndine.dto.request.SendEmailOtpRequest;
 import com.crowndine.dto.request.UpdateProfileRequest;
@@ -27,7 +26,6 @@ public class ApiUserController {
 
     private final UserService userService;
     private final RewardPointService rewardPointService;
-    private final Cloudinary cloudinary;
 
     @GetMapping
     public ApiResponse getListUsers() {

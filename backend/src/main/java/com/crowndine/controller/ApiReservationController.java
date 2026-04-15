@@ -67,6 +67,7 @@ public class ApiReservationController {
 
     @PostMapping("/create")
     public ApiResponse createReservation(@Valid @RequestBody ReservationCreateRequest request, Principal principal) {
+        log.info("Request reservation for user: {}", principal.getName());
         return ApiResponse.builder()
                 .status(200)
                 .message("Created reservation successfully")

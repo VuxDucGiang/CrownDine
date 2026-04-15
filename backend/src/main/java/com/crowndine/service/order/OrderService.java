@@ -5,6 +5,7 @@ import com.crowndine.dto.request.OrderItemBatchRequest;
 import com.crowndine.dto.request.OrderItemRemoveRequest;
 import com.crowndine.dto.request.OrderItemRequest;
 import com.crowndine.dto.request.OrderRequest;
+import com.crowndine.dto.response.OrderCheckoutResponse;
 import com.crowndine.dto.response.OrderResponse;
 import com.crowndine.dto.response.PageResponse;
 import com.crowndine.model.Order;
@@ -41,4 +42,6 @@ public interface OrderService {
     Order getOrder(Long id);
 
     List<OrderResponse> getKitchenOrders();
+
+    OrderCheckoutResponse getOrderCheckout(Long orderId);
 }

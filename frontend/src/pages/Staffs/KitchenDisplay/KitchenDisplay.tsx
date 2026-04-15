@@ -71,13 +71,35 @@ const KitchenDisplay = () => {
   const stompClient = useStompClient()
   const prevOrderCount = useRef(0)
 
-  // Live clock
+  // Live clock — mỗi giây cập nhật, sync ngay khi quay lại tab
   useEffect(() => {
-    const id = setInterval(() => {
+    let id: ReturnType<typeof setInterval>
+
+    const tick = () => {
       setClock(new Date())
-      forceUpdate((n) => n + 1) // re-render for elapsed timers
-    }, 60000)
-    return () => clearInterval(id)
+      forceUpdate((n) => n + 1)
+    }
+
+    const startInterval = () => {
+      tick()
+      id = setInterval(tick, 1000)
+    }
+
+    const handleVisibility = () => {
+      if (document.hidden) {
+        clearInterval(id)
+      } else {
+        startInterval()
+      }
+    }
+
+    startInterval()
+    document.addEventListener('visibilitychange', handleVisibility)
+
+    return () => {
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', handleVisibility)
+    }
   }, [])
 
   // Fetch active kitchen orders
@@ -122,14 +144,24 @@ const KitchenDisplay = () => {
     }
   })
 
-  // WebSocket — order status changed (completed/cancelled → remove card)
+  // WebSocket — order status changed
   useSubscription('/topic/orders', (message) => {
     const updatedOrder = JSON.parse(message.body)
-    if (updatedOrder.status === 'COMPLETED' || updatedOrder.status === 'CANCELLED') {
+    if (updatedOrder.status === 'CANCELLED') {
       queryClient.setQueryData(['kitchen-orders'], (old: AxiosResponse) => {
         if (!old) return old
         const orders: Order[] = old.data?.data ?? []
         return { ...old, data: { ...old.data, data: orders.filter((o) => o.id !== updatedOrder.id) } }
+      })
+    } else if (updatedOrder.status === 'COMPLETED') {
+      // Chỉ cập nhật status, hàm render sẽ tự động ẩn nếu không còn món pending
+      queryClient.setQueryData(['kitchen-orders'], (old: AxiosResponse) => {
+        if (!old) return old
+        const orders: Order[] = old.data?.data ?? []
+        return {
+          ...old,
+          data: { ...old.data, data: orders.map((o) => (o.id === updatedOrder.id ? { ...o, status: 'COMPLETED' } : o)) }
+        }
       })
     } else {
       queryClient.invalidateQueries({ queryKey: ['kitchen-orders'] })
@@ -154,14 +186,24 @@ const KitchenDisplay = () => {
     }
   }
 
+  // Filter local orders
+  const activeOrders = orders.filter((order) => {
+    if (order.status === 'CANCELLED') return false
+    if (order.status === 'COMPLETED') {
+      // Giữ lại đơn COMPLETED nếu vẫn còn món cần làm
+      return order.orderDetails.some((d) => d.status === 'PENDING' || d.status === 'COOKING')
+    }
+    return true
+  })
+
   // Stats
-  const allDetails = orders.flatMap((o) => o.orderDetails)
+  const allDetails = activeOrders.flatMap((o) => o.orderDetails)
   const pendingCount = allDetails.filter((d) => d.status === 'PENDING').length
   const cookingCount = allDetails.filter((d) => d.status === 'COOKING').length
   const servedCount = allDetails.filter((d) => d.status === 'SERVED').length
 
   const batches = useMemo(() => {
-    const flatItems = orders.flatMap((o) =>
+    const flatItems = activeOrders.flatMap((o) =>
       o.orderDetails.map((d) => ({
         ...d,
         orderId: o.id,
@@ -202,7 +244,7 @@ const KitchenDisplay = () => {
       }
     })
     return grouped
-  }, [orders])
+  }, [activeOrders])
 
   return (
     <div className='bg-background flex min-h-screen flex-col p-6 md:p-8'>
@@ -232,16 +274,15 @@ const KitchenDisplay = () => {
       </div>
 
       {/* ── Empty State ── */}
-      {orders.length === 0 && (
+      {activeOrders.length === 0 && (
         <div className='bg-card border-border flex flex-1 flex-col items-center justify-center rounded-xl border py-24 shadow-sm'>
           <span className='text-muted-foreground text-5xl'>🍽️</span>
           <p className='text-muted-foreground mt-4 text-lg font-medium'>Không có đơn nào đang hoạt động</p>
-          <p className='text-muted-foreground mt-1 text-sm'>Các đơn CONFIRMED hoặc IN_PROGRESS sẽ xuất hiện ở đây</p>
         </div>
       )}
 
       {/* ── Order Cards Grid ── */}
-      {batches.length > 0 && (
+      {activeOrders.length > 0 && (
         <div className='grid gap-5 sm:grid-cols-2 xl:grid-cols-3'>
           {batches.map((batch) => {
             const batchTimeStr = batch.createdAt || ''

@@ -23,6 +23,7 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
+  const [pendingReservationCode, setPendingReservationCode] = useState<string | null>(null)
   const [currentTarget, setCurrentTarget] = useState<{
     orderId: number
     orderDetailId?: number
@@ -63,6 +64,9 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
 
       return response.data.data
     },
+    onMutate: (reservationCode) => {
+      setPendingReservationCode(reservationCode)
+    },
     onSuccess: (checkoutUrl) => {
       if (!checkoutUrl) {
         toast.error('Không nhận được liên kết thanh toán')
@@ -73,6 +77,9 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Không thể tạo liên kết thanh toán')
+    },
+    onSettled: () => {
+      setPendingReservationCode(null)
     }
   })
 
@@ -172,6 +179,9 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
     <div className='bg-card border-border rounded-lg border p-8'>
       {/* Header */}
       <h2 className='mb-8 text-2xl font-bold'>Lịch Sử Đặt Bàn & Đơn Hàng</h2>
+      <div className='mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800'>
+        Lưu ý: Bàn được giữ trong vòng <strong>15 phút</strong> tính từ giờ bắt đầu đặt bàn, không phải từ lúc tạo đơn.
+      </div>
 
       {/* Reservations List */}
       <div className='space-y-4'>
@@ -218,9 +228,13 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                           event.stopPropagation()
                           handleContinuePayment(reservation.reservationCode)
                         }}
-                        disabled={continuePaymentMutation.isPending}
+                        disabled={
+                          continuePaymentMutation.isPending && pendingReservationCode === reservation.reservationCode
+                        }
                       >
-                        {continuePaymentMutation.isPending ? 'Đang tạo link...' : 'Tiếp tục thanh toán'}
+                        {continuePaymentMutation.isPending && pendingReservationCode === reservation.reservationCode
+                          ? 'Đang tạo link...'
+                          : 'Tiếp tục thanh toán'}
                       </Button>
                     )}
                     <Badge className={getReservationStatusColor(reservation.reservationStatus)}>

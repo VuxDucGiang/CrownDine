@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
 import { ThemeProvider } from 'next-themes'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'sonner'
 import { StompSessionProvider } from 'react-stomp-hooks'
 import '@/index.css'
@@ -66,11 +65,10 @@ createRoot(document.getElementById('root')!).render(
           <ThemeProvider attribute='class' defaultTheme='light' disableTransitionOnChange>
             <AppWebSocketProvider>
               <RouterProvider router={router} />
-              <Toaster richColors position='top-right' />
+              <Toaster richColors position='top-right' offset='70px' />
             </AppWebSocketProvider>
           </ThemeProvider>
         </AppProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </GoogleOAuthProvider>
   </StrictMode>

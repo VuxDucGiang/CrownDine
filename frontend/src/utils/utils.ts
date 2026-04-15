@@ -70,9 +70,11 @@ export const formatCurrency = (amount: number) => {
 }
 
 const API_BASE = 'http://localhost:8080'
+export const DEFAULT_PLACEHOLDER = 'https://placehold.co/600x400?text=No+Image'
+
 /** Chuẩn hóa URL ảnh: nếu path bắt đầu bằng / hoặc không phải http thì ghép với API_BASE */
 export function getImageUrl(imageUrl: string | null | undefined): string {
-  if (!imageUrl) return ''
+  if (!imageUrl || imageUrl.trim() === '') return DEFAULT_PLACEHOLDER
   if (imageUrl.startsWith('http://') || imageUrl.startsWith('https://')) return imageUrl
   const path = imageUrl.startsWith('/') ? imageUrl : `/${imageUrl}`
   return `${API_BASE}${path}`
