@@ -90,18 +90,18 @@ payos:
   cancel-url: ${PAYOS_CANCEL_URL:http://localhost:5173/thanh-toan/that-bai}
 
 google:
-  client-id: ${GOOGLE_CLIENT_ID}
+  client-id: 399918081269-omvul48r2jcro8c1cqtrbpoj8t5djn8l.apps.googleusercontent.com
 
 gemini:
   api:
-    keys: ${GEMINI_API_KEYS}
+    keys: ${GEMINI_API_KEYS:AIzaSyC4395ghbd1iEu0PbSJpOQBonyJiz4o0ZU,AIzaSyCv2-IVlv0O44seCvB_LYb-Ku0k9tAv86s,AIzaSyBnd-9zDpNLq7Qnkk2sLrurB1wFBRpzz4A,AIzaSyDGxZGJPrOfflILNwefihRudSOWGm92XyQ}
     url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent
   model: models/gemini-2.0-flash-001
 
 #OpenRouter
 openrouter:
   api:
-    key: ${OPENROUTER_API_KEY}
+    key: ${OPENROUTER_API_KEY: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}
 
 app:
   cors:

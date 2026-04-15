@@ -197,9 +197,9 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
             return (
               <div key={itemId} className='border-border overflow-hidden rounded-lg border'>
                 {/* Summary */}
-                <button
+                <div
                   onClick={() => setExpandedId(isExpanded ? null : itemId)}
-                  className='hover:bg-foreground/5 flex w-full items-center justify-between p-6 transition-colors'
+                  className='hover:bg-foreground/5 flex w-full cursor-pointer items-center justify-between p-6 transition-colors'
                 >
                   <div className='flex flex-1 items-center gap-6'>
                     <div>
@@ -244,7 +244,7 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                       className={`text-foreground/60 h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                     />
                   </div>
-                </button>
+                </div>
 
                 {/* Details */}
                 {isExpanded && (

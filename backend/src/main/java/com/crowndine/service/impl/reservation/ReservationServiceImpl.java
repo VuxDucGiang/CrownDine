@@ -71,14 +71,10 @@ public class ReservationServiceImpl implements ReservationService {
         List<ReservationHistoryResponse> allHistory = new ArrayList<>(reservationHistory);
         allHistory.addAll(standaloneOrderHistory);
         allHistory.sort((left, right) -> {
-            int dateCompare = right.getDate().compareTo(left.getDate());
-            if (dateCompare != 0) {
-                return dateCompare;
-            }
-
-            LocalTime leftTime = left.getStartTime() != null ? left.getStartTime() : LocalTime.MIN;
-            LocalTime rightTime = right.getStartTime() != null ? right.getStartTime() : LocalTime.MIN;
-            return rightTime.compareTo(leftTime);
+            if (left.getCreatedAt() == null && right.getCreatedAt() == null) return 0;
+            if (left.getCreatedAt() == null) return 1;
+            if (right.getCreatedAt() == null) return -1;
+            return right.getCreatedAt().compareTo(left.getCreatedAt());
         });
 
         int totalItems = allHistory.size();
@@ -216,6 +212,7 @@ public class ReservationServiceImpl implements ReservationService {
                     userId != null && feedbackRepository.existsByUser_IdAndOrder_IdAndOrderDetailIsNull(userId, order.getId())
             );
         }
+        response.setCreatedAt(reservation.getCreatedAt());
 
         return response;
     }
@@ -250,6 +247,7 @@ public class ReservationServiceImpl implements ReservationService {
         response.setHasGeneralFeedback(
                 userId != null && feedbackRepository.existsByUser_IdAndOrder_IdAndOrderDetailIsNull(userId, order.getId())
         );
+        response.setCreatedAt(order.getCreatedAt());
         return response;
     }
 

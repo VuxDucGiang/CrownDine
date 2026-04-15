@@ -31,7 +31,8 @@ const Profile = () => {
   const { data: historyData, isLoading: isHistoryLoading } = useQuery({
     queryKey: ['reservation-history'],
     queryFn: () => reservationApi.getReservationHistory({ page: 0, size: 100 }),
-    enabled: activeTab === 'reservations'
+    enabled: activeTab === 'reservations',
+    staleTime: 0
   })
 
   const { data: vouchersData, isLoading: isVouchersLoading } = useQuery({
