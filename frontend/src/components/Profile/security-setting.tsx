@@ -13,13 +13,13 @@ import useVerifyEmailOtp from '@/hooks/useVerifyEmailOtp'
 import { toast } from 'sonner'
 
 interface SecurityTab {
-  id: 'password' | 'email' | 'phone'
+  id: 'password' | 'email'
   label: string
   description: string
 }
 
 const SecuritySetting = () => {
-  const [activeTab, setActiveTab] = useState<'password' | 'email' | 'phone'>('password')
+  const [activeTab, setActiveTab] = useState<'password' | 'email'>('password')
   const [showPassword, setShowPassword] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
@@ -46,11 +46,6 @@ const SecuritySetting = () => {
       id: 'email',
       label: 'Đổi Email',
       description: 'Xác minh địa chỉ email mới bằng mã OTP'
-    },
-    {
-      id: 'phone',
-      label: 'Đổi Số Điện Thoại',
-      description: 'Xác minh số điện thoại mới bằng mã OTP'
     }
   ]
 
@@ -65,12 +60,6 @@ const SecuritySetting = () => {
     otp: ''
   })
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [phoneForm, setPhoneForm] = useState({
-    newPhone: '',
-    otp: ''
-  })
-
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setPasswordForm((prev) => ({ ...prev, [name]: value }))
@@ -79,11 +68,6 @@ const SecuritySetting = () => {
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target
     setEmailForm((prev) => ({ ...prev, [name]: value }))
-  }
-
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const { name, value } = e.target
-    setPhoneForm((prev) => ({ ...prev, [name]: value }))
   }
 
   const changePasswordMutation = useChangePassword()
@@ -167,7 +151,7 @@ const SecuritySetting = () => {
       <h2 className='mb-2 text-2xl font-bold'>Mật Khẩu & Bảo Mật</h2>
       <p className='text-foreground/60 mb-8'>Quản lý bảo mật tài khoản và thông tin cá nhân</p>
 
-      <div className='mb-8 grid grid-cols-1 gap-4 md:grid-cols-3'>
+      <div className='mb-8 grid grid-cols-1 gap-4 md:grid-cols-2'>
         {tabs.map((tab) => (
           <button
             key={tab.id}
@@ -371,26 +355,7 @@ const SecuritySetting = () => {
         </div>
       )}
 
-      {activeTab === 'phone' && (
-        <div className='max-w-md space-y-6'>
-          <div>
-            <Label htmlFor='newPhone' className='text-sm font-semibold'>
-              Số Điện Thoại Mới
-            </Label>
-            <Input
-              id='newPhone'
-              name='newPhone'
-              type='tel'
-              value={phoneForm.newPhone}
-              onChange={handlePhoneChange}
-              placeholder='VD: 0912345678'
-              className='border-border mt-2 rounded-lg border-2'
-              disabled={otpSent}
-            />
-          </div>
-          <p className='text-foreground/60 text-sm'> Tính năng đổi số điện thoại đang được phát triển. </p>
-        </div>
-      )}
+
     </div>
   )
 }
