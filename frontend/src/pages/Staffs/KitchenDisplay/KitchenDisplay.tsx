@@ -350,9 +350,16 @@ const KitchenDisplay = () => {
                       return (
                         <div key={detail.id} className='bg-muted/40 border-border rounded-lg border p-3'>
                           <div className='flex items-start justify-between gap-2'>
-                            <p className='text-foreground text-sm font-bold'>
-                              {detail.quantity}x {name}
-                            </p>
+                            <div>
+                              <p className='text-foreground text-sm font-bold'>
+                                {detail.quantity}x {name}
+                              </p>
+                              {detail.note && (
+                                <p className='text-muted-foreground mt-1 text-xs italic'>
+                                  Ghi chú: {detail.note}
+                                </p>
+                              )}
+                            </div>
                             <DetailStatusBadge status={detail.status} />
                           </div>
 
