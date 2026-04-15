@@ -31,6 +31,8 @@ public class ReservationHistoryResponse {
     private BigDecimal finalPrice;
     private List<OrderLineResponse> items;
     private boolean hasGeneralFeedback;
+    private FeedbackResponse generalFeedback;
+    private Boolean canEditGeneralFeedback;
 
     private LocalDateTime createdAt;
 }

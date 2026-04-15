@@ -39,6 +39,20 @@ export interface OrderLineResponse {
   totalPrice: number
   note?: string
   hasFeedback?: boolean
+  feedback?: ReservationFeedbackSummary
+  canEditFeedback?: boolean
+}
+
+export interface ReservationFeedbackSummary {
+  id: number
+  rating: number
+  comment: string
+  orderId?: number | null
+  orderDetailId?: number | null
+  itemId?: number | null
+  comboId?: number | null
+  createdAt: string
+  updatedAt: string
 }
 
 export interface ReservationCheckoutResponse {
@@ -118,6 +132,8 @@ export interface ReservationHistoryResponse {
   finalPrice?: number
   items?: OrderLineResponse[]
   hasGeneralFeedback?: boolean
+  generalFeedback?: ReservationFeedbackSummary
+  canEditGeneralFeedback?: boolean
   hasFeedback?: boolean // Keep for backward compatibility or during migration
 }
 
