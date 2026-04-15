@@ -42,10 +42,6 @@ const reservationApi = {
     return http.post<ApiResponse<void>>(`${RESERVATION_URL}/${reservationId}/cancel`)
   },
 
-  noShowReservation(reservationId: number) {
-    return http.post<ApiResponse<void>>(`${RESERVATION_URL}/${reservationId}/no-show`)
-  },
-
   completeReservation(reservationId: number) {
     return http.post<ApiResponse<void>>(`${RESERVATION_URL}/${reservationId}/complete`)
   },

@@ -43,6 +43,20 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     List<Reservation> findByStatusAndExpiratedAtBefore(EReservationStatus status, LocalDateTime now);
 
     @Query("""
+            select r
+            from Reservation r
+            where r.status = :status
+              and r.checkedOutAt is null
+              and (r.date < :thresholdDate
+                   or (r.date = :thresholdDate and r.startTime <= :thresholdTime))
+            """)
+    List<Reservation> findNoShowCandidates(
+            @Param("status") EReservationStatus status,
+            @Param("thresholdDate") LocalDate thresholdDate,
+            @Param("thresholdTime") LocalTime thresholdTime
+    );
+
+    @Query("""
             select r from Reservation r
             where r.status = :status
             and r.reminderSentAt is null

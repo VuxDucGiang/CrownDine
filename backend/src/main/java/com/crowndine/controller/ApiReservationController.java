@@ -149,16 +149,6 @@ public class ApiReservationController {
     }
 
     @PreAuthorize("hasAnyAuthority('STAFF', 'ADMIN')")
-    @PostMapping("/{reservationId}/no-show")
-    public ApiResponse markReservationNoShow(@PathVariable Long reservationId, Principal principal) {
-        reservationLifecycleService.markReservationNoShow(reservationId, principal.getName());
-        return ApiResponse.builder()
-                .status(200)
-                .message("Marked reservation as no-show successfully")
-                .build();
-    }
-
-    @PreAuthorize("hasAnyAuthority('STAFF', 'ADMIN')")
     @PostMapping("/{reservationId}/complete")
     public ApiResponse completeReservation(@PathVariable Long reservationId, Principal principal) {
         reservationLifecycleService.completeReservation(reservationId, principal.getName());
