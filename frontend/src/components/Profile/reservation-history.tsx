@@ -23,6 +23,7 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
+  const [pendingReservationCode, setPendingReservationCode] = useState<string | null>(null)
   const [currentTarget, setCurrentTarget] = useState<{
     orderId: number
     orderDetailId?: number
@@ -63,6 +64,9 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
 
       return response.data.data
     },
+    onMutate: (reservationCode) => {
+      setPendingReservationCode(reservationCode)
+    },
     onSuccess: (checkoutUrl) => {
       if (!checkoutUrl) {
         toast.error('Không nhận được liên kết thanh toán')
@@ -73,6 +77,9 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Không thể tạo liên kết thanh toán')
+    },
+    onSettled: () => {
+      setPendingReservationCode(null)
     }
   })
 
@@ -208,9 +215,13 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                           event.stopPropagation()
                           handleContinuePayment(reservation.reservationCode)
                         }}
-                        disabled={continuePaymentMutation.isPending}
+                        disabled={
+                          continuePaymentMutation.isPending && pendingReservationCode === reservation.reservationCode
+                        }
                       >
-                        {continuePaymentMutation.isPending ? 'Đang tạo link...' : 'Tiếp tục thanh toán'}
+                        {continuePaymentMutation.isPending && pendingReservationCode === reservation.reservationCode
+                          ? 'Đang tạo link...'
+                          : 'Tiếp tục thanh toán'}
                       </Button>
                     )}
                     <Badge className={getReservationStatusColor(reservation.reservationStatus)}>
