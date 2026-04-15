@@ -94,6 +94,7 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
     applyVoucherMutation.mutate(voucherCode.trim())
   }
 
+
   const paymentMutation = useMutation({
     mutationFn: (paymentMethod: 'CASH' | 'PAYOS') => {
       if (!order) throw new Error('Không tìm thấy thông tin đơn hàng.')
@@ -121,14 +122,22 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
     }
   })
 
-  const handlePay = (paymentMethod: 'CASH' | 'PAYOS') => {
+  const handlePay = async (paymentMethod: 'CASH' | 'PAYOS') => {
     if (isCheckoutFetching) {
       toast.info('Đang tải thông tin checkout, vui lòng chờ...')
       return
     }
+
     setMethod(paymentMethod)
     paymentMutation.mutate(paymentMethod)
   }
+
+  // Local calculation for instant UI update
+  const totalAmount = checkoutData?.totalAmount || 0
+  const voucherDiscount = checkoutData?.voucherDiscount || 0
+  const depositAdjusted = checkoutData?.orderDepositPaidAmount || 0
+  
+  const computedFinalAmount = Math.max(0, totalAmount - voucherDiscount - depositAdjusted)
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Thanh toán đơn #${order?.code || ''}`}>
@@ -143,27 +152,19 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
             <div className='space-y-2 text-sm'>
               <div className='flex items-center justify-between'>
                 <span className='text-muted-foreground'>Tổng tiền món</span>
-                <span className='font-semibold'>{formatCurrency(checkoutData?.totalAmount)}</span>
+                <span className='font-semibold'>{formatCurrency(totalAmount)}</span>
               </div>
               <div className='flex items-center justify-between'>
-                <span className='text-muted-foreground'>Giảm giá</span>
-                <span className='font-semibold'>- {formatCurrency(checkoutData?.discountAmount)}</span>
+                <span className='text-muted-foreground font-medium'>Voucher giảm</span>
+                <span className='font-semibold'>- {formatCurrency(voucherDiscount)}</span>
               </div>
               <div className='flex items-center justify-between'>
-                <span className='text-muted-foreground'>Tổng cọc đã trả</span>
-                <span className='font-semibold text-green-700'>{formatCurrency(checkoutData?.depositedAmount)}</span>
-              </div>
-              <div className='flex items-center justify-between'>
-                <span className='text-muted-foreground'>Cọc bàn đã trả</span>
-                <span className='font-semibold'>{formatCurrency(checkoutData?.tableDepositPaidAmount)}</span>
-              </div>
-              <div className='flex items-center justify-between'>
-                <span className='text-muted-foreground'>Cọc order đã trừ</span>
-                <span className='font-semibold'>{formatCurrency(checkoutData?.orderDepositPaidAmount)}</span>
+                <span className='text-muted-foreground'>Đã cọc (trừ vào đơn)</span>
+                <span className='font-semibold text-green-700'>- {formatCurrency(depositAdjusted)}</span>
               </div>
               <div className='border-border mt-2 flex items-center justify-between border-t pt-2'>
-                <span className='text-base font-semibold'>Khách cần thanh toán</span>
-                <span className='text-primary text-lg font-bold'>{formatCurrency(checkoutData?.finalAmount)}</span>
+                <span className='text-base font-black'>KHÁCH CẦN TRẢ</span>
+                <span className='text-primary text-xl font-black transition-all'>{formatCurrency(computedFinalAmount)}</span>
               </div>
             </div>
           )}

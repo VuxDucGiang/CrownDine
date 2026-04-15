@@ -12,7 +12,7 @@ export function CategoryToolbar({ searchTerm, onSearchChange }: CategoryToolbarP
             <div className='relative max-w-sm flex-1'>
             <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
             <Input
-                placeholder='Search categories...'
+                placeholder='Tìm kiếm danh mục...'
                 className='bg-background pl-9'
                 value={searchTerm}
                 onChange={(e) => onSearchChange(e.target.value)}
@@ -21,7 +21,7 @@ export function CategoryToolbar({ searchTerm, onSearchChange }: CategoryToolbarP
             <div className='flex items-center gap-2'>
             <button className='border-input hover:bg-accent hover:text-accent-foreground inline-flex h-9 items-center justify-center rounded-md border bg-transparent px-3 text-sm font-medium shadow-sm transition-colors'>
                 <Filter className='mr-2 h-4 w-4' />
-                Filter
+                Lọc
             </button>
             </div>
         </div>

@@ -133,7 +133,7 @@ export const ComboForm = ({ initialData, onSubmit, onCancel }: ComboFormProps) =
                   >
                     <option value={0} disabled>Chọn món ăn...</option>
                     {allItems.map((opt) => (
-                      <option key={opt.id} value={opt.id}>{opt.name} - {opt.price.toLocaleString()}đ</option>
+                      <option key={opt.id} value={opt.id}>{opt.name} - {opt.price.toLocaleString('en-US')}đ</option>
                     ))}
                   </select>
                 </div>

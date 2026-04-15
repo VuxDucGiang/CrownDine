@@ -309,9 +309,11 @@ public class OrderServiceImpl implements OrderService {
         Order order = getOrder(orderId);
 
         BigDecimal totalAmount = defaultMoney(order.getTotalPrice());
-        BigDecimal discountAmount = defaultMoney(order.getDiscountPrice());
-        BigDecimal orderFinalAmount = defaultMoney(order.getFinalPrice());
-
+        
+        // Detailed discount breakdown
+        BigDecimal voucherDiscount = (order.getVoucher() == null) ? BigDecimal.ZERO 
+                : calculationService.calculateVoucherDiscount(totalAmount, order.getVoucher());
+        
         BigDecimal depositedAmount = BigDecimal.ZERO;
         BigDecimal tableDepositPaidAmount = BigDecimal.ZERO;
         if (order.getReservation() != null) {
@@ -335,6 +337,8 @@ public class OrderServiceImpl implements OrderService {
             orderDepositPaidAmount = BigDecimal.ZERO;
         }
 
+        // Final price after ALL discounts and reservation deposits
+        BigDecimal orderFinalAmount = defaultMoney(order.getFinalPrice());
         BigDecimal finalAmount = orderFinalAmount.subtract(orderDepositPaidAmount);
         if (finalAmount.compareTo(BigDecimal.ZERO) < 0) {
             finalAmount = BigDecimal.ZERO;
@@ -344,7 +348,7 @@ public class OrderServiceImpl implements OrderService {
         response.setOrderId(order.getId());
         response.setOrderCode(order.getCode());
         response.setTotalAmount(totalAmount);
-        response.setDiscountAmount(discountAmount);
+        response.setVoucherDiscount(voucherDiscount);
         response.setDepositedAmount(depositedAmount);
         response.setTableDepositPaidAmount(tableDepositPaidAmount);
         response.setOrderDepositPaidAmount(orderDepositPaidAmount);
@@ -405,6 +409,16 @@ public class OrderServiceImpl implements OrderService {
         return response;
     }
 
+    private boolean isSameProduct(OrderDetail detail, Long itemId, Long comboId) {
+        if (itemId != null && detail.getItem() != null) {
+            return detail.getItem().getId().equals(itemId);
+        }
+        if (comboId != null && detail.getCombo() != null) {
+            return detail.getCombo().getId().equals(comboId);
+        }
+        return false;
+    }
+
     private ComboResponse toComboResponse(Combo combo) {
         return ComboResponse.builder()
                 .id(combo.getId())
@@ -421,16 +435,6 @@ public class OrderServiceImpl implements OrderService {
                 .description(item.getDescription())
                 .price(item.getPrice())
                 .build();
-    }
-
-    private boolean isSameProduct(OrderDetail detail, Long itemId, Long comboId) {
-        if (itemId != null && detail.getItem() != null) {
-            return detail.getItem().getId().equals(itemId);
-        }
-        if (comboId != null && detail.getCombo() != null) {
-            return detail.getCombo().getId().equals(comboId);
-        }
-        return false;
     }
 
     private BigDecimal defaultMoney(BigDecimal amount) {

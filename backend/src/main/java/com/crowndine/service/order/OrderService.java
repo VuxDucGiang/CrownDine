@@ -44,4 +44,5 @@ public interface OrderService {
     List<OrderResponse> getKitchenOrders();
 
     OrderCheckoutResponse getOrderCheckout(Long orderId);
+
 }

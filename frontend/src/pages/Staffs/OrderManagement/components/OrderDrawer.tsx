@@ -124,6 +124,28 @@ export default function OrderDrawer({
     )
   }
 
+  const handleQuantityManual = (cartId: string, quantity: number) => {
+    setCart((prev) =>
+      prev.map((c) => {
+        if (c.cartId === cartId) {
+          return { ...c, quantity: Math.max(1, quantity) }
+        }
+        return c
+      })
+    )
+  }
+
+  const handleUpdateItemNote = (cartId: string, note: string) => {
+    setCart((prev) =>
+      prev.map((c) => {
+        if (c.cartId === cartId) {
+          return { ...c, note }
+        }
+        return c
+      })
+    )
+  }
+
   const createOrderMutation = useMutation({
     mutationFn: async (): Promise<any> => {
       if (reservationId) {
@@ -168,7 +190,7 @@ export default function OrderDrawer({
           itemId: c.itemType === 'item' ? c.data.id : undefined,
           comboId: c.itemType === 'combo' ? c.data.id : undefined,
           quantity: c.quantity,
-          note: undefined // Assuming item-level note if needed, but the current UI implies a global note or no note
+          note: c.note
         }))
       })
     },
@@ -314,9 +336,22 @@ export default function OrderDrawer({
                         <div className='text-muted-foreground w-6 pt-1 text-sm font-bold'>{idx + 1}</div>
                         <div className='flex-1'>
                           <h4 className='leading-tight font-semibold'>{c.data.name}</h4>
+                          <div className='mt-2'>
+                             <input 
+                                type='text' 
+                                placeholder='Ghi chú cho món...'
+                                className={cn(
+                                   'w-full text-[10px] border rounded-md px-2 py-1 outline-none transition-all',
+                                   c.existingDetailId ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white border-slate-200 focus:border-primary/40'
+                                )}
+                                value={c.note || ''}
+                                onChange={(e) => handleUpdateItemNote(c.cartId, e.target.value)}
+                                disabled={!!c.existingDetailId}
+                             />
+                          </div>
                           <div className='text-muted-foreground mt-2 flex items-center gap-4 text-xs font-medium'>
                             <span>{price.toLocaleString()}đ</span>
-                            <div className='border-border bg-muted/30 flex items-center gap-2 rounded-md border px-1 py-0.5'>
+                            <div className='border-border bg-muted/30 flex items-center gap-1.5 rounded-md border p-0.5'>
                               <button
                                 onClick={() => handleQuantityChange(c.cartId, -1)}
                                 className='hover:bg-background hover:text-primary flex h-5 w-5 items-center justify-center rounded-sm shadow-sm transition-colors disabled:opacity-50'
@@ -324,7 +359,13 @@ export default function OrderDrawer({
                               >
                                 -
                               </button>
-                              <span className='w-4 text-center'>{c.quantity}</span>
+                              <input 
+                                 type='number' 
+                                 min={1}
+                                 className='w-8 text-[11px] font-black text-center bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none m-0'
+                                 value={c.quantity}
+                                 onChange={(e) => handleQuantityManual(c.cartId, parseInt(e.target.value) || 1)}
+                              />
                               <button
                                 onClick={() => handleQuantityChange(c.cartId, 1)}
                                 className='hover:bg-background hover:text-primary flex h-5 w-5 items-center justify-center rounded-sm shadow-sm transition-colors'
@@ -377,13 +418,24 @@ export default function OrderDrawer({
                 <span className='text-primary'>{finalPrice.toLocaleString()} VND</span>
               </div>
               <div className='mt-2 flex items-center justify-between gap-2 xl:justify-end xl:gap-4'>
-                <Button
-                  onClick={order ? handlePayment : handleSave}
-                  disabled={isSaving || order?.status === 'CANCELLED' || order?.status === 'COMPLETED'}
-                  className='h-11 flex-1 xl:flex-none'
-                >
-                  {isSaving ? 'Đang lưu...' : order ? 'Thanh toán' : 'Tạo đơn'}
-                </Button>
+                {order && onPaymentClick && (
+                  <Button
+                    onClick={handlePayment}
+                    disabled={isSaving || order.status === 'CANCELLED' || order.status === 'COMPLETED'}
+                    className='h-11 flex-1 xl:flex-none bg-orange-500 hover:bg-orange-600'
+                  >
+                    Thanh toán
+                  </Button>
+                )}
+                {!order && (
+                  <Button
+                    onClick={handleSave}
+                    disabled={isSaving}
+                    className='h-11 flex-1 xl:flex-none'
+                  >
+                    {isSaving ? 'Đang lưu...' : 'Tạo đơn'}
+                  </Button>
+                )}
                 {order && (
                   <Button
                     onClick={handleSave}

@@ -30,7 +30,7 @@ export interface OrderCheckout {
   orderId: number
   orderCode: string
   totalAmount: number
-  discountAmount: number
+  voucherDiscount: number
   depositedAmount: number
   tableDepositPaidAmount: number
   orderDepositPaidAmount: number
