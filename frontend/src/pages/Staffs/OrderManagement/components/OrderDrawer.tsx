@@ -154,7 +154,7 @@ export default function OrderDrawer({
             itemId: c.itemType === 'item' ? c.data.id : undefined,
             comboId: c.itemType === 'combo' ? c.data.id : undefined,
             quantity: c.quantity,
-            note: orderNote || undefined
+            note: c.note || orderNote || undefined
           }))
         })
       }
@@ -165,7 +165,7 @@ export default function OrderDrawer({
           itemId: c.itemType === 'item' ? c.data.id : undefined,
           comboId: c.itemType === 'combo' ? c.data.id : undefined,
           quantity: c.quantity,
-          note: orderNote || undefined
+          note: c.note || orderNote || undefined
         }))
       })
     },
