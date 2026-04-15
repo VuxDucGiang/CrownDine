@@ -134,6 +134,19 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
     }
   }
 
+  const translateStatus = (status: string | undefined | null) => {
+    if (!status) return ''
+    switch (status) {
+      case 'PENDING': return 'Chờ xử lý'
+      case 'CONFIRMED': return 'Đã xác nhận'
+      case 'IN_PROGRESS': return 'Đang phục vụ'
+      case 'COMPLETED': return 'Hoàn thành'
+      case 'CANCELLED': return 'Đã hủy'
+      case 'PRE_ORDER': return 'Đặt trước'
+      default: return status
+    }
+  }
+
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('vi-VN', {
       year: 'numeric',
@@ -184,9 +197,12 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
             return (
               <div key={itemId} className='border-border overflow-hidden rounded-lg border'>
                 {/* Summary */}
-                <button
+                <div
+                  role='button'
+                  tabIndex={0}
                   onClick={() => setExpandedId(isExpanded ? null : itemId)}
-                  className='hover:bg-foreground/5 flex w-full items-center justify-between p-6 transition-colors'
+                  onKeyDown={(e) => e.key === 'Enter' && setExpandedId(isExpanded ? null : itemId)}
+                  className='hover:bg-foreground/5 flex w-full cursor-pointer items-center justify-between p-6 transition-colors'
                 >
                   <div className='flex flex-1 items-center gap-6'>
                     <div>
@@ -225,13 +241,13 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                       </Button>
                     )}
                     <Badge className={getReservationStatusColor(reservation.reservationStatus)}>
-                      {reservation.reservationStatus}
+                      {translateStatus(reservation.reservationStatus)}
                     </Badge>
                     <ChevronDown
                       className={`text-foreground/60 h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                     />
                   </div>
-                </button>
+                </div>
 
                 {/* Details */}
                 {isExpanded && (
@@ -284,7 +300,7 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                               </Badge>
                             )}
                             <Badge variant='outline' className={getOrderStatusColor(reservation.orderStatus || '')}>
-                              Order #{reservation.orderId} • {reservation.orderStatus}
+                              Order #{reservation.orderId} • {translateStatus(reservation.orderStatus)}
                             </Badge>
                           </div>
                         </div>

@@ -22,7 +22,6 @@ import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -71,14 +70,9 @@ public class ReservationServiceImpl implements ReservationService {
         List<ReservationHistoryResponse> allHistory = new ArrayList<>(reservationHistory);
         allHistory.addAll(standaloneOrderHistory);
         allHistory.sort((left, right) -> {
-            int dateCompare = right.getDate().compareTo(left.getDate());
-            if (dateCompare != 0) {
-                return dateCompare;
-            }
-
-            LocalTime leftTime = left.getStartTime() != null ? left.getStartTime() : LocalTime.MIN;
-            LocalTime rightTime = right.getStartTime() != null ? right.getStartTime() : LocalTime.MIN;
-            return rightTime.compareTo(leftTime);
+            java.time.LocalDateTime leftCreated = left.getCreatedAt() != null ? left.getCreatedAt() : java.time.LocalDateTime.MIN;
+            java.time.LocalDateTime rightCreated = right.getCreatedAt() != null ? right.getCreatedAt() : java.time.LocalDateTime.MIN;
+            return rightCreated.compareTo(leftCreated);
         });
 
         int totalItems = allHistory.size();
@@ -200,6 +194,7 @@ public class ReservationServiceImpl implements ReservationService {
         response.setGuestNumber(reservation.getGuestNumber());
         response.setReservationStatus(reservation.getStatus());
         response.setTableName(reservation.getTable() != null ? reservation.getTable().getName() : null);
+        response.setCreatedAt(reservation.getCreatedAt());
 
         Order order = reservation.getOrder();
         if (order != null) {
@@ -228,6 +223,7 @@ public class ReservationServiceImpl implements ReservationService {
         response.setStartTime(order.getCreatedAt().toLocalTime());
         response.setEndTime(order.getCreatedAt().toLocalTime().plusHours(1));
         response.setGuestNumber(0);
+        response.setCreatedAt(order.getCreatedAt());
 
         if (order.getStatus() == com.crowndine.common.enums.EOrderStatus.COMPLETED) {
             response.setReservationStatus(EReservationStatus.COMPLETED);
