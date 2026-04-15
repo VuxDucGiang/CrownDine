@@ -60,14 +60,6 @@ const orderApi = {
     return http.post<ApiResponse<any>>(`${TABLE_URL}/${orderId}/voucher/remove`)
   },
 
-  applyManualDiscount(orderId: number, body: { discountValue: number; isPercentage: boolean }) {
-    return http.patch<ApiResponse<any>>(`${TABLE_URL}/${orderId}/discount`, body)
-  },
-
-  removeManualDiscount(orderId: number) {
-    return http.delete<ApiResponse<any>>(`${TABLE_URL}/${orderId}/discount`)
-  },
-
   mapCustomerToOrder(orderId: number, customerId: number) {
     return http.patch<ApiResponse<null>>(`${TABLE_URL}/${orderId}/customer/${customerId}`)
   },

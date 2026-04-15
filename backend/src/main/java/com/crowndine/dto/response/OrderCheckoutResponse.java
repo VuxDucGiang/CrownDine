@@ -12,7 +12,6 @@ public class OrderCheckoutResponse {
     private String orderCode;
     private BigDecimal totalAmount;
     private BigDecimal voucherDiscount;
-    private BigDecimal manualDiscountAmount;
     private BigDecimal depositedAmount;
     private BigDecimal tableDepositPaidAmount;
     private BigDecimal orderDepositPaidAmount;

@@ -24,8 +24,6 @@ export interface Order {
   updatedAt: string
   createdAt: string
   cancelReason?: string
-  manualDiscountValue?: number
-  isManualDiscountPercentage?: boolean
 }
 
 export interface OrderCheckout {
@@ -33,7 +31,6 @@ export interface OrderCheckout {
   orderCode: string
   totalAmount: number
   voucherDiscount: number
-  manualDiscountAmount: number
   depositedAmount: number
   tableDepositPaidAmount: number
   orderDepositPaidAmount: number

@@ -45,7 +45,4 @@ public interface OrderService {
 
     OrderCheckoutResponse getOrderCheckout(Long orderId);
 
-    void applyManualDiscount(Long orderId, java.math.BigDecimal discountValue, Boolean isPercentage);
-
-    void removeManualDiscount(Long orderId);
 }

@@ -22,8 +22,6 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
   const [voucherCode, setVoucherCode] = useState('')
   const [foundCustomer, setFoundCustomer] = useState<any>(null)
   const [customerVouchers, setCustomerVouchers] = useState<any[]>([])
-  const [manualDiscount, setManualDiscount] = useState<number>(order?.manualDiscountValue || 0)
-  const [discountType, setDiscountType] = useState<'PERCENT' | 'AMOUNT'>(order?.isManualDiscountPercentage ? 'PERCENT' : 'AMOUNT')
 
   const { data: checkoutData, isFetching: isCheckoutFetching, refetch: refetchCheckout } = useQuery({
     queryKey: ['order-checkout', order?.id],
@@ -130,18 +128,8 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
       return
     }
 
-    try {
-      // Always sync manual discount to backend before payment
-       await orderApi.applyManualDiscount(order!.id, {
-          discountValue: manualDiscount || 0,
-          isPercentage: discountType === 'PERCENT'
-       })
-       
-       setMethod(paymentMethod)
-       paymentMutation.mutate(paymentMethod)
-    } catch (error: any) {
-       toast.error('Lỗi khi cập nhật giảm giá: ' + (error.response?.data?.message || error.message))
-    }
+    setMethod(paymentMethod)
+    paymentMutation.mutate(paymentMethod)
   }
 
   // Local calculation for instant UI update
@@ -149,11 +137,7 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
   const voucherDiscount = checkoutData?.voucherDiscount || 0
   const depositAdjusted = checkoutData?.orderDepositPaidAmount || 0
   
-  const currentManualDiscountAmount = discountType === 'PERCENT'
-    ? (totalAmount * (manualDiscount || 0)) / 100
-    : (manualDiscount || 0)
-
-  const computedFinalAmount = Math.max(0, totalAmount - voucherDiscount - currentManualDiscountAmount - depositAdjusted)
+  const computedFinalAmount = Math.max(0, totalAmount - voucherDiscount - depositAdjusted)
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} title={`Thanh toán đơn #${order?.code || ''}`}>
@@ -173,10 +157,6 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
               <div className='flex items-center justify-between'>
                 <span className='text-muted-foreground font-medium'>Voucher giảm</span>
                 <span className='font-semibold'>- {formatCurrency(voucherDiscount)}</span>
-              </div>
-              <div className='flex items-center justify-between'>
-                <span className='text-primary font-bold'>Staff giảm</span>
-                <span className='font-bold text-primary'>- {formatCurrency(currentManualDiscountAmount)}</span>
               </div>
               <div className='flex items-center justify-between'>
                 <span className='text-muted-foreground'>Đã cọc (trừ vào đơn)</span>
@@ -259,38 +239,6 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
             {foundCustomer && customerVouchers.length === 0 && (
               <p className='text-muted-foreground mt-1 text-xs italic'>Khách không có voucher nào chưa sử dụng.</p>
             )}
-          </div>
-
-          <div className='flex flex-col gap-1.5 border-t border-border pt-3 mt-1'>
-            <label className='text-sm font-bold text-primary flex items-center gap-2'>
-               <span>Giảm giá trực tiếp (Staff)</span>
-            </label>
-            <div className='flex gap-2 items-center'>
-               <div className='flex-1 relative'>
-                  <Input
-                    type='number'
-                    min={0}
-                    placeholder='Nhập mức giảm...'
-                    value={manualDiscount === 0 ? '' : manualDiscount}
-                    onChange={(e) => setManualDiscount(Math.max(0, Number(e.target.value)))}
-                    className='pr-16 h-11 text-base font-bold text-primary'
-                  />
-                  <div className='absolute right-1 top-1 bottom-1 flex gap-0.5 bg-muted rounded-md border p-0.5'>
-                     <button 
-                        onClick={() => setDiscountType('AMOUNT')}
-                        className={`px-3 text-[11px] font-black rounded transition-all ${discountType === 'AMOUNT' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}
-                     >
-                        đ
-                     </button>
-                     <button 
-                        onClick={() => setDiscountType('PERCENT')}
-                        className={`px-3 text-[11px] font-black rounded transition-all ${discountType === 'PERCENT' ? 'bg-white shadow-sm text-primary' : 'text-slate-400'}`}
-                     >
-                        %
-                     </button>
-                  </div>
-               </div>
-            </div>
           </div>
         </div>
 

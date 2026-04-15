@@ -314,16 +314,6 @@ public class OrderServiceImpl implements OrderService {
         BigDecimal voucherDiscount = (order.getVoucher() == null) ? BigDecimal.ZERO 
                 : calculationService.calculateVoucherDiscount(totalAmount, order.getVoucher());
         
-        BigDecimal manualDiscountVal = defaultMoney(order.getManualDiscountValue());
-        BigDecimal manualDiscountAmount = BigDecimal.ZERO;
-        if (manualDiscountVal.compareTo(BigDecimal.ZERO) > 0) {
-            if (Boolean.TRUE.equals(order.getIsManualDiscountPercentage())) {
-                manualDiscountAmount = totalAmount.multiply(manualDiscountVal).divide(BigDecimal.valueOf(100), 2, RoundingMode.HALF_UP);
-            } else {
-                manualDiscountAmount = manualDiscountVal;
-            }
-        }
-
         BigDecimal depositedAmount = BigDecimal.ZERO;
         BigDecimal tableDepositPaidAmount = BigDecimal.ZERO;
         if (order.getReservation() != null) {
@@ -359,7 +349,6 @@ public class OrderServiceImpl implements OrderService {
         response.setOrderCode(order.getCode());
         response.setTotalAmount(totalAmount);
         response.setVoucherDiscount(voucherDiscount);
-        response.setManualDiscountAmount(manualDiscountAmount);
         response.setDepositedAmount(depositedAmount);
         response.setTableDepositPaidAmount(tableDepositPaidAmount);
         response.setOrderDepositPaidAmount(orderDepositPaidAmount);
@@ -446,28 +435,6 @@ public class OrderServiceImpl implements OrderService {
                 .description(item.getDescription())
                 .price(item.getPrice())
                 .build();
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void applyManualDiscount(Long orderId, BigDecimal discountValue, Boolean isPercentage) {
-        log.info("Applying manual discount {} (percentage: {}) to order {}", discountValue, isPercentage, orderId);
-        Order order = getOrder(orderId);
-        order.setManualDiscountValue(discountValue);
-        order.setIsManualDiscountPercentage(isPercentage);
-        recalculateOrderPricing(order);
-        orderRepository.save(order);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void removeManualDiscount(Long orderId) {
-        log.info("Removing manual discount from order {}", orderId);
-        Order order = getOrder(orderId);
-        order.setManualDiscountValue(BigDecimal.ZERO);
-        order.setIsManualDiscountPercentage(false);
-        recalculateOrderPricing(order);
-        orderRepository.save(order);
     }
 
     private BigDecimal defaultMoney(BigDecimal amount) {
