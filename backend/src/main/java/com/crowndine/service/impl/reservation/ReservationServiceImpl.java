@@ -169,6 +169,7 @@ public class ReservationServiceImpl implements ReservationService {
                     .id(orderDetail.getItem().getId())
                     .name(orderDetail.getItem().getName())
                     .price(orderDetail.getItem().getPrice())
+                    .priceAfterDiscount(orderDetail.getItem().getPriceAfterDiscount())
                     .build();
             response.setItem(itemResponse);
         }
@@ -178,6 +179,7 @@ public class ReservationServiceImpl implements ReservationService {
                     .id(orderDetail.getCombo().getId())
                     .name(orderDetail.getCombo().getName())
                     .price(orderDetail.getCombo().getPrice())
+                    .priceAfterDiscount(orderDetail.getCombo().getPriceAfterDiscount())
                     .build();
             response.setCombo(comboResponse);
         }
@@ -283,11 +285,7 @@ public class ReservationServiceImpl implements ReservationService {
             });
         }
 
-        if (orderDetail.getCombo() != null) {
-            response.setUnitPrice(orderDetail.getCombo().getPrice());
-        } else if (orderDetail.getItem() != null) {
-            response.setUnitPrice(orderDetail.getItem().getPrice());
-        }
+        response.setUnitPrice(orderDetail.getAppliedUnitPrice());
 
         return response;
     }

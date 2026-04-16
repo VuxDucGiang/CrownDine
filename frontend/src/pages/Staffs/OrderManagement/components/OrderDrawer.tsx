@@ -330,7 +330,10 @@ export default function OrderDrawer({
               ) : (
                 <div className='flex flex-col gap-4'>
                   {cart.map((c, idx) => {
-                    const price = c.data.priceAfterDiscount ?? c.data.price
+                    const originalPrice = Number(c.data.price)
+                    const discountedPrice = c.data.priceAfterDiscount != null ? Number(c.data.priceAfterDiscount) : null
+                    const hasDiscount = discountedPrice != null && discountedPrice < originalPrice
+                    const price = hasDiscount ? discountedPrice : originalPrice
                     return (
                       <div key={c.cartId} className='border-border flex gap-3 border-b pb-4 last:border-0 last:pb-0'>
                         <div className='text-muted-foreground w-6 pt-1 text-sm font-bold'>{idx + 1}</div>
@@ -350,7 +353,12 @@ export default function OrderDrawer({
                              />
                           </div>
                           <div className='text-muted-foreground mt-2 flex items-center gap-4 text-xs font-medium'>
-                            <span>{price.toLocaleString()}đ</span>
+                            <div className='flex flex-col leading-tight'>
+                              {hasDiscount && (
+                                <span className='text-[10px] text-slate-400 line-through'>{originalPrice.toLocaleString()}đ</span>
+                              )}
+                              <span className='text-primary text-xs font-bold'>{price.toLocaleString()}đ</span>
+                            </div>
                             <div className='border-border bg-muted/30 flex items-center gap-1.5 rounded-md border p-0.5'>
                               <button
                                 onClick={() => handleQuantityChange(c.cartId, -1)}

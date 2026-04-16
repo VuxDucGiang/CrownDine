@@ -164,7 +164,6 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
     public void markReservationNoShow(Long reservationId) {
         Reservation reservation = getReservationById(reservationId);
 

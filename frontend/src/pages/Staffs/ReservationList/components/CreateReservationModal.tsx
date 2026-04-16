@@ -28,6 +28,8 @@ interface CartItem {
   type: 'item' | 'combo'
   name: string
   price: number
+  originalPrice: number
+  priceAfterDiscount: number | null
   quantity: number
   imageUrl: string
   note?: string
@@ -86,6 +88,8 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
         type,
         name: item.name,
         price: Number(item.priceAfterDiscount ?? item.price),
+        originalPrice: Number(item.price),
+        priceAfterDiscount: item.priceAfterDiscount != null ? Number(item.priceAfterDiscount) : null,
         quantity: 1,
         imageUrl: item.imageUrl
       }]
@@ -381,7 +385,12 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
                            />
 
                            <div className='flex justify-between items-center'>
-                              <span className='text-[10px] font-black text-primary'>{formatCurrency(item.price)}</span>
+                              <div className='flex flex-col leading-tight'>
+                                {item.priceAfterDiscount != null && item.priceAfterDiscount < item.originalPrice && (
+                                  <span className='text-[9px] text-slate-400 line-through'>{formatCurrency(item.originalPrice)}</span>
+                                )}
+                                <span className='text-[10px] font-black text-primary'>{formatCurrency(item.price)}</span>
+                              </div>
                               <div className='flex items-center gap-1.5 bg-white rounded-lg border border-slate-100 p-0.5'>
                                  <button onClick={() => updateQuantity(item.id, item.type, -1)} className='w-5 h-5 flex items-center justify-center hover:text-primary transition-colors'><Minus size={8}/></button>
                                  <input 

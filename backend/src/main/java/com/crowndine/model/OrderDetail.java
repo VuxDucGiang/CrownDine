@@ -50,18 +50,30 @@ public class OrderDetail extends AbstractEntity<Long> {
     }
 
     public void calculateAndSetTotalPrice() {
-        BigDecimal unitPrice = BigDecimal.ZERO;
-
-        if (this.item != null) {
-            unitPrice = this.item.getPrice();
-        } else if (this.combo != null) {
-            unitPrice = this.combo.getPrice();
-        }
+        BigDecimal unitPrice = getAppliedUnitPrice();
 
         if (this.quantity != null && this.quantity > 0) {
             this.totalPrice = unitPrice.multiply(BigDecimal.valueOf(this.quantity));
         } else {
             this.totalPrice = BigDecimal.ZERO;
         }
+    }
+
+    public BigDecimal getAppliedUnitPrice() {
+        if (this.item != null) {
+            if (this.item.getPriceAfterDiscount() != null) {
+                return this.item.getPriceAfterDiscount();
+            }
+            return this.item.getPrice() != null ? this.item.getPrice() : BigDecimal.ZERO;
+        }
+
+        if (this.combo != null) {
+            if (this.combo.getPriceAfterDiscount() != null) {
+                return this.combo.getPriceAfterDiscount();
+            }
+            return this.combo.getPrice() != null ? this.combo.getPrice() : BigDecimal.ZERO;
+        }
+
+        return BigDecimal.ZERO;
     }
 }

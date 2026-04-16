@@ -229,7 +229,8 @@ export default function MenuSelector({ onSelectItem, isSidebar = false }: MenuSe
 
 // --- Internal Small Card Component ---
 function MenuCard({ item, onClick }: { item: MenuCardItem; onClick: () => void }) {
-  const currentPrice = item.priceAfterDiscount ?? item.price
+  const hasDiscount = item.priceAfterDiscount != null && Number(item.priceAfterDiscount) < Number(item.price)
+  const currentPrice = hasDiscount ? Number(item.priceAfterDiscount) : Number(item.price)
 
   return (
     <div
@@ -256,8 +257,11 @@ function MenuCard({ item, onClick }: { item: MenuCardItem; onClick: () => void }
       </div>
       <div className='p-2 text-center' title={item.name}>
         <h3 className='text-foreground line-clamp-1 mb-0.5 text-[11px] font-bold'>{item.name}</h3>
-        <div className='text-primary mx-auto inline-block text-[10px] font-black'>
-          {formatCurrency(Number(currentPrice))}
+        <div className='mx-auto flex flex-col items-center leading-tight'>
+          {hasDiscount && (
+            <span className='text-muted-foreground text-[9px] line-through'>{formatCurrency(Number(item.price))}</span>
+          )}
+          <span className='text-primary text-[11px] font-black'>{formatCurrency(Number(currentPrice))}</span>
         </div>
       </div>
     </div>

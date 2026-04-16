@@ -425,6 +425,7 @@ public class OrderServiceImpl implements OrderService {
                 .name(combo.getName())
                 .description(combo.getDescription())
                 .price(combo.getPrice())
+                .priceAfterDiscount(combo.getPriceAfterDiscount())
                 .build();
     }
 
@@ -434,6 +435,7 @@ public class OrderServiceImpl implements OrderService {
                 .name(item.getName())
                 .description(item.getDescription())
                 .price(item.getPrice())
+                .priceAfterDiscount(item.getPriceAfterDiscount())
                 .build();
     }
 
