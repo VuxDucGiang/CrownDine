@@ -57,7 +57,7 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
         log.info("Processing create reservation for user: {}", username);
         LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(request.getDate(), request.getStartTime());
         User customer = getUserByUserName(username);
-        return createReservationInternal(request, customer, null, null, null, EReservationStatus.PENDING, startDateTime);
+        return createReservationInternal(request, customer, null, null, null, EReservationStatus.CONFIRMED, startDateTime);
     }
 
     @Override
