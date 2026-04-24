@@ -107,11 +107,11 @@ export const ATTENDANCE_STATUS_LABELS: Record<EAttendanceStatus, string> = {
 }
 
 export const ATTENDANCE_STATUS_COLORS: Record<EAttendanceStatus, string> = {
-  ON_TIME: 'bg-blue-500',
-  LATE_EARLY: 'bg-purple-500',
-  MISSING_PUNCH: 'bg-red-500',
-  NOT_PUNCHED: 'bg-amber-500',
-  ABSENT_OFF: 'bg-gray-400'
+  ON_TIME: '#3b82f6',        
+  LATE_EARLY: '#a855f7',    
+  MISSING_PUNCH: '#ef4444',
+  NOT_PUNCHED: '#f59e0b',   
+  ABSENT_OFF: '#9ca3af'     
 }
 
 export const ATTENDANCE_TYPE_LABELS: Record<EAttendanceType, string> = {

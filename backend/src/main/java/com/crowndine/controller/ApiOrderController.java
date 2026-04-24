@@ -44,6 +44,16 @@ public class ApiOrderController {
     }
 
     @PreAuthorize("hasAnyAuthority('STAFF', 'ADMIN')")
+    @GetMapping("/{orderId}/checkout")
+    public ApiResponse getOrderCheckout(@Min(1) @PathVariable Long orderId) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Successfully retrieved order checkout")
+                .data(orderService.getOrderCheckout(orderId))
+                .build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('STAFF', 'ADMIN')")
     @PostMapping
     public ApiResponse createOrder(@Valid @RequestBody OrderRequest request, Principal principal) {
         orderService.createWalkInOrder(request, principal.getName());

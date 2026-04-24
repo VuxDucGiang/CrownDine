@@ -1,6 +1,9 @@
 package com.crowndine.service.impl.order;
 
+import com.crowndine.common.enums.EOrderDetailStatus;
 import com.crowndine.common.enums.EOrderStatus;
+import com.crowndine.common.enums.EPaymentStatus;
+import com.crowndine.common.enums.EPaymentTarget;
 import com.crowndine.common.enums.EReservationStatus;
 import com.crowndine.dto.request.OrderItemBatchRequest;
 import com.crowndine.dto.request.OrderItemRemoveRequest;
@@ -16,13 +19,10 @@ import com.crowndine.service.OrderPricingResult;
 import com.crowndine.service.order.OrderDetailService;
 import com.crowndine.service.order.OrderService;
 import com.crowndine.service.order.OrderStatusService;
-import com.crowndine.service.order.OrderVoucherService;
-import com.crowndine.service.voucher.UserVoucherService;
 import com.crowndine.common.utils.CodeUtils;
 import org.springframework.beans.BeanUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
@@ -31,6 +31,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -46,11 +47,11 @@ public class OrderServiceImpl implements OrderService {
     private final UserRepository userRepository;
     private final ReservationRepository reservationRepository;
     private final RestaurantTableRepository tableRepository;
+    private final PaymentRepository paymentRepository;
 
     private final CalculationService calculationService;
     private final OrderDetailService orderDetailService;
     private final OrderStatusService orderStatusService;
-    private final OrderVoucherService orderVoucherService;
 
     private static final String ORDER_NOT_FOUND_MESSAGE = "Order not found";
 
@@ -286,10 +287,73 @@ public class OrderServiceImpl implements OrderService {
 
     @Override
     public List<OrderResponse> getKitchenOrders() {
-        List<EOrderStatus> activeStatuses = List.of(EOrderStatus.CONFIRMED, EOrderStatus.IN_PROGRESS);
+        List<EOrderStatus> activeStatuses = List.of(EOrderStatus.CONFIRMED, EOrderStatus.IN_PROGRESS, EOrderStatus.COMPLETED);
         List<Order> orders = orderRepository.findByStatusIn(activeStatuses);
-        log.info("Found {} active kitchen orders", orders.size());
-        return orders.stream().map(this::toResponse).toList();
+        
+        List<Order> kitchenOrders = orders.stream()
+                .filter(o -> {
+                    if (o.getStatus() == EOrderStatus.COMPLETED) {
+                        return o.getOrderDetails().stream()
+                                .anyMatch(d -> d.getStatus() == EOrderDetailStatus.PENDING || d.getStatus() == EOrderDetailStatus.COOKING);
+                    }
+                    return true;
+                })
+                .toList();
+
+        log.info("Found {} active kitchen orders", kitchenOrders.size());
+        return kitchenOrders.stream().map(this::toResponse).toList();
+    }
+
+    @Override
+    public OrderCheckoutResponse getOrderCheckout(Long orderId) {
+        Order order = getOrder(orderId);
+
+        BigDecimal totalAmount = defaultMoney(order.getTotalPrice());
+        
+        // Detailed discount breakdown
+        BigDecimal voucherDiscount = (order.getVoucher() == null) ? BigDecimal.ZERO 
+                : calculationService.calculateVoucherDiscount(totalAmount, order.getVoucher());
+        
+        BigDecimal depositedAmount = BigDecimal.ZERO;
+        BigDecimal tableDepositPaidAmount = BigDecimal.ZERO;
+        if (order.getReservation() != null) {
+            depositedAmount = defaultMoney(paymentRepository.sumAmountByTargetAndReservationIdAndStatus(
+                    EPaymentTarget.RESERVATION,
+                    order.getReservation().getId(),
+                    EPaymentStatus.SUCCESS
+            ));
+
+            if (depositedAmount.compareTo(BigDecimal.ZERO) > 0 && order.getReservation().getTable() != null) {
+                tableDepositPaidAmount = defaultMoney(order.getReservation().getTable().getBaseDeposit())
+                        .setScale(2, RoundingMode.HALF_UP);
+                if (tableDepositPaidAmount.compareTo(depositedAmount) > 0) {
+                    tableDepositPaidAmount = depositedAmount;
+                }
+            }
+        }
+
+        BigDecimal orderDepositPaidAmount = depositedAmount.subtract(tableDepositPaidAmount);
+        if (orderDepositPaidAmount.compareTo(BigDecimal.ZERO) < 0) {
+            orderDepositPaidAmount = BigDecimal.ZERO;
+        }
+
+        // Final price after ALL discounts and reservation deposits
+        BigDecimal orderFinalAmount = defaultMoney(order.getFinalPrice());
+        BigDecimal finalAmount = orderFinalAmount.subtract(orderDepositPaidAmount);
+        if (finalAmount.compareTo(BigDecimal.ZERO) < 0) {
+            finalAmount = BigDecimal.ZERO;
+        }
+
+        OrderCheckoutResponse response = new OrderCheckoutResponse();
+        response.setOrderId(order.getId());
+        response.setOrderCode(order.getCode());
+        response.setTotalAmount(totalAmount);
+        response.setVoucherDiscount(voucherDiscount);
+        response.setDepositedAmount(depositedAmount);
+        response.setTableDepositPaidAmount(tableDepositPaidAmount);
+        response.setOrderDepositPaidAmount(orderDepositPaidAmount);
+        response.setFinalAmount(finalAmount);
+        return response;
     }
 
     private void recalculateOrderPricing(Order order) {
@@ -345,12 +409,23 @@ public class OrderServiceImpl implements OrderService {
         return response;
     }
 
+    private boolean isSameProduct(OrderDetail detail, Long itemId, Long comboId) {
+        if (itemId != null && detail.getItem() != null) {
+            return detail.getItem().getId().equals(itemId);
+        }
+        if (comboId != null && detail.getCombo() != null) {
+            return detail.getCombo().getId().equals(comboId);
+        }
+        return false;
+    }
+
     private ComboResponse toComboResponse(Combo combo) {
         return ComboResponse.builder()
                 .id(combo.getId())
                 .name(combo.getName())
                 .description(combo.getDescription())
                 .price(combo.getPrice())
+                .priceAfterDiscount(combo.getPriceAfterDiscount())
                 .build();
     }
 
@@ -360,16 +435,11 @@ public class OrderServiceImpl implements OrderService {
                 .name(item.getName())
                 .description(item.getDescription())
                 .price(item.getPrice())
+                .priceAfterDiscount(item.getPriceAfterDiscount())
                 .build();
     }
 
-    private boolean isSameProduct(OrderDetail detail, Long itemId, Long comboId) {
-        if (itemId != null && detail.getItem() != null) {
-            return detail.getItem().getId().equals(itemId);
-        }
-        if (comboId != null && detail.getCombo() != null) {
-            return detail.getCombo().getId().equals(comboId);
-        }
-        return false;
+    private BigDecimal defaultMoney(BigDecimal amount) {
+        return amount != null ? amount : BigDecimal.ZERO;
     }
 }

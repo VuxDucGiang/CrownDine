@@ -19,15 +19,15 @@ export function ItemsModal({ isOpen, onClose, categoryName, items, isLoading, on
         <Modal
             isOpen={isOpen}
             onClose={onClose}
-            title={`Items in ${categoryName}`}
+            title={`Các món trong ${categoryName}`}
             maxWidth='max-w-4xl'
         >
             <div className='space-y-4'>
             <div className='bg-muted/30 flex items-center justify-between rounded-lg p-2'>
-                <span className='text-muted-foreground text-sm'>Showing {items.length} items</span>
+                <span className='text-muted-foreground text-sm'>Đang hiển thị {items.length} món</span>
                 <Button size='sm' onClick={onAddItem}>
                 <Plus className='mr-2 h-4 w-4' />
-                Add Item
+                Thêm món ăn
                 </Button>
             </div>
 
@@ -35,12 +35,12 @@ export function ItemsModal({ isOpen, onClose, categoryName, items, isLoading, on
                 <table className='w-full text-left text-sm'>
                 <thead className='bg-muted/50 text-muted-foreground border-border border-b font-medium'>
                     <tr>
-                    <th className='w-[60px] px-4 py-3'>Image</th>
-                    <th className='px-4 py-3'>Name</th>
-                    <th className='hidden px-4 py-3 sm:table-cell'>Description</th>
-                    <th className='w-[100px] px-4 py-3'>Price</th>
-                    <th className='w-[100px] px-4 py-3'>Status</th>
-                    <th className='w-[80px] px-4 py-3 text-end'>Action</th>
+                    <th className='w-[60px] px-4 py-3'>Hình ảnh</th>
+                    <th className='px-4 py-3'>Tên</th>
+                    <th className='hidden px-4 py-3 sm:table-cell'>Mô tả</th>
+                    <th className='w-[100px] px-4 py-3'>Giá</th>
+                    <th className='w-[100px] px-4 py-3'>Trạng thái</th>
+                    <th className='w-[80px] px-4 py-3 text-end'>Thao tác</th>
                     </tr>
                 </thead>
                 <tbody className='divide-border divide-y'>
@@ -48,7 +48,7 @@ export function ItemsModal({ isOpen, onClose, categoryName, items, isLoading, on
                       <tr>
                         <td colSpan={6} className='py-12 text-center'>
                           <div className='inline-block h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent'></div>
-                          <p className='text-muted-foreground mt-2 text-xs'>Loading items...</p>
+                          <p className='text-muted-foreground mt-2 text-xs'>Đang tải danh sách món ăn...</p>
                         </td>
                       </tr>
                     ) : items.length > 0 ? (
@@ -63,7 +63,7 @@ export function ItemsModal({ isOpen, onClose, categoryName, items, isLoading, on
                         <td className='text-muted-foreground hidden max-w-[200px] truncate px-4 py-3 sm:table-cell'>
                             {item.description}
                         </td>
-                        <td className='px-4 py-3'>${item.price}</td>
+                        <td className='px-4 py-3'>{item.price.toLocaleString('en-US')}đ</td>
                         <td className='px-4 py-3'>
                             <span
                             className={`inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold uppercase ${
@@ -72,7 +72,7 @@ export function ItemsModal({ isOpen, onClose, categoryName, items, isLoading, on
                                 : 'bg-red-500/15 text-red-700 dark:text-red-400'
                             } `}
                             >
-                            {item.status}
+                             {item.status === 'AVAILABLE' ? 'CÒN HÀNG' : 'HẾT HÀNG'}
                             </span>
                         </td>
                         <td className='px-4 py-3 text-end'>
@@ -96,7 +96,7 @@ export function ItemsModal({ isOpen, onClose, categoryName, items, isLoading, on
                     ) : (
                     <tr>
                         <td colSpan={6} className='text-muted-foreground px-4 py-8 text-center'>
-                        No items found in this category.
+                        Không tìm thấy món ăn nào trong danh mục này.
                         </td>
                     </tr>
                     )}

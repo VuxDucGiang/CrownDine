@@ -24,4 +24,7 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
 
     @Query("SELECT a FROM Attendance a JOIN a.workSchedule ws WHERE ws.workDate BETWEEN :fromDate AND :toDate ORDER BY ws.workDate ASC, ws.shift.startTime ASC")
     List<Attendance> findByWorkDateBetween(@Param("fromDate") LocalDate fromDate, @Param("toDate") LocalDate toDate);
+
+    @Query("SELECT a FROM Attendance a JOIN a.workSchedule ws WHERE a.user.id = :userId AND ws.shift.id = :shiftId AND ws.workDate = :workDate")
+    Optional<Attendance> findByUserShiftAndDate(@Param("userId") Long userId, @Param("shiftId") Long shiftId, @Param("workDate") LocalDate workDate);
 }

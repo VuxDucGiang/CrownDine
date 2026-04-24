@@ -23,38 +23,24 @@ public class RestaurantTableStateServiceImpl implements RestaurantTableStateServ
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void markAvailable(Long tableId) {
-        changeStatus(tableId, ETableStatus.AVAILABLE);
-    }
+    public RestaurantTableResponse changeStatus(Long tableId, ETableStatus targetStatus) {
+        RestaurantTable table = tableRepository.findById(tableId).orElseThrow(() -> new ResourceNotFoundException("Table not found"));
 
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void markReserved(Long tableId) {
-        changeStatus(tableId, ETableStatus.RESERVED);
-    }
-
-    @Override
-    @Transactional(rollbackFor = Exception.class)
-    public void markOccupied(Long tableId) {
-        changeStatus(tableId, ETableStatus.OCCUPIED);
-    }
-
-    private void changeStatus(Long tableId, ETableStatus targetStatus) {
-        RestaurantTable table = tableRepository.findById(tableId)
-                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
+        RestaurantTableResponse response = new RestaurantTableResponse();
+        BeanUtils.copyProperties(table, response);
+        response.setId(table.getId());
 
         if (table.getStatus() == targetStatus) {
-            return;
+            return response;
         }
 
         table.setStatus(targetStatus);
         tableRepository.save(table);
 
-        RestaurantTableResponse response = new RestaurantTableResponse();
         BeanUtils.copyProperties(table, response);
-        response.setId(table.getId());
         messagingTemplate.convertAndSend("/topic/tables", response);
 
         log.info("Updated table {} to {}", tableId, targetStatus);
+        return response;
     }
 }

@@ -1,6 +1,7 @@
 package com.crowndine.config;
 
 import com.crowndine.common.enums.ETokenType;
+import com.crowndine.common.i18n.MessageService;
 import com.crowndine.exception.ErrorResponse;
 import com.crowndine.exception.JwtAuthenticationException;
 import com.crowndine.security.CustomUserDetailsService;
@@ -39,7 +40,7 @@ public class PreFilter extends OncePerRequestFilter {
     private final CustomUserDetailsService customUserDetailsService;
 
     private final TokenRepository tokenRepository;
-    private final com.crowndine.common.i18n.MessageService messageService;
+    private final MessageService messageService;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,

@@ -6,6 +6,8 @@ import com.crowndine.dto.request.UpdateProfileRequest;
 import com.crowndine.model.User;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 public interface UserService {
     void changePassword(ChangePasswordRequest request, String username);
 
@@ -21,8 +23,8 @@ public interface UserService {
 
     User getUserByUserName(String username);
 
-    java.util.List<ProfileResponse> getAllCustomers();
-    
+    List<ProfileResponse> getAllCustomers();
+
     void sendEmailOtp(String username, String newEmail);
 
     void verifyEmailOtp(String username, String otp, String newEmail);

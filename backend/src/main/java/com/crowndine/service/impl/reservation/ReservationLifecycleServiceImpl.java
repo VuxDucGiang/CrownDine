@@ -29,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -39,6 +40,7 @@ import java.time.LocalDateTime;
 public class ReservationLifecycleServiceImpl implements ReservationLifecycleService {
     private static final long HOLD_TABLE_MINUTES = 10;
     private static final long CHECK_IN_WINDOW_MINUTES = 15;
+    private static final long NO_SHOW_GRACE_MINUTES = 15;
 
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
@@ -50,15 +52,16 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public ReservationCheckoutResponse createReservationByCustomer(String username, ReservationCreateRequest request) {
+        log.info("Processing create reservation for user: {}", username);
         LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(request.getDate(), request.getStartTime());
         User customer = getUserByUserName(username);
-        return createReservationInternal(request, customer, null, null, null, EReservationStatus.PENDING, startDateTime);
+        return createReservationInternal(request, customer, null, null, null, EReservationStatus.CONFIRMED, startDateTime);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
     public ReservationCheckoutResponse createWalkInReservationByStaff(String staffUsername, StaffReservationCreateRequest request) {
         LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(request.getDate(), request.getStartTime());
         User staff = getUserByUserName(staffUsername);
@@ -140,18 +143,46 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void markReservationNoShow(Long reservationId, String username) {
-        log.info("Staff/Admin {} marking reservation id {} as no-show", username, reservationId);
+    public void markNoShowDueReservations() {
+        LocalDateTime threshold = LocalDateTime.now().minusMinutes(NO_SHOW_GRACE_MINUTES);
+        var candidates = reservationRepository.findNoShowCandidates(
+                EReservationStatus.CONFIRMED,
+                threshold.toLocalDate(),
+                threshold.toLocalTime()
+        );
 
+        if (candidates.isEmpty()) {
+            return;
+        }
+
+        int updatedCount = 0;
+        for (Reservation reservation : candidates) {
+            markReservationNoShow(reservation.getId());
+            updatedCount++;
+        }
+        log.info("Auto-marked {} reservation(s) as no-show", updatedCount);
+    }
+
+    @Override
+    public void markReservationNoShow(Long reservationId) {
         Reservation reservation = getReservationById(reservationId);
-        getUserByUserName(username);
 
         if (reservation.getStatus() != EReservationStatus.CONFIRMED) {
-            throw new InvalidDataException("reservation.no_show_only_confirmed");
+            return;
+        }
+
+        if (!isNoShowGraceElapsed(reservation)) {
+            return;
         }
 
         cancelReservationWithStatus(reservation, EReservationStatus.NO_SHOW);
-        log.info("Reservation id {} has been marked as no-show", reservationId);
+        log.info("Reservation id {} has been auto-marked as no-show by scheduler", reservationId);
+    }
+
+    private boolean isNoShowGraceElapsed(Reservation reservation) {
+        LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(reservation.getDate(), reservation.getStartTime());
+        LocalDateTime threshold = startDateTime.plusMinutes(NO_SHOW_GRACE_MINUTES);
+        return !LocalDateTime.now().isBefore(threshold);
     }
 
     @Override
@@ -192,7 +223,10 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
             throw new InvalidDataException("reservation.update_table_only_pending");
         }
 
-        RestaurantTable newTable = tableRepository.findById(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
+        /*
+         * Lock bàn đích trước khi check availability để tránh 2 request đổi/chọn cùng 1 bàn trong cùng thời điểm.
+         */
+        RestaurantTable newTable = tableRepository.findByIdForUpdate(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
 
         validateTableForReservation(newTable, reservation.getGuestNumber());
 
@@ -248,12 +282,12 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
     }
 
     private ReservationCheckoutResponse createReservationInternal(ReservationCreateRequest request, User customer,
-                                                                User createdByStaff, String guestName, String guestPhone,
-                                                                EReservationStatus initialStatus, LocalDateTime startDateTime) {
+                                                                  User createdByStaff, String guestName, String guestPhone,
+                                                                  EReservationStatus initialStatus, LocalDateTime startDateTime) {
         LocalDateTime endDateTime = reservationTimePolicy.calculatePlannedEndTime(startDateTime);
         reservationTimePolicy.validateStartTime(startDateTime);
 
-        RestaurantTable table = tableRepository.findById(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
+        RestaurantTable table = tableRepository.findByIdForUpdate(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
 
         validateTableForReservation(table, request.getGuestNumber());
         reservationAvailabilityService.ensureTableAvailable(request.getDate(), request.getStartTime(), table.getId());

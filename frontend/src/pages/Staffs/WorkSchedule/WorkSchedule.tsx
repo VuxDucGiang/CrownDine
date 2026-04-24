@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns'
 import { ScheduleHeader } from './components/ScheduleHeader'
 import { ScheduleTable } from './components/ScheduleTable'
+import { CreateShiftModal } from '../Attendance/components/CreateShiftModal'
 import useWorkSchedule from '@/hooks/useWorkSchedule'
 import useStaffs from '@/hooks/useStaffs'
 
@@ -12,6 +13,7 @@ interface WorkScheduleProps {
 const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
   const [currentDate, setCurrentDate] = useState<Date>(new Date())
   const [selectedStaffSearchIds, setSelectedStaffSearchIds] = useState<string[]>([])
+  const [isCreateShiftOpen, setIsCreateShiftOpen] = useState(false)
 
   // Bắt đầu tuần từ Thứ Hai
   const fromDate = format(startOfWeek(currentDate, { weekStartsOn: 1 }), 'yyyy-MM-dd')
@@ -27,11 +29,10 @@ const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
 
   const nextWeek = () => setCurrentDate((prev) => addWeeks(prev, 1))
   const prevWeek = () => setCurrentDate((prev) => subWeeks(prev, 1))
-  const thisWeek = () => setCurrentDate(new Date())
 
   // Filter logic for ScheduleTable
-  const filteredStaffs = staffs ? (selectedStaffSearchIds.length > 0 ? staffs.filter(s => selectedStaffSearchIds.includes(s.id)) : staffs) : []
-  const filteredSchedules = schedules ? (selectedStaffSearchIds.length > 0 ? schedules.filter(s => selectedStaffSearchIds.includes(s.user.id.toString())) : schedules) : []
+  const filteredStaffs = staffs ? (selectedStaffSearchIds.length > 0 ? staffs.filter(s => selectedStaffSearchIds.some(id => String(id) === String(s.id))) : staffs) : []
+  const filteredSchedules = schedules ? (selectedStaffSearchIds.length > 0 ? schedules.filter(s => selectedStaffSearchIds.some(id => String(id) === String(s.user.id))) : schedules) : []
 
   return (
     <div className='bg-muted/10 h-full min-h-[calc(100vh-64px)] p-6'>
@@ -45,7 +46,7 @@ const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
             onStaffSelect={setSelectedStaffSearchIds}
             onNextWeek={nextWeek}
             onPrevWeek={prevWeek}
-            onThisWeek={thisWeek}
+            onCreateShift={() => setIsCreateShiftOpen(true)}
           />
         </div>
         <div className='shadow-sm'>
@@ -58,6 +59,9 @@ const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
           />
         </div>
       </div>
+      {isCreateShiftOpen && (
+        <CreateShiftModal onClose={() => setIsCreateShiftOpen(false)} />
+      )}
     </div>
   )
 }

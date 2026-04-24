@@ -87,7 +87,13 @@ public class CalculationServiceImpl implements CalculationService {
     @Override
     public OrderPricingResult calculateOrderPricing(Order order) {
         BigDecimal totalPrice = calculateTotalOrder(order.getOrderDetails());
-        BigDecimal discountPrice = order.getVoucher() == null ? BigDecimal.ZERO : calculateVoucherDiscount(totalPrice, order.getVoucher());
+        BigDecimal voucherDiscount = order.getVoucher() == null ? BigDecimal.ZERO : calculateVoucherDiscount(totalPrice, order.getVoucher());
+        BigDecimal discountPrice = voucherDiscount;
+
+        if (discountPrice.compareTo(totalPrice) > 0) {
+            discountPrice = totalPrice;
+        }
+
         BigDecimal finalPrice = calculateFinalTotalPrice(totalPrice, discountPrice);
 
         return new OrderPricingResult(totalPrice, discountPrice, finalPrice);

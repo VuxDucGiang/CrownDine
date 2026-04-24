@@ -19,7 +19,7 @@
     "@radix-ui/react-slot": "^1.2.4",
     "@react-oauth/google": "^0.13.4",
     "@stomp/stompjs": "^7.3.0",
-    "@tailwindcss/vite": "^4.1.18",
+    "@tailwindcss/vite": "^4.2.4",
     "@tanstack/react-query": "^5.90.20",
     "@tanstack/react-query-devtools": "^5.91.2",
     "axios": "^1.13.3",
@@ -40,7 +40,7 @@
     "socketjs-client": "^1.0.2",
     "sonner": "^2.0.7",
     "tailwind-merge": "^3.4.0",
-    "tailwindcss": "^4.1.18",
+    "tailwindcss": "^4.2.4",
     "zod": "^4.3.6",
     "zustand": "^5.0.11"
   },

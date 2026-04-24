@@ -17,7 +17,9 @@ public interface ReservationLifecycleService {
 
     void cancelReservationByStaff(Long reservationId, String username);
 
-    void markReservationNoShow(Long reservationId, String username);
+    void markNoShowDueReservations();
+
+    void markReservationNoShow(Long reservationId);
 
     void completeReservation(Long reservationId, String username);
 

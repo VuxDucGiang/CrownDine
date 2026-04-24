@@ -140,11 +140,7 @@ public class ReservationOrderServiceImpl implements ReservationOrderService {
             response.setHasFeedback(feedbackRepository.existsByUser_IdAndOrderDetail_Id(userId, orderDetail.getId()));
         }
 
-        if (orderDetail.getCombo() != null) {
-            response.setUnitPrice(orderDetail.getCombo().getPrice());
-        } else if (orderDetail.getItem() != null) {
-            response.setUnitPrice(orderDetail.getItem().getPrice());
-        }
+        response.setUnitPrice(orderDetail.getAppliedUnitPrice());
 
         return response;
     }

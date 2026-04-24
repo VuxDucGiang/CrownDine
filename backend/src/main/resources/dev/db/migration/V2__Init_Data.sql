@@ -105,7 +105,7 @@ VALUES
 ('Mirinda', 'Nước ngọt Mirinda cam lon', 'https://cdn.tgdd.vn/Products/Images/2443/79140/bhx/nuoc-ngot-mirinda-huong-cam-lon-320ml-202312252142544474.jpg', 15000.00, NULL, 0, 'AVAILABLE', 9, NOW(), NOW()),
 ('Rượu Macallan 12', 'Single Malt Scotch Whisky', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ3WBZpDIPr1pSmvkRNLfDjG7Cg05o-U_hBww&s', 2500000.00, NULL, 0, 'AVAILABLE', 9, NOW(), NOW()),
 ('Rượu Chivas 18', 'Blended Scotch Whisky 18 Years', 'https://ruoungoai68.com/wp-content/uploads/2024/01/ruou-chivas-18-nam-1-lit-03.jpg', 1800000.00, NULL, 0, 'AVAILABLE', 9, NOW(), NOW()),
-('Rượu Hennessy VSOP', 'Cognac Hennessy Pháp', 'https://ruouvip.vn/wp-content/uploads/2023/03/ruou-hennessy-vsop-privilege-4.jpg', 1600000.00, NULL, 0, 'AVAILABLE', 9, NOW(), NOW()),
+('Rượu Hennessy VSOP', 'Cognac Hennessy Pháp', 'https://www.phanphoiruoungoai.net/wp-content/uploads/2017/12/ruou-hennessy-vsop.png', 1600000.00, NULL, 0, 'AVAILABLE', 9, NOW(), NOW()),
 
 -- 48-56
 

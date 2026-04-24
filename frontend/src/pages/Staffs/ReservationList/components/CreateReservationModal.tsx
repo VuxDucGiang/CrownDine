@@ -28,8 +28,11 @@ interface CartItem {
   type: 'item' | 'combo'
   name: string
   price: number
+  originalPrice: number
+  priceAfterDiscount: number | null
   quantity: number
   imageUrl: string
+  note?: string
 }
 
 type ModalTab = 'INFO' | 'MENU'
@@ -85,6 +88,8 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
         type,
         name: item.name,
         price: Number(item.priceAfterDiscount ?? item.price),
+        originalPrice: Number(item.price),
+        priceAfterDiscount: item.priceAfterDiscount != null ? Number(item.priceAfterDiscount) : null,
         quantity: 1,
         imageUrl: item.imageUrl
       }]
@@ -96,6 +101,24 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
       if (i.id === id && i.type === type) {
         const newQ = Math.max(1, i.quantity + delta)
         return { ...i, quantity: newQ }
+      }
+      return i
+    }))
+  }
+
+  const setQuantityManual = (id: string | number, type: 'item' | 'combo', quantity: number) => {
+    setCart(prev => prev.map(i => {
+      if (i.id === id && i.type === type) {
+        return { ...i, quantity: Math.max(1, quantity) }
+      }
+      return i
+    }))
+  }
+
+  const updateItemNote = (id: string | number, type: 'item' | 'combo', note: string) => {
+    setCart(prev => prev.map(i => {
+      if (i.id === id && i.type === type) {
+        return { ...i, note }
       }
       return i
     }))
@@ -120,7 +143,8 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
           await reservationApi.addItemToReservation(reservationId, {
             itemId: item.type === 'item' ? Number(item.id) : undefined,
             comboId: item.type === 'combo' ? Number(item.id) : undefined,
-            quantity: item.quantity
+            quantity: item.quantity,
+            note: item.note
           })
         }
       }
@@ -154,11 +178,15 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
     })
   }
 
+  const isPhoneValid = (phone: string) => /^0[0-9]{9}$/.test(phone)
+
+  const isFormValid = guestName.trim() !== '' && isPhoneValid(guestPhone) && formData.tableId !== ''
+
   const totalPrice = cart.reduce((acc, i) => acc + i.price * i.quantity, 0)
 
   return (
     <Modal isOpen={isOpen} onClose={handleClose} title='Tạo đặt bàn cho khách vãng lai' maxWidth='max-w-6xl'>
-      <div className='flex flex-col min-h-[650px] max-h-[85vh] -mt-4'>
+      <div className='flex flex-col h-[75vh] -mt-4 overflow-hidden'>
         
         {/* Tab Navigation */}
         <div className='flex border-b border-border bg-muted/10 rounded-t-xl overflow-hidden'>
@@ -184,14 +212,14 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
         </div>
 
         {/* Tab Content */}
-        <div className='flex-1 overflow-hidden flex flex-col p-8'>
+        <div className='flex-1 overflow-hidden flex flex-col p-4'>
            
            {/* TAB 1: INFORMATION */}
            {activeTab === 'INFO' && (
              <div className='max-w-2xl mx-auto w-full space-y-10 animate-in fade-in slide-in-from-bottom-2'>
                 <div className='space-y-6'>
                    <h4 className='text-[10px] font-black text-primary uppercase tracking-widest border-b border-primary/20 pb-2 flex items-center gap-2'>
-                      <User size={14} /> Danh tính khách hàng
+                      <User size={14} /> Thông tin
                    </h4>
                    <div className='grid grid-cols-2 gap-8'>
                       <div className='space-y-2'>
@@ -208,9 +236,18 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
                         <Input
                           placeholder='Ví dụ: 0912345678'
                           value={guestPhone}
-                          onChange={(e) => setGuestPhone(e.target.value)}
-                          className='h-12 bg-slate-50/50 border-slate-200 focus:ring-1 focus:ring-primary rounded-xl'
+                          onChange={(e) => {
+                            const val = e.target.value.replace(/[^0-9]/g, '').substring(0, 10)
+                            setGuestPhone(val)
+                          }}
+                          className={clsx(
+                            'h-12 bg-slate-50/50 border-slate-200 focus:ring-1 focus:ring-primary rounded-xl',
+                            guestPhone && !isPhoneValid(guestPhone) && 'border-red-500 focus:ring-red-500 bg-red-50/10'
+                          )}
                         />
+                        {guestPhone && !isPhoneValid(guestPhone) && (
+                          <p className='text-[10px] text-red-500 font-bold italic mt-1'>Số điện thoại phải bắt đầu bằng 0 và đủ 10 chữ số</p>
+                        )}
                       </div>
                    </div>
                 </div>
@@ -291,34 +328,29 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
                    </div>
                 </div>
 
-                <div className='pt-10 flex justify-center'>
-                   <Button 
-                      onClick={() => setActiveTab('MENU')}
-                      className='h-14 px-12 gap-3 bg-primary hover:bg-primary/90 text-sm font-black rounded-full shadow-lg shadow-primary/20 transition-all hover:scale-105 uppercase tracking-widest'
-                   >
-                      Tiếp theo: Chọn món <ChevronRight size={18} />
-                   </Button>
-                </div>
+                 <div className='pt-10 flex justify-center'>
+                    <Button 
+                       onClick={() => setActiveTab('MENU')}
+                       disabled={!guestName.trim() || !isPhoneValid(guestPhone)}
+                       className='h-14 px-12 gap-3 bg-primary hover:bg-primary/90 text-sm font-black rounded-full shadow-lg shadow-primary/20 transition-all hover:scale-105 uppercase tracking-widest disabled:opacity-50'
+                    >
+                       Tiếp theo: Chọn món <ChevronRight size={18} />
+                    </Button>
+                 </div>
              </div>
            )}
 
            {/* TAB 2: MENU SELECTION */}
            {activeTab === 'MENU' && (
-             <div className='flex-1 flex gap-8 overflow-hidden animate-in fade-in slide-in-from-right-4'>
-                {/* Product List Selector */}
-                <div className='flex-1 h-full bg-slate-50 border border-slate-200 rounded-3xl overflow-hidden p-6 shadow-inner'>
-                   <div className='mb-4 flex justify-between items-center px-2'>
-                      <h5 className='text-[10px] font-black uppercase text-primary tracking-[0.2em]'>Danh sách thực đơn</h5>
-                      <span className='text-[10px] font-bold text-slate-400 italic'>Click để chọn món vào giỏ hàng</span>
-                   </div>
-                   <div className='h-[calc(100%-2rem)]'>
-                      <MenuSelector onSelectItem={handleSelectItem} />
-                   </div>
+             <div className='flex-1 flex gap-3 overflow-hidden animate-in fade-in slide-in-from-right-4'>
+                {/* Product List Selector with Category Sidebar */}
+                <div className='flex-1 bg-slate-50 border border-slate-200 rounded-2xl overflow-hidden p-3 shadow-inner'>
+                   <MenuSelector onSelectItem={handleSelectItem} isSidebar={true} />
                 </div>
 
-                {/* Selected Items Cart */}
-                <div className='w-80 flex flex-col bg-white border border-slate-200 rounded-3xl overflow-hidden shadow-xl'>
-                   <div className='p-6 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between'>
+                {/* Selected Items Cart (Right Sidebar) */}
+                <div className='w-72 flex flex-col bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xl'>
+                   <div className='p-4 bg-slate-50/80 border-b border-slate-100 flex items-center justify-between'>
                       <div className='flex items-center gap-2'>
                         <ShoppingCart className='w-4 h-4 text-primary' />
                         <span className='text-[10px] font-black uppercase tracking-widest text-slate-600'>Đơn đặt trước</span>
@@ -335,19 +367,40 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
                            <p className='text-[10px] font-black uppercase tracking-widest leading-loose'>Chưa có món ăn<br/>được chọn</p>
                         </div>
                       ) : cart.map(item => (
-                        <div key={`${item.type}-${item.id}`} className='bg-slate-50/50 p-3 rounded-2xl border border-slate-100 group transition-all hover:bg-white hover:border-primary/20'>
-                           <div className='flex justify-between items-start gap-2 mb-2'>
-                              <p className='text-xs font-bold text-slate-800 line-clamp-1 flex-1'>{item.name}</p>
+                        <div key={`${item.type}-${item.id}`} className='bg-slate-50/50 p-2 rounded-xl border border-slate-100 group transition-all hover:bg-white hover:border-primary/20 space-y-2'>
+                           <div className='flex justify-between items-start gap-2' title={item.name}>
+                              <p className='text-[11px] font-bold text-slate-800 line-clamp-1 flex-1'>{item.name}</p>
                               <button onClick={() => removeItem(item.id, item.type)} className='text-slate-300 hover:text-red-500'>
-                                 <Trash2 size={12} />
+                                 <Trash2 size={10} />
                               </button>
                            </div>
+                           
+                           {/* Note field */}
+                           <input 
+                              type='text' 
+                              placeholder='Ghi chú cho món...'
+                              className='w-full text-[10px] bg-white border border-slate-100 rounded-md px-2 py-1 outline-none focus:border-primary/30 transition-all'
+                              value={item.note || ''}
+                              onChange={(e) => updateItemNote(item.id, item.type, e.target.value)}
+                           />
+
                            <div className='flex justify-between items-center'>
-                              <span className='text-[11px] font-black text-primary'>{formatCurrency(item.price)}</span>
-                              <div className='flex items-center gap-2 bg-white rounded-lg border border-slate-100 p-1'>
-                                 <button onClick={() => updateQuantity(item.id, item.type, -1)} className='w-5 h-5 flex items-center justify-center hover:text-primary'><Minus size={10}/></button>
-                                 <span className='text-xs font-black min-w-[14px] text-center'>{item.quantity}</span>
-                                 <button onClick={() => updateQuantity(item.id, item.type, 1)} className='w-5 h-5 flex items-center justify-center hover:text-primary'><Plus size={10}/></button>
+                              <div className='flex flex-col leading-tight'>
+                                {item.priceAfterDiscount != null && item.priceAfterDiscount < item.originalPrice && (
+                                  <span className='text-[9px] text-slate-400 line-through'>{formatCurrency(item.originalPrice)}</span>
+                                )}
+                                <span className='text-[10px] font-black text-primary'>{formatCurrency(item.price)}</span>
+                              </div>
+                              <div className='flex items-center gap-1.5 bg-white rounded-lg border border-slate-100 p-0.5'>
+                                 <button onClick={() => updateQuantity(item.id, item.type, -1)} className='w-5 h-5 flex items-center justify-center hover:text-primary transition-colors'><Minus size={8}/></button>
+                                 <input 
+                                    type='number' 
+                                    min={1}
+                                    className='w-8 text-[11px] font-black text-center bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none m-0'
+                                    value={item.quantity}
+                                    onChange={(e) => setQuantityManual(item.id, item.type, parseInt(e.target.value) || 1)}
+                                 />
+                                 <button onClick={() => updateQuantity(item.id, item.type, 1)} className='w-5 h-5 flex items-center justify-center hover:text-primary transition-colors'><Plus size={8}/></button>
                               </div>
                            </div>
                         </div>
@@ -356,7 +409,7 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
 
                    <div className='p-6 bg-primary/5 border-t border-slate-100 space-y-4'>
                       <div className='flex justify-between items-end'>
-                         <span className='text-[9px] font-black uppercase text-slate-400'>Tổng tiền hàng</span>
+                         <span className='text-[9px] font-black uppercase text-slate-400'>Tổng cộng</span>
                          <span className='text-xl font-black text-primary tracking-tight'>{formatCurrency(totalPrice)}</span>
                       </div>
                       <div className='flex gap-3'>
@@ -369,8 +422,8 @@ export default function CreateReservationModal({ isOpen, onClose, onSuccess, ini
                          </Button>
                          <Button 
                             onClick={() => createMutation.mutate()}
-                            disabled={!guestName.trim() || !guestPhone.trim() || !formData.tableId || createMutation.isPending}
-                            className='flex-[2] h-12 rounded-xl bg-primary shadow-lg shadow-primary/20 text-[10px] font-black uppercase tracking-[0.2em] transition-transform active:scale-95'
+                            disabled={!isFormValid || createMutation.isPending}
+                            className='flex-[2] h-12 rounded-xl bg-primary shadow-lg shadow-primary/20 text-[10px] font-black uppercase tracking-[0.2em] disabled:opacity-50 disabled:grayscale'
                          >
                             {createMutation.isPending ? 'Đang gửi...' : 'HOÀN TẤT'}
                          </Button>

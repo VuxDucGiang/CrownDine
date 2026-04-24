@@ -174,12 +174,8 @@ const OrderManagement = () => {
     setIsDrawerOpen(true)
   }
 
-  const handlePayment = (order: Order) => {
-    setPaymentOrder(order)
-  }
-
   const cancelOrderMutation = useMutation({
-    mutationFn: ({ orderId, cancelReason }: { orderId: number; cancelReason: string }) => 
+    mutationFn: ({ orderId, cancelReason }: { orderId: number; cancelReason: string }) =>
       orderApi.updateOrderStatus(orderId, 'CANCELLED', cancelReason),
     onSuccess: () => {
       toast.success('Hủy đơn hàng thành công')
@@ -196,9 +192,12 @@ const OrderManagement = () => {
 
   const confirmCancelOrder = (reason: string) => {
     if (cancelingOrder) {
-      cancelOrderMutation.mutate({ orderId: cancelingOrder.id, cancelReason: reason }, {
-        onSuccess: () => setCancelingOrder(null)
-      })
+      cancelOrderMutation.mutate(
+        { orderId: cancelingOrder.id, cancelReason: reason },
+        {
+          onSuccess: () => setCancelingOrder(null)
+        }
+      )
     }
   }
 
@@ -348,15 +347,6 @@ const OrderManagement = () => {
                           <Button
                             variant='outline'
                             size='sm'
-                            className='rounded-lg border-orange-200 font-semibold text-orange-600 shadow-sm hover:bg-orange-50 hover:text-orange-700'
-                            onClick={() => handlePayment(order)}
-                            disabled={order.status === 'CANCELLED' || order.status === 'COMPLETED'}
-                          >
-                            Thanh toán
-                          </Button>
-                          <Button
-                            variant='outline'
-                            size='sm'
                             className='text-foreground hover:bg-muted rounded-lg font-medium shadow-sm'
                             onClick={() => handleViewOrder(order)}
                           >
@@ -454,11 +444,6 @@ const OrderManagement = () => {
         }}
         order={selectedOrder}
         reservationId={reservationIdForNewOrder}
-        onPaymentClick={(order) => {
-          setIsDrawerOpen(false)
-          setReservationIdForNewOrder(null)
-          setPaymentOrder(order)
-        }}
         onCancelClick={(order) => {
           setIsDrawerOpen(false)
           setReservationIdForNewOrder(null)

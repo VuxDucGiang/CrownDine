@@ -17,6 +17,9 @@ import com.crowndine.exception.InvalidDataException;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+import java.util.Random;
+
 @Service
 @RequiredArgsConstructor
 @Slf4j(topic = "USER-SERVICE")
@@ -153,7 +156,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public java.util.List<ProfileResponse> getAllCustomers() {
+    public List<ProfileResponse> getAllCustomers() {
         return userRepository.findAllCustomers().stream()
                 .map(user -> ProfileResponse.builder()
                         .id(user.getId())
@@ -169,13 +172,13 @@ public class UserServiceImpl implements UserService {
                         .createdAt(user.getCreatedAt().toLocalDate())
                         .updatedAt(user.getUpdatedAt().toLocalDate())
                         .build())
-                .collect(java.util.stream.Collectors.toList());
+                .toList();
     }
 
     @Override
     public void sendEmailOtp(String username, String newEmail) {
         log.info("Generating email OTP for user: {}", username);
-        
+
         if (userRepository.existsByEmail(newEmail)) {
             throw new InvalidDataException("auth.email_exists");
         }
@@ -184,8 +187,8 @@ public class UserServiceImpl implements UserService {
                 .orElseThrow(() -> new ResourceNotFoundException("user.not_found"));
 
         // Generate 6-digit random OTP
-        String otp = String.format("%06d", new java.util.Random().nextInt(1000000));
-        
+        String otp = String.format("%06d", new Random().nextInt(1000000));
+
         user.setVerificationCode(otp);
         user.setVerificationExpiration(java.time.LocalDateTime.now().plusMinutes(5));
         userRepository.save(user);

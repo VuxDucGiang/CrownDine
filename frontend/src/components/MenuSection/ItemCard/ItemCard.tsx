@@ -2,7 +2,7 @@ import RatingStart from '@/components/RatingStart'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useFavoriteStore } from '@/stores/useFavoriteStore'
 import type { MenuCardItem } from '@/types/item.type'
-import { formatCurrency, getImageUrl } from '@/utils/utils'
+import { formatCurrency, getImageUrl, DEFAULT_PLACEHOLDER } from '@/utils/utils'
 import { Eye, Heart } from 'lucide-react'
 import { toast } from 'sonner'
 
@@ -43,8 +43,9 @@ const ItemCard = ({ item, isCombo = false, onViewDetails }: Props) => {
     }
   }
 
-  const discountPercent = item.priceAfterDiscount
-    ? Math.round(((item.price - item.priceAfterDiscount) / item.price) * 100)
+  const hasDiscount = item.priceAfterDiscount != null && Number(item.priceAfterDiscount) < Number(item.price)
+  const discountPercent = hasDiscount
+    ? Math.round(((item.price - Number(item.priceAfterDiscount)) / item.price) * 100)
     : 0
   return (
     <div className='group bg-card border-border hover:border-primary/50 relative flex h-full flex-col overflow-hidden rounded-xl border shadow-sm transition-all duration-300 hover:shadow-md'>
@@ -78,6 +79,12 @@ const ItemCard = ({ item, isCombo = false, onViewDetails }: Props) => {
           src={getImageUrl(item.imageUrl)}
           alt={item.name}
           className='h-full w-full object-cover transition-transform duration-500 group-hover:scale-110'
+          onError={(e) => {
+            const target = e.target as HTMLImageElement
+            if (target.src !== DEFAULT_PLACEHOLDER) {
+              target.src = DEFAULT_PLACEHOLDER
+            }
+          }}
         />
         {/* Badge category */}
         {item.status === 'SOLD_OUT' && (
@@ -106,9 +113,9 @@ const ItemCard = ({ item, isCombo = false, onViewDetails }: Props) => {
         {/* Price & Action */}
         <div className='border-border mt-auto flex items-center justify-between border-t border-dashed pt-3'>
           <div className='flex flex-col'>
-            {item.priceAfterDiscount ? (
+            {hasDiscount ? (
               <>
-                <span className='text-muted-foreground text-xs line-through'>
+                <span className='text-muted-foreground text-[11px] line-through'>
                   {formatCurrency(Number(item.price))}
                 </span>
                 <span className='text-primary text-xl font-bold'>
