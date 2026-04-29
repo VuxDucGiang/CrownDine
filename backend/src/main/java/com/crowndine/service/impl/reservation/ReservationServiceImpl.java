@@ -245,7 +245,7 @@ public class ReservationServiceImpl implements ReservationService {
             response.setReservationStatus(EReservationStatus.CONFIRMED);
         }
 
-        response.setTableName(order.getRestaurantTable() != null ? order.getRestaurantTable().getName() : "N/A");
+        response.setTableName(order.getRestaurantTable().getName());
         response.setOrderId(order.getId());
         response.setOrderStatus(order.getStatus());
         response.setFinalPrice(order.getFinalPrice());

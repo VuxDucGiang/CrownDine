@@ -403,9 +403,7 @@ public class DashboardServiceImpl implements DashboardService {
                         Row row = sheet.createRow(rowIdx++);
                         row.createCell(0).setCellValue(order.getCode());
                         row.createCell(1).setCellValue(order.getCreatedAt().toString());
-                        row.createCell(2).setCellValue(
-                                        order.getRestaurantTable() != null ? order.getRestaurantTable().getName()
-                                                        : "Mang về");
+                        row.createCell(2).setCellValue(order.getRestaurantTable().getName());
                         row.createCell(3).setCellValue(
                                         order.getUser() != null ? order.getUser().getFullName() : "Khách lẻ");
                         row.createCell(4).setCellValue(order.getFinalPrice().doubleValue());

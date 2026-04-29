@@ -56,10 +56,6 @@ public class OrderStatusServiceImpl implements OrderStatusService {
     }
 
     private void handleOrderStatusSideEffects(Order order) {
-        if (order.getRestaurantTable() == null) {
-            return;
-        }
-
         Long tableId = order.getRestaurantTable().getId();
         switch (order.getStatus()) {
             case CONFIRMED, IN_PROGRESS -> restaurantTableStateService.changeStatus(tableId, ETableStatus.OCCUPIED);

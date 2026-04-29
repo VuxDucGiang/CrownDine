@@ -376,9 +376,7 @@ public class OrderServiceImpl implements OrderService {
             response.setGuestName(order.getUser().getFullName());
         }
 
-        if (order.getRestaurantTable() != null) {
-            response.setTableName(order.getRestaurantTable().getName());
-        }
+        response.setTableName(order.getRestaurantTable().getName());
 
         List<OrderDetailResponse> details = order.getOrderDetails().stream().map(d -> {
             OrderDetailResponse od = new OrderDetailResponse();
