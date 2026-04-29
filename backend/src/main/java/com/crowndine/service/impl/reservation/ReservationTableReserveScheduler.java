@@ -46,7 +46,7 @@ public class ReservationTableReserveScheduler {
 
     private boolean reserveTable(Reservation reservation) {
         Long tableId = reservation.getTable().getId();
-        restaurantTableStateService.markReserved(tableId);
+        restaurantTableStateService.changeStatus(tableId, ETableStatus.RESERVED);
         log.info("Set table {} to RESERVED for reservation {}", tableId, reservation.getId());
         return true;
     }

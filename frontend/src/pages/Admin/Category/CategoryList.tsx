@@ -37,7 +37,7 @@ export default function CategoryList() {
     mutationFn: (data: { name: string; description: string }) => categoryApi.createCategory(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
-      toast.success('Category created successfully')
+      toast.success('Tạo danh mục thành công')
       setIsCategoryModalOpen(false)
     }
   })
@@ -48,7 +48,7 @@ export default function CategoryList() {
       categoryApi.updateCategory(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
-      toast.success('Category updated successfully')
+      toast.success('Cập nhật danh mục thành công')
       setIsCategoryModalOpen(false)
     }
   })
@@ -58,7 +58,7 @@ export default function CategoryList() {
     mutationFn: (id: number) => categoryApi.deleteCategory(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['categories'] })
-      toast.success('Category deleted successfully')
+      toast.success('Xóa danh mục thành công')
     }
   })
 
@@ -71,7 +71,7 @@ export default function CategoryList() {
         handleRowClick(selectedCategoryForItems) // Refresh item list
       }
       queryClient.invalidateQueries({ queryKey: ['categories'] })
-      toast.success('Item created successfully')
+      toast.success('Tạo món ăn thành công')
       setIsItemFormOpen(false)
     }
   })
@@ -82,7 +82,7 @@ export default function CategoryList() {
       if (selectedCategoryForItems) {
         handleRowClick(selectedCategoryForItems) // Refresh item list
       }
-      toast.success('Item updated successfully')
+      toast.success('Cập nhật món ăn thành công')
       setIsItemFormOpen(false)
     }
   })
@@ -94,7 +94,7 @@ export default function CategoryList() {
         handleRowClick(selectedCategoryForItems) // Refresh item list
       }
       queryClient.invalidateQueries({ queryKey: ['categories'] })
-      toast.success('Item deleted successfully')
+      toast.success('Xóa món ăn thành công')
     }
   })
 
@@ -113,7 +113,7 @@ export default function CategoryList() {
     mutationFn: (id: number) => comboApi.deleteCombo(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['combos'] })
-      toast.success('Combo deleted successfully')
+      toast.success('Xóa combo thành công')
     }
   })
 
@@ -122,7 +122,7 @@ export default function CategoryList() {
     mutationFn: (data: ComboFormData) => comboApi.createCombo(data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['combos'] })
-      toast.success('Combo created successfully')
+      toast.success('Tạo combo thành công')
       setIsComboModalOpen(false)
     }
   })
@@ -133,7 +133,7 @@ export default function CategoryList() {
       comboApi.updateCombo(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['combos'] })
-      toast.success('Combo updated successfully')
+      toast.success('Cập nhật combo thành công')
       setIsComboModalOpen(false)
     }
   })
@@ -175,7 +175,7 @@ export default function CategoryList() {
 
   const handleDeleteCategory = (e: React.MouseEvent, category: any) => {
     e.stopPropagation()
-    if (window.confirm(`Are you sure you want to delete category "${category.name}"?`)) {
+    if (window.confirm(`Bạn có chắc chắn muốn xóa danh mục "${category.name}"?`)) {
       deleteCategoryMutation.mutate(category.id)
     }
   }
@@ -216,7 +216,7 @@ export default function CategoryList() {
   }
 
   const handleDeleteItem = (item: Item) => {
-    if (window.confirm(`Are you sure you want to delete item "${item.name}"?`)) {
+    if (window.confirm(`Bạn có chắc chắn muốn xóa món ăn "${item.name}"?`)) {
       deleteItemMutation.mutate(item.id)
     }
   }
@@ -241,7 +241,7 @@ export default function CategoryList() {
 
   const handleDeleteCombo = (e: React.MouseEvent, combo: Combo) => {
     e.stopPropagation()
-    if (window.confirm(`Are you sure you want to delete combo "${combo.name}"?`)) {
+    if (window.confirm(`Bạn có chắc chắn muốn xóa combo "${combo.name}"?`)) {
       deleteComboMutation.mutate(combo.id)
     }
   }
@@ -275,8 +275,8 @@ export default function CategoryList() {
       {/* Page Header */}
       <div className='flex flex-col justify-between gap-4 sm:flex-row sm:items-center'>
         <div>
-          <h1 className='text-3xl font-bold tracking-tight'>Menu Management</h1>
-          <p className='text-muted-foreground mt-1'>Manage your categories and combos.</p>
+          <h1 className='text-3xl font-bold tracking-tight'>Quản lý Thực đơn</h1>
+          <p className='text-muted-foreground mt-1'>Quản lý danh mục món ăn và các gói combo của bạn.</p>
         </div>
       </div>
 
@@ -287,13 +287,13 @@ export default function CategoryList() {
         {/* Categories Table */}
         <div className='space-y-4'>
           <div className='flex items-center justify-between'>
-            <h2 className='text-xl font-semibold'>Categories</h2>
+            <h2 className='text-xl font-semibold'>Danh mục</h2>
             <button
               onClick={handleCreateCategory}
               className='bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex h-9 items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50'
             >
               <Plus className='mr-2 h-4 w-4' />
-              Add Category
+              Thêm danh mục
             </button>
           </div>
           {isLoadingCategories ? (
@@ -313,13 +313,13 @@ export default function CategoryList() {
         {/* Combos Table */}
         <div className='space-y-4'>
           <div className='flex items-center justify-between'>
-            <h2 className='text-xl font-semibold'>Combos</h2>
+            <h2 className='text-xl font-semibold'>Combo</h2>
             <button
               onClick={handleCreateCombo}
               className='bg-primary text-primary-foreground hover:bg-primary/90 focus-visible:ring-ring inline-flex h-9 items-center justify-center rounded-lg px-3 py-2 text-sm font-medium shadow transition-colors focus-visible:ring-1 focus-visible:outline-none disabled:pointer-events-none disabled:opacity-50'
             >
               <Plus className='mr-2 h-4 w-4' />
-              Add Combo
+              Thêm Combo
             </button>
           </div>
           {isLoadingCombos ? (
@@ -341,7 +341,7 @@ export default function CategoryList() {
       <Modal
         isOpen={isCategoryModalOpen}
         onClose={() => setIsCategoryModalOpen(false)}
-        title={editingCategory ? 'Edit Category' : 'Add New Category'}
+        title={editingCategory ? 'Chỉnh sửa danh mục' : 'Thêm danh mục mới'}
       >
         <CategoryForm
           key={editingCategory ? editingCategory.id : 'new-category'}
@@ -367,7 +367,7 @@ export default function CategoryList() {
       <Modal
         isOpen={isItemFormOpen}
         onClose={() => setIsItemFormOpen(false)}
-        title={editingItem ? 'Edit Item' : 'Add New Item'}
+        title={editingItem ? 'Chỉnh sửa món ăn' : 'Thêm món ăn mới'}
       >
         <MenuItemForm
           key={editingItem ? editingItem.id : 'new-item'}
@@ -387,7 +387,7 @@ export default function CategoryList() {
       <Modal
         isOpen={isComboModalOpen}
         onClose={() => setIsComboModalOpen(false)}
-        title={editingCombo ? 'Edit Combo' : 'Add New Combo'}
+        title={editingCombo ? 'Chỉnh sửa Combo' : 'Thêm Combo mới'}
         maxWidth='max-w-4xl'
       >
         <ComboForm

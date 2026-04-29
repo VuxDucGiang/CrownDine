@@ -6,6 +6,7 @@ import LayoutCanvas from '@/components/Layout/LayoutCanvas'
 import AreaCanvas from '@/components/Layout/AreaCanvas'
 import { Loader2, ArrowLeft, MapPin, Wallet, Table as TableIcon } from 'lucide-react'
 import { formatCurrency } from '@/utils/utils'
+import TableDetailDrawer from './TableDetailDrawer'
 
 interface Props {
   selectedTable: Table | null
@@ -23,16 +24,19 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
   const [activeLayout, setActiveLayout] = useState<FloorLayoutResponse | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [availableTableIds, setAvailableTableIds] = useState<Set<number>>(new Set())
+  const [viewingTable, setViewingTable] = useState<TableLayout | null>(null)
 
   // 1. Fetch all floors on mount
   useEffect(() => {
     const fetchFloors = async () => {
       try {
         const res = await layoutApi.getAllFloors()
-        const fetchedFloors = res.data.data
-        setFloors(fetchedFloors)
-        if (fetchedFloors.length > 0) {
-          setActiveFloorId(fetchedFloors[0].id)
+        const fetchedFloors = res.data?.data
+        if (Array.isArray(fetchedFloors)) {
+          setFloors(fetchedFloors)
+          if (fetchedFloors.length > 0) {
+            setActiveFloorId(fetchedFloors[0].id)
+          }
         }
       } catch (error) {
         console.error('Failed to load floors', error)
@@ -50,7 +54,9 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
     const fetchLayout = async () => {
       try {
         const res = await layoutApi.getFloorLayout(activeFloorId)
-        setActiveLayout(res.data.data)
+        if (res.data?.data) {
+          setActiveLayout(res.data.data)
+        }
         setActiveAreaId(null) // Reset area when floor changes
       } catch (error) {
         console.error('Failed to load layout details', error)
@@ -68,9 +74,10 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
         const res = await layoutApi.getAvailableTables({
           date,
           startTime,
-          guestNumber: guests
+          guestNumber: 1 // Lấy tất cả bàn trống (sức chứa >= 1) để frontend tự phân loại vàng/đỏ
         })
-        const availableIds = new Set(res.data.data.map((t: TableLayout) => t.id))
+        const availableData = res.data?.data || []
+        const availableIds = new Set(availableData.map((t: TableLayout) => t.id))
 
         // Nếu đã có bàn được chọn, thêm nó vào availableIds để hiển thị màu xanh
         // (vì bàn đã được đặt bởi reservation hiện tại nên không có trong available tables)
@@ -86,48 +93,55 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
       }
     }
     fetchAvailableTables()
-  }, [date, startTime, guests, selectedTable])
+  }, [date, startTime, guests])
 
   const handleSelectArea = (area: AreaLayout) => {
     setActiveAreaId(area.areaId)
   }
 
-  // Map TableLayout to Booking Table type when clicking on a table
+  // Mở ngăn kéo chi tiết bàn
   const handleSelectTable = (tableLayout: TableLayout) => {
     // Nếu đã thanh toán, không cho phép chọn bàn mới
-    if (isPaid) {
+    if (isPaid && selectedTable?.id !== tableLayout.id.toString()) {
       return
     }
 
-    // Không cho chọn bàn đã được đặt trong khung giờ này (chỉ áp dụng cho bàn AVAILABLE)
-    if (tableLayout.status === 'AVAILABLE' && !availableTableIds.has(tableLayout.id)) {
+    // Không cho xem chi tiết bàn đã được đặt (trừ bàn đang chọn)
+    const isInteractive = tableLayout.status === 'AVAILABLE' || tableLayout.status === 'OCCUPIED' || tableLayout.status === 'RESERVED'
+    if (isInteractive && !availableTableIds.has(tableLayout.id) && selectedTable?.id !== tableLayout.id.toString()) {
       return
     }
 
-    // Không cho chọn bàn AVAILABLE nhưng capacity < guests
-    if (tableLayout.status === 'AVAILABLE') {
+    setViewingTable(tableLayout)
+  }
+
+  // Xác nhận chọn bàn từ ngăn kéo
+  const handleConfirmSelect = (tableLayout: TableLayout) => {
+    // Không cho chọn bàn nếu capacity < guests
+    const isInteractive = tableLayout.status === 'AVAILABLE' || tableLayout.status === 'OCCUPIED' || tableLayout.status === 'RESERVED'
+    if (isInteractive) {
       const capacity = tableLayout.capacity || 2
       if (capacity < guests) {
         return
       }
     }
 
-    // Chỉ cho chọn bàn AVAILABLE, capacity >= guests, và chưa được đặt trong khung giờ này
     const mappedTable: Table = {
       id: tableLayout.id.toString(),
       name: tableLayout.name || `Bàn ${tableLayout.id}`,
       capacity: tableLayout.capacity || 2,
       status: tableLayout.status as 'AVAILABLE' | 'OCCUPIED' | 'RESERVED',
-      type: 'STANDARD', // Backend might not store type yet, fallback to STANDARD
+      type: 'STANDARD',
       areaName: tableLayout.areaName || activeLayout?.areas.find((a) => a.tables.some((t) => t.id === tableLayout.id))?.areaName,
       floorName: tableLayout.floorName || activeFloor?.name
     }
 
     toggleTable(mappedTable)
   }
+
   // Lấy thông tin hiển thị
-  const activeFloor = floors.find((f) => f.id === activeFloorId)
-  const activeArea = activeLayout?.areas.find((a) => a.areaId === activeAreaId)
+  const activeFloor = floors ? floors.find((f) => f.id === activeFloorId) : undefined
+  const activeArea = activeLayout?.areas ? activeLayout.areas.find((a) => a.areaId === activeAreaId) : undefined
   const currentSelectedTable = selectedTable
 
   // Tìm khu vực của bàn đã chọn (nếu có)
@@ -223,7 +237,7 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
         </div>
       </div>
 
-      <div className='relative flex min-h-125 flex-col overflow-hidden rounded-2xl border-2 border-gray-200/80 bg-white shadow-2xl backdrop-blur-sm'>
+      <div className='relative flex min-h-[750px] flex-col overflow-hidden rounded-2xl border-2 border-gray-200/80 bg-white shadow-2xl backdrop-blur-sm'>
         {/* Floor Tabs - Enhanced Modern Design */}
         {!isLoading && floors.length > 0 && (
           <div className='flex border-b-2 border-gray-200/50 bg-linear-to-br from-gray-50 via-white to-gray-50 shadow-sm'>
@@ -249,8 +263,8 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
           </div>
         )}
 
-        {/* Layout Area - Enhanced Modern Design */}
-        <div className='relative min-h-125 flex-1 overflow-hidden rounded-b-2xl bg-linear-to-br from-gray-50/80 via-white to-gray-50/80 backdrop-blur-sm'>
+        {/* Layout Area - Enhanced Modern Design spans full height */}
+        <div className='relative flex-1 overflow-hidden rounded-b-2xl bg-linear-to-br from-gray-50/80 via-white to-gray-50/80 backdrop-blur-sm'>
           {isLoading ? (
             <div className='absolute inset-0 flex flex-col items-center justify-center'>
               <div className='flex flex-col items-center gap-4'>
@@ -278,8 +292,7 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
                     layout={activeLayout}
                     onChange={() => {}} // Readonly
                     onSelectArea={handleSelectArea}
-                    zoomScale={0.4}
-                    enableScroll={true}
+                    enableScroll={false}
                   />
                 </div>
               </div>
@@ -309,8 +322,7 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
                     onChange={() => {}} // Disabled in this view
                     onSelectTable={handleSelectTable}
                     selectedTableIds={currentSelectedTable ? [parseInt(currentSelectedTable.id)] : []}
-                    zoomScale={0.4}
-                    enableScroll={true}
+                    enableScroll={false}
                     guests={guests}
                     availableTableIds={availableTableIds}
                     isPaid={isPaid}
@@ -329,13 +341,37 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
             </div>
           )}
         </div>
-        <div className='absolute right-0 bottom-6 left-0 text-center'>
-          <div className='inline-flex items-center gap-2 rounded-full border-2 border-gray-200/80 bg-white/90 px-5 py-2.5 shadow-lg backdrop-blur-md'>
-            <div className='h-2.5 w-2.5 rounded-full bg-linear-to-r from-green-400 to-green-500 shadow-sm ring-2 ring-green-200'></div>
-            <span className='text-xs font-semibold text-gray-700'>Cửa ra vào</span>
+        <div className='absolute right-0 bottom-6 left-0 flex justify-center px-4'>
+          <div className='inline-flex flex-wrap items-center justify-center gap-3 rounded-full border-2 border-gray-200/80 bg-white/90 px-5 py-2.5 shadow-lg backdrop-blur-md md:gap-4 md:px-6'>
+            <div className='flex items-center gap-2'>
+              <div className='h-3.5 w-3.5 rounded-xs bg-white border border-gray-300 shadow-sm'></div>
+              <span className='text-xs font-semibold text-gray-700'>Bàn khả dụng</span>
+            </div>
+            <div className='hidden h-4 w-px bg-gray-300 sm:block'></div>
+            <div className='flex items-center gap-2'>
+              <div className='h-3.5 w-3.5 rounded-xs bg-[#4caf50] shadow-sm'></div>
+              <span className='text-xs font-semibold text-gray-700'>Đang chọn</span>
+            </div>
+            <div className='hidden h-4 w-px bg-gray-300 sm:block'></div>
+            <div className='flex items-center gap-2'>
+              <div className='h-3.5 w-3.5 rounded-xs bg-[#d9534f] shadow-sm'></div>
+              <span className='text-xs font-semibold text-gray-700'>Đã được đặt</span>
+            </div>
+            <div className='hidden h-4 w-px bg-gray-300 md:block'></div>
+            <div className='flex items-center gap-2'>
+              <div className='h-3.5 w-3.5 rounded-xs bg-[#f59e0b] shadow-sm'></div>
+              <span className='text-xs font-semibold text-gray-700'>Không đủ chỗ</span>
+            </div>
           </div>
         </div>
       </div>
+
+      <TableDetailDrawer
+        table={viewingTable}
+        onClose={() => setViewingTable(null)}
+        onSelect={handleConfirmSelect}
+        isSelected={selectedTable?.id === viewingTable?.id.toString()}
+      />
     </div>
   )
 }

@@ -11,6 +11,7 @@ import java.util.Optional;
 @Repository
 public interface FeedbackRepository extends JpaRepository<Feedback, Long> {
     Optional<Feedback> findByUser_IdAndOrderDetail_Id(Long userId, Long orderDetailId);
+    Optional<Feedback> findByUser_IdAndOrder_IdAndOrderDetailIsNull(Long userId, Long orderId);
 
     boolean existsByUser_IdAndOrder_IdAndOrderDetailIsNull(Long userId, Long orderId);
     boolean existsByUser_IdAndOrderDetail_Id(Long userId, Long orderDetailId);

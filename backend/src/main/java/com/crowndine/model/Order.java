@@ -56,12 +56,15 @@ public class Order extends AbstractEntity<Long> {
     private User staff;
 
     @ManyToOne
-    @JoinColumn(name = "restaurant_table_id")
+    @JoinColumn(name = "restaurant_table_id", nullable = false)
     private RestaurantTable restaurantTable;
 
     @ManyToOne
     @JoinColumn(name = "voucher_id")
     private Voucher voucher;
+
+    @Column(name = "cancel_reason")
+    private String cancelReason;
 
     public void addOrderDetail(OrderDetail detail) {
         this.orderDetails.add(detail);

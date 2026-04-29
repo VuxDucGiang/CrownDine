@@ -13,6 +13,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 
 import com.crowndine.dto.response.ChartDataResponse;
+import com.crowndine.dto.response.RecentActivityResponse;
 import com.crowndine.model.Order;
 import com.crowndine.model.OrderDetail;
 import java.util.ArrayList;
@@ -55,6 +56,7 @@ public class DashboardServiceImpl implements DashboardService {
                 addCustomerWidgetData(response, viewMode, timeRange, rangeStart, rangeEnd,
                                 response.getTotalCustomersToday());
                 addTopProductsWidgetData(response, rangeStart, rangeEnd);
+                addRecentActivitiesWidgetData(response);
 
                 return response;
         }
@@ -254,6 +256,45 @@ public class DashboardServiceImpl implements DashboardService {
                 return ((double) (current - previous) / previous) * 100;
         }
 
+        private void addRecentActivitiesWidgetData(DashboardSalesResponse response) {
+                List<Order> recentOrders = orderRepository.findTop50ByUpdatedByIsNotNullOrderByUpdatedAtDesc();
+                List<RecentActivityResponse> activities = new ArrayList<>();
+                java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("HH:mm - dd/MM/yyyy");
+
+                for (Order o : recentOrders) {
+                        String orderCode = o.getCode() != null ? " #" + o.getCode() : "";
+                        String action = "cập nhật đơn hàng" + orderCode;
+                        String type = "sale";
+
+                        switch (o.getStatus()) {
+                                case COMPLETED:
+                                        action = "hoàn tất hóa đơn" + orderCode;
+                                        break;
+                                case CANCELLED:
+                                        action = "đã hủy đơn hàng" + orderCode;
+                                        type = "delete";
+                                        break;
+                                case SERVED:
+                                        action = "phục vụ món mới cho đơn" + orderCode;
+                                        break;
+                                default:
+                                        action = "chỉnh sửa đơn hàng" + orderCode;
+                                        break;
+                        }
+
+                        activities.add(RecentActivityResponse.builder()
+                                        .id(o.getId() + "_" + o.getUpdatedAt().toString())
+                                        .user(o.getUpdatedBy())
+                                        .action(action)
+                                        .value(o.getFinalPrice() != null ? o.getFinalPrice().doubleValue() + "" : "0")
+                                        .time(o.getUpdatedAt().format(formatter))
+                                        .type(type)
+                                        .reason(o.getCancelReason())
+                                        .build());
+                }
+                response.setRecentActivities(activities);
+        }
+
         @Override
         public byte[] exportSalesReport(String timeRange) throws java.io.IOException {
                 LocalDate today = LocalDate.now();
@@ -362,9 +403,7 @@ public class DashboardServiceImpl implements DashboardService {
                         Row row = sheet.createRow(rowIdx++);
                         row.createCell(0).setCellValue(order.getCode());
                         row.createCell(1).setCellValue(order.getCreatedAt().toString());
-                        row.createCell(2).setCellValue(
-                                        order.getRestaurantTable() != null ? order.getRestaurantTable().getName()
-                                                        : "Mang về");
+                        row.createCell(2).setCellValue(order.getRestaurantTable().getName());
                         row.createCell(3).setCellValue(
                                         order.getUser() != null ? order.getUser().getFullName() : "Khách lẻ");
                         row.createCell(4).setCellValue(order.getFinalPrice().doubleValue());

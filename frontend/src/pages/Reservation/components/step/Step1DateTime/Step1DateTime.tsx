@@ -22,14 +22,11 @@ const Step1DateTime = ({
   plannedEndTime,
   timeSlots
 }: Props) => {
-  // Reset startTime nếu giờ hiện tại đã qua khi date thay đổi
+  // Tự động set giờ về thời gian khả dụng đầu tiên (vd: 09:00 cho ngày trong tương lai) khi đổi ngày
   useEffect(() => {
-    if (isDateTimeInPast(date, startTime)) {
-      const nextValidTime = timeSlots.find((slot) => !isDateTimeInPast(date, slot))
-
-      if (nextValidTime) {
-        setStartTime(nextValidTime)
-      }
+    const nextValidTime = timeSlots.find((slot) => !isDateTimeInPast(date, slot))
+    if (nextValidTime) {
+      setStartTime(nextValidTime)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [date, timeSlots])
@@ -42,17 +39,20 @@ const Step1DateTime = ({
           <label className='flex items-center gap-2 text-sm font-bold'>
             <Users size={16} /> Số lượng khách
           </label>
-          <div className='flex w-fit items-center gap-4 rounded-lg border bg-white p-1'>
+          <div className='flex w-fit items-center gap-4 rounded-lg border p-1 bg-white border-zinc-200
+                dark:bg-zinc-950 dark:border-zinc-800 transition-colors duration-300'>
             <button
               onClick={() => setGuests(Math.max(1, guests - 1))}
-              className='h-10 w-10 rounded text-lg font-bold hover:bg-gray-100'
+              disabled={guests <= 1}
+              className='h-10 w-10 rounded text-lg font-bold hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50'
             >
               -
             </button>
             <span className='w-12 text-center text-xl font-bold'>{guests}</span>
             <button
-              onClick={() => setGuests(guests + 1)}
-              className='h-10 w-10 rounded text-lg font-bold hover:bg-gray-100'
+              onClick={() => setGuests(Math.min(20, guests + 1))}
+              disabled={guests >= 20}
+              className='h-10 w-10 rounded text-lg font-bold hover:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-50'
             >
               +
             </button>
@@ -107,18 +107,11 @@ const Step1DateTime = ({
         <div>
           <p className='text-sm font-bold text-blue-700'>Khung giờ dự kiến: {startTime} - {plannedEndTime}</p>
           <p className='mt-1 text-xs text-blue-600'>
-            Giờ kết thúc sẽ được hệ thống tự tính theo mặc định khoảng 4 tiếng giữ bàn.
+            Giờ kết thúc tối đa đến <strong>22:00</strong> (giờ đóng cửa nhà hàng), mặc định giữ bàn tối đa 4 tiếng.
           </p>
         </div>
       </div>
 
-      <div className='rounded-lg border border-amber-200 bg-amber-50 p-4'>
-        <p className='text-sm font-semibold text-amber-800'>Lưu ý về thời gian giữ bàn</p>
-        <p className='mt-1 text-xs leading-5 text-amber-700'>
-          Mỗi lượt đặt bàn sẽ được giữ mặc định khoảng 4 tiếng. Nếu bàn trước đã hoàn tất sớm, hệ thống vẫn có thể
-          cho phép khách khác tiếp tục đặt bàn trong khung giờ gần nhất.
-        </p>
-      </div>
     </div>
   )
 }

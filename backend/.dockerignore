@@ -1,0 +1,32 @@
+# VCS
+.git
+.gitignore
+
+# IDE
+.idea
+.vscode
+*.iml
+
+# Build outputs
+target
+build
+out
+
+# Maven/Gradle wrappers cache
+.mvn/wrapper/maven-wrapper.jar
+
+# Logs/temp
+*.log
+*.tmp
+tmp
+
+# Local env/secrets
+.env
+dev.env
+prod.env
+*.env
+
+# OS files
+.DS_Store
+Thumbs.db
+

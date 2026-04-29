@@ -1,9 +1,9 @@
 'use client'
 
 import { useState } from 'react'
-import type { ReservationHistoryResponse, OrderLineResponse } from '@/types/reservation.type'
+import type { ReservationHistoryResponse, OrderLineResponse, ReservationFeedbackSummary } from '@/types/reservation.type'
 import { Badge } from '@/components/ui/badge'
-import { ChevronDown, Clock, Table, DollarSign, Star, MessageSquare } from 'lucide-react'
+import { ChevronDown, Clock, Table, DollarSign, Star, MessageSquare, Pencil } from 'lucide-react'
 import { formatCurrency } from '@/utils/utils'
 import { cn } from '@/lib/utils'
 import { Modal } from '@/components/ui/modal'
@@ -23,15 +23,18 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [rating, setRating] = useState(5)
   const [comment, setComment] = useState('')
+  const [feedbackMode, setFeedbackMode] = useState<'create' | 'view' | 'edit'>('create')
+  const [pendingReservationCode, setPendingReservationCode] = useState<string | null>(null)
   const [currentTarget, setCurrentTarget] = useState<{
     orderId: number
     orderDetailId?: number
     itemName?: string
+    feedbackId?: number
   } | null>(null)
 
   const queryClient = useQueryClient()
 
-  const mutation = useMutation({
+  const createFeedbackMutation = useMutation({
     mutationFn: (data: {
       rating: number
       comment: string
@@ -41,16 +44,25 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
       comboId?: number
     }) => feedbackApi.createFeedback(data),
     onSuccess: () => {
-      toast.success('Feedback sent successfully!')
-      setIsModalOpen(false)
+      toast.success('Gửi đánh giá thành công!')
+      resetFeedbackModal()
       queryClient.invalidateQueries({ queryKey: ['reservation-history'] })
-      // Reset state
-      setRating(5)
-      setComment('')
-      setCurrentTarget(null)
     },
     onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Failed to send feedback')
+      toast.error(error.response?.data?.message || 'Gửi đánh giá thất bại')
+    }
+  })
+
+  const updateFeedbackMutation = useMutation({
+    mutationFn: (payload: { id: number; rating: number; comment: string }) =>
+      feedbackApi.updateFeedback(payload.id, { rating: payload.rating, comment: payload.comment }),
+    onSuccess: () => {
+      toast.success('Cập nhật đánh giá thành công!')
+      resetFeedbackModal()
+      queryClient.invalidateQueries({ queryKey: ['reservation-history'] })
+    },
+    onError: (error: any) => {
+      toast.error(error.response?.data?.message || 'Cập nhật đánh giá thất bại')
     }
   })
 
@@ -63,6 +75,9 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
 
       return response.data.data
     },
+    onMutate: (reservationCode) => {
+      setPendingReservationCode(reservationCode)
+    },
     onSuccess: (checkoutUrl) => {
       if (!checkoutUrl) {
         toast.error('Không nhận được liên kết thanh toán')
@@ -73,10 +88,24 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
     },
     onError: (error: any) => {
       toast.error(error.response?.data?.message || 'Không thể tạo liên kết thanh toán')
+    },
+    onSettled: () => {
+      setPendingReservationCode(null)
     }
   })
 
-  const handleOpenFeedback = (orderId: number, item?: any) => {
+  const resetFeedbackModal = () => {
+    setIsModalOpen(false)
+    setRating(5)
+    setComment('')
+    setFeedbackMode('create')
+    setCurrentTarget(null)
+  }
+
+  const handleOpenCreateFeedback = (orderId: number, item?: OrderLineResponse) => {
+    setFeedbackMode('create')
+    setRating(5)
+    setComment('')
     setCurrentTarget({
       orderId,
       orderDetailId: item?.orderDetailId,
@@ -85,13 +114,42 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
     setIsModalOpen(true)
   }
 
+  const handleOpenExistingFeedback = (
+    orderId: number,
+    feedback: ReservationFeedbackSummary,
+    mode: 'view' | 'edit',
+    item?: OrderLineResponse
+  ) => {
+    setFeedbackMode(mode)
+    setRating(feedback.rating)
+    setComment(feedback.comment || '')
+    setCurrentTarget({
+      orderId,
+      orderDetailId: item?.orderDetailId,
+      itemName: item?.name,
+      feedbackId: feedback.id
+    })
+    setIsModalOpen(true)
+  }
+
   const handleSubmitFeedback = () => {
     if (!currentTarget) return
+
+    if (feedbackMode === 'edit' && currentTarget.feedbackId) {
+      updateFeedbackMutation.mutate({
+        id: currentTarget.feedbackId,
+        rating,
+        comment
+      })
+      return
+    }
+
+    if (feedbackMode !== 'create') return
 
     const reservation = reservations.find((r) => r.orderId === currentTarget.orderId)
     const item = reservation?.items?.find((i: OrderLineResponse) => i.orderDetailId === currentTarget.orderDetailId)
 
-    mutation.mutate({
+    createFeedbackMutation.mutate({
       rating,
       comment,
       orderId: currentTarget.orderId,
@@ -127,6 +185,19 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
     }
   }
 
+  const translateStatus = (status: string | undefined | null) => {
+    if (!status) return ''
+    switch (status) {
+      case 'PENDING': return 'Chờ xử lý'
+      case 'CONFIRMED': return 'Đã xác nhận'
+      case 'IN_PROGRESS': return 'Đang phục vụ'
+      case 'COMPLETED': return 'Hoàn thành'
+      case 'CANCELLED': return 'Đã hủy'
+      case 'PRE_ORDER': return 'Đặt trước'
+      default: return status
+    }
+  }
+
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString('vi-VN', {
       year: 'numeric',
@@ -144,12 +215,15 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
     continuePaymentMutation.mutate(reservationCode)
   }
 
+  const isReadonlyModal = feedbackMode === 'view'
+  const isSubmitting = createFeedbackMutation.isPending || updateFeedbackMutation.isPending
+
   if (isLoading) {
     return (
       <div className='bg-card border-border rounded-lg border p-8'>
-        <h2 className='mb-8 text-2xl font-bold'>Order & Reservation History</h2>
+        <h2 className='mb-8 text-2xl font-bold'>Lịch Sử Đặt Bàn & Đơn Hàng</h2>
         <div className='flex items-center justify-center py-12'>
-          <p className='text-foreground/60 animate-pulse'>Loading your history...</p>
+          <p className='text-foreground/60 animate-pulse'>Đang tải dữ liệu...</p>
         </div>
       </div>
     )
@@ -158,13 +232,16 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
   return (
     <div className='bg-card border-border rounded-lg border p-8'>
       {/* Header */}
-      <h2 className='mb-8 text-2xl font-bold'>Order & Reservation History</h2>
+      <h2 className='mb-8 text-2xl font-bold'>Lịch Sử Đặt Bàn & Đơn Hàng</h2>
+      <div className='mb-6 rounded-lg border border-amber-200 bg-amber-50 px-4 py-3 text-xs text-amber-800'>
+        Lưu ý: Bàn được giữ trong vòng <strong>15 phút</strong> tính từ giờ bắt đầu đặt bàn, không phải từ lúc tạo đơn.
+      </div>
 
       {/* Reservations List */}
       <div className='space-y-4'>
         {reservations.length === 0 ? (
           <div className='py-12 text-center'>
-            <p className='text-foreground/60'>No reservations yet</p>
+            <p className='text-foreground/60'>Chưa có đặt bàn nào</p>
           </div>
         ) : (
           reservations.map((reservation) => {
@@ -174,9 +251,12 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
             return (
               <div key={itemId} className='border-border overflow-hidden rounded-lg border'>
                 {/* Summary */}
-                <button
+                <div
+                  role='button'
+                  tabIndex={0}
                   onClick={() => setExpandedId(isExpanded ? null : itemId)}
-                  className='hover:bg-foreground/5 flex w-full items-center justify-between p-6 transition-colors'
+                  onKeyDown={(e) => e.key === 'Enter' && setExpandedId(isExpanded ? null : itemId)}
+                  className='hover:bg-foreground/5 flex w-full cursor-pointer items-center justify-between p-6 transition-colors'
                 >
                   <div className='flex flex-1 items-center gap-6'>
                     <div>
@@ -187,7 +267,7 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                             {reservation.guestNumber !== 1 ? 's' : ''}
                           </>
                         ) : (
-                          <>Walk-in Order • {reservation.tableName}</>
+                          <> Khách vãng lai • {reservation.tableName}</>
                         )}
                       </h3>
                       <p className='text-foreground/60 mt-1 text-sm'>
@@ -205,19 +285,23 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                           event.stopPropagation()
                           handleContinuePayment(reservation.reservationCode)
                         }}
-                        disabled={continuePaymentMutation.isPending}
+                        disabled={
+                          continuePaymentMutation.isPending && pendingReservationCode === reservation.reservationCode
+                        }
                       >
-                        {continuePaymentMutation.isPending ? 'Đang tạo link...' : 'Tiếp tục thanh toán'}
+                        {continuePaymentMutation.isPending && pendingReservationCode === reservation.reservationCode
+                          ? 'Đang tạo link...'
+                          : 'Tiếp tục thanh toán'}
                       </Button>
                     )}
                     <Badge className={getReservationStatusColor(reservation.reservationStatus)}>
-                      {reservation.reservationStatus}
+                      {translateStatus(reservation.reservationStatus)}
                     </Badge>
                     <ChevronDown
                       className={`text-foreground/60 h-5 w-5 transition-transform ${isExpanded ? 'rotate-180' : ''}`}
                     />
                   </div>
-                </button>
+                </div>
 
                 {/* Details */}
                 {isExpanded && (
@@ -225,19 +309,19 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                     {/* General Info */}
                     {reservation.reservationId && (
                       <div className='border-border/50 mb-6 border-b pb-6'>
-                        <h4 className='mb-3 font-semibold'>Reservation Information</h4>
+                        <h4 className='mb-3 font-semibold'>Thông Tin Đặt Bàn</h4>
                         <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
                           <div className='flex items-start gap-2'>
                             <Table className='text-primary mt-0.5 h-5 w-5 flex-shrink-0' />
                             <div>
-                              <p className='text-foreground/60 text-sm'>Table</p>
+                              <p className='text-foreground/60 text-sm'>Bàn</p>
                               <p className='font-medium'>{reservation.tableName}</p>
                             </div>
                           </div>
                           <div className='flex items-start gap-2'>
                             <Clock className='text-primary mt-0.5 h-5 w-5 flex-shrink-0' />
                             <div>
-                              <p className='text-foreground/60 text-sm'>Time Slot</p>
+                              <p className='text-foreground/60 text-sm'>Khung Giờ</p>
                               <p className='font-medium'>
                                 {reservation.startTime.slice(0, 5)} - {reservation.endTime.slice(0, 5)}
                               </p>
@@ -250,27 +334,46 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                     {reservation.orderId ? (
                       <div className='bg-card border-border/50 space-y-4 rounded-lg border p-6'>
                         <div className='flex items-center justify-between'>
-                          <h4 className='font-semibold'>Order Summary</h4>
+                          <h4 className='font-semibold'>Tóm Tắt Đơn Hàng</h4>
                           <div className='flex items-center gap-3'>
                             {reservation.orderStatus === 'COMPLETED' && !reservation.hasGeneralFeedback && (
                               <Button
                                 size='sm'
                                 variant='outline'
                                 className='h-8 gap-1.5'
-                                onClick={() => handleOpenFeedback(reservation.orderId!)}
+                                onClick={() => handleOpenCreateFeedback(reservation.orderId!)}
                               >
                                 <MessageSquare className='h-3.5 w-3.5' />
-                                Feedback Order
+                                Đánh Giá Đơn Hàng
                               </Button>
                             )}
                             {reservation.hasGeneralFeedback && (
-                              <Badge variant='outline' className='bg-green-50 text-green-700 border-green-200'>
-                                <Star className='mr-1 h-3 w-3 fill-current' />
-                                Order Reviewed
-                              </Badge>
+                              <div className='flex items-center gap-2'>
+                                <Badge variant='outline' className='bg-green-50 text-green-700 border-green-200'>
+                                  <Star className='mr-1 h-3 w-3 fill-current' />
+                                  Đã Đánh Giá
+                                </Badge>
+                                {reservation.generalFeedback && (
+                                  <button
+                                    onClick={() => handleOpenExistingFeedback(reservation.orderId!, reservation.generalFeedback!, 'view')}
+                                    className='text-primary hover:text-primary/80 text-xs font-semibold underline underline-offset-2'
+                                  >
+                                    Xem
+                                  </button>
+                                )}
+                                {reservation.generalFeedback && reservation.canEditGeneralFeedback && (
+                                  <button
+                                    onClick={() => handleOpenExistingFeedback(reservation.orderId!, reservation.generalFeedback!, 'edit')}
+                                    className='text-primary hover:text-primary/80 inline-flex items-center gap-1 text-xs font-semibold underline underline-offset-2'
+                                  >
+                                    <Pencil className='h-3 w-3' />
+                                    Sửa
+                                  </button>
+                                )}
+                              </div>
                             )}
                             <Badge variant='outline' className={getOrderStatusColor(reservation.orderStatus || '')}>
-                              Order #{reservation.orderId} • {reservation.orderStatus}
+                              Order #{reservation.orderId} • {translateStatus(reservation.orderStatus)}
                             </Badge>
                           </div>
                         </div>
@@ -289,15 +392,36 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                                   <span className='font-medium'>{item.name}</span>
                                   {reservation.orderStatus === 'COMPLETED' && !item.hasFeedback && (
                                     <button
-                                      onClick={() => handleOpenFeedback(reservation.orderId!, item)}
+                                      onClick={() => handleOpenCreateFeedback(reservation.orderId!, item)}
                                       className='text-primary hover:text-primary/80 ml-2 text-xs font-semibold underline underline-offset-2'
                                     >
-                                      Rate dish
+                                      Đánh giá món
                                     </button>
                                   )}
                                   {item.hasFeedback && (
-                                    <span className='text-green-600 ml-2 text-[10px] italic font-medium'>
-                                      (Rated)
+                                    <span className='text-green-600 ml-2 inline-flex items-center gap-2 text-[10px] italic font-medium'>
+                                      (Đã đánh giá)
+                                      {item.feedback && (
+                                        <button
+                                          onClick={() =>
+                                            handleOpenExistingFeedback(reservation.orderId!, item.feedback!, 'view', item)
+                                          }
+                                          className='text-primary hover:text-primary/80 text-xs not-italic underline underline-offset-2'
+                                        >
+                                          Xem
+                                        </button>
+                                      )}
+                                      {item.feedback && item.canEditFeedback && (
+                                        <button
+                                          onClick={() =>
+                                            handleOpenExistingFeedback(reservation.orderId!, item.feedback!, 'edit', item)
+                                          }
+                                          className='text-primary hover:text-primary/80 inline-flex items-center gap-1 text-xs not-italic underline underline-offset-2'
+                                        >
+                                          <Pencil className='h-3 w-3' />
+                                          Sửa
+                                        </button>
+                                      )}
                                     </span>
                                   )}
                                 </div>
@@ -310,19 +434,19 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
                         <div className='flex items-center justify-between'>
                           <span className='flex items-center gap-2 font-semibold'>
                             <DollarSign className='text-primary h-4 w-4' />
-                            Final Bill
+                            Hóa Đơn Cuối
                           </span>
                           <span className='text-primary text-xl font-bold'>
                             {formatCurrency(Number(reservation.finalPrice || 0))}
                           </span>
                         </div>
                         <p className='text-foreground/60 text-center text-xs'>
-                          Visit the counter to see full invoice details
+                          Vui lòng đến quầy thu ngân để xem hóa đơn chi tiết
                         </p>
                       </div>
                     ) : (
                       <div className='bg-card/50 border-border/50 rounded-lg border border-dashed p-6 text-center italic'>
-                        <p className='text-foreground/40 text-sm'>No order created for this reservation yet</p>
+                        <p className='text-foreground/40 text-sm'>Chưa có đơn hàng nào cho lần đặt bàn này</p>
                       </div>
                     )}
                   </div>
@@ -336,22 +460,31 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
       {/* Feedback Modal */}
       <Modal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
-        title={currentTarget?.itemName ? `Rate: ${currentTarget.itemName}` : 'Rate your overall experience'}
+        onClose={resetFeedbackModal}
+        title={
+          currentTarget?.itemName
+            ? `${feedbackMode === 'view' ? 'Xem' : feedbackMode === 'edit' ? 'Sửa' : 'Đánh giá'}: ${currentTarget.itemName}`
+            : feedbackMode === 'view'
+              ? 'Xem đánh giá đơn hàng'
+              : feedbackMode === 'edit'
+                ? 'Sửa đánh giá đơn hàng'
+                : 'Đánh giá trải nghiệm tổng quan'
+        }
       >
         <div className='space-y-6'>
           <div className='flex flex-col items-center gap-3 py-4 text-center'>
             <p className='text-foreground/60 text-sm'>
               {currentTarget?.itemName 
-                ? `How was the ${currentTarget.itemName}? Your feedback helps other food lovers.`
-                : 'How was your experience with CrownDine?'}
+                ? `Món ${currentTarget.itemName} có ngon không? Đánh giá của bạn giúp những thực khách khác biết thêm.`
+                : 'Trải nghiệm của bạn tại CrownDine hôm nay thế nào?'}
             </p>
             <div className='flex gap-2'>
               {[1, 2, 3, 4, 5].map((star) => (
                 <button
                   key={star}
-                  onClick={() => setRating(star)}
+                  onClick={() => !isReadonlyModal && setRating(star)}
                   className='hover:scale-110 transition-transform focus:outline-none'
+                  disabled={isReadonlyModal}
                 >
                   <Star
                     className={cn(
@@ -363,37 +496,40 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
               ))}
             </div>
             <p className='text-sm font-semibold text-yellow-600 capitalize'>
-              {rating === 1 && 'Poor'}
-              {rating === 2 && 'Fair'}
-              {rating === 3 && 'Good'}
-              {rating === 4 && 'Very Good'}
-              {rating === 5 && 'Excellent!'}
+              {rating === 1 && 'Rất tệ'}
+              {rating === 2 && 'Tạmực'}
+              {rating === 3 && 'Bình thường'}
+              {rating === 4 && 'Tốt'}
+              {rating === 5 && 'Xuất sắc!'}
             </p>
           </div>
 
           <div className='space-y-2'>
-            <label className='text-sm font-medium'>Your comment (optional)</label>
+            <label className='text-sm font-medium'>Nhận xét của bạn (tùy chọn)</label>
             <textarea
               className='border-border bg-foreground/[0.02] focus:ring-primary/20 w-full rounded-lg border p-4 text-sm focus:outline-none focus:ring-2'
               rows={4}
-              placeholder='Add a comment...'
+              placeholder={isReadonlyModal ? 'Không có nhận xét' : 'Viết nhận xét...'}
               value={comment}
-              onChange={(e) => setComment(e.target.value)}
+              onChange={(e) => setComment(e.target.value.slice(0, 200))}
+              disabled={isReadonlyModal}
             />
             <p className='text-foreground/40 text-right text-xs'>{comment.length}/200</p>
           </div>
 
           <div className='flex gap-3'>
-            <Button variant='outline' className='flex-1' onClick={() => setIsModalOpen(false)}>
-              Cancel
+            <Button variant='outline' className='flex-1' onClick={resetFeedbackModal}>
+              {isReadonlyModal ? 'Đóng' : 'Hủy'}
             </Button>
-            <Button className='flex-1' onClick={handleSubmitFeedback} disabled={mutation.isPending}>
-              {mutation.isPending ? 'Submitting...' : 'Submit Review'}
-            </Button>
+            {!isReadonlyModal && (
+              <Button className='flex-1' onClick={handleSubmitFeedback} disabled={isSubmitting}>
+                {isSubmitting ? 'Đang gửi...' : feedbackMode === 'edit' ? 'Lưu thay đổi' : 'Gửi Đánh Giá'}
+              </Button>
+            )}
           </div>
           
           <p className='text-foreground/40 mt-4 text-center text-xs italic'>
-            * Each item or summary can only be reviewed once.
+            * Mỗi món ăn hoặc đơn hàng chỉ được đánh giá một lần. Bạn chỉ có thể chỉnh sửa feedback trong 24 giờ.
           </p>
         </div>
       </Modal>

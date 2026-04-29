@@ -1,6 +1,7 @@
 package com.crowndine.service.impl.order;
 
 import com.crowndine.common.enums.EOrderStatus;
+import com.crowndine.common.enums.ETableStatus;
 import com.crowndine.dto.response.UpdateStatusOrderResponse;
 import com.crowndine.exception.ResourceNotFoundException;
 import com.crowndine.model.Order;
@@ -27,14 +28,27 @@ public class OrderStatusServiceImpl implements OrderStatusService {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public UpdateStatusOrderResponse updateOrderStatus(Long orderId, EOrderStatus status) {
+        return updateOrderStatus(orderId, status, null);
+    }
+
+    @Override
+    public UpdateStatusOrderResponse updateOrderStatus(Long orderId, EOrderStatus status, String cancelReason) {
         Order order = orderRepository.findById(orderId).orElseThrow(() -> new ResourceNotFoundException(ORDER_NOT_FOUND_MESSAGE));
-        Order updatedOrder = transitionOrderStatus(order, status);
+        Order updatedOrder = transitionOrderStatus(order, status, cancelReason);
         return buildStatusResponse(updatedOrder);
     }
 
     @Override
     public Order transitionOrderStatus(Order order, EOrderStatus status) {
+        return transitionOrderStatus(order, status, null);
+    }
+
+    @Override
+    public Order transitionOrderStatus(Order order, EOrderStatus status, String cancelReason) {
         order.setStatus(status);
+        if (status == EOrderStatus.CANCELLED && cancelReason != null) {
+            order.setCancelReason(cancelReason);
+        }
         Order updatedOrder = orderRepository.save(order);
         handleOrderStatusSideEffects(updatedOrder);
         publishOrderStatus(updatedOrder);
@@ -42,14 +56,10 @@ public class OrderStatusServiceImpl implements OrderStatusService {
     }
 
     private void handleOrderStatusSideEffects(Order order) {
-        if (order.getRestaurantTable() == null) {
-            return;
-        }
-
         Long tableId = order.getRestaurantTable().getId();
         switch (order.getStatus()) {
-            case CONFIRMED, IN_PROGRESS -> restaurantTableStateService.markOccupied(tableId);
-            case COMPLETED, CANCELLED -> restaurantTableStateService.markAvailable(tableId);
+            case CONFIRMED, IN_PROGRESS -> restaurantTableStateService.changeStatus(tableId, ETableStatus.OCCUPIED);
+            case COMPLETED, CANCELLED -> restaurantTableStateService.changeStatus(tableId, ETableStatus.AVAILABLE);
             case PRE_ORDER, SERVED -> {
                 // PRE_ORDER reserve is handled by reservation scheduler; SERVED keeps current table state.
             }

@@ -3,11 +3,12 @@ package com.crowndine.service.impl.reservation;
 import com.crowndine.common.enums.EOrderStatus;
 import com.crowndine.common.enums.EReservationStatus;
 import com.crowndine.common.enums.ETableStatus;
+import com.crowndine.common.enums.ERole;
 import com.crowndine.common.utils.CodeUtils;
 import com.crowndine.dto.request.ReservationCreateRequest;
 import com.crowndine.dto.request.StaffReservationCreateRequest;
 import com.crowndine.dto.request.ReservationUpdateTableRequest;
-import com.crowndine.dto.response.ReservationCreateResponse;
+import com.crowndine.dto.response.ReservationCheckoutResponse;
 import com.crowndine.exception.InvalidDataException;
 import com.crowndine.exception.ResourceNotFoundException;
 import com.crowndine.model.Order;
@@ -20,6 +21,7 @@ import com.crowndine.repository.UserRepository;
 import com.crowndine.service.order.OrderService;
 import com.crowndine.service.reservation.ReservationAvailabilityService;
 import com.crowndine.service.reservation.ReservationLifecycleService;
+import com.crowndine.service.reservation.ReservationOrderService;
 import com.crowndine.service.reservation.ReservationTimePolicy;
 import com.crowndine.service.reservation.event.ReservationCancelledEvent;
 import com.crowndine.service.reservation.event.ReservationConfirmedEvent;
@@ -27,6 +29,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
@@ -36,6 +39,8 @@ import java.time.LocalDateTime;
 @Slf4j(topic = "RESERVATION-LIFECYCLE-SERVICE")
 public class ReservationLifecycleServiceImpl implements ReservationLifecycleService {
     private static final long HOLD_TABLE_MINUTES = 10;
+    private static final long CHECK_IN_WINDOW_MINUTES = 15;
+    private static final long NO_SHOW_GRACE_MINUTES = 15;
 
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
@@ -43,23 +48,25 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
     private final OrderService orderService;
     private final ReservationTimePolicy reservationTimePolicy;
     private final ReservationAvailabilityService reservationAvailabilityService;
+    private final ReservationOrderService reservationOrderService;
     private final ApplicationEventPublisher eventPublisher;
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ReservationCreateResponse createReservationByCustomer(String username, ReservationCreateRequest request) {
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
+    public ReservationCheckoutResponse createReservationByCustomer(String username, ReservationCreateRequest request) {
+        log.info("Processing create reservation for user: {}", username);
         LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(request.getDate(), request.getStartTime());
         User customer = getUserByUserName(username);
-        return createReservationInternal(request, customer, null, null, EReservationStatus.PENDING, startDateTime);
+        return createReservationInternal(request, customer, null, null, null, EReservationStatus.PENDING, startDateTime);
     }
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
-    public ReservationCreateResponse createWalkInReservationByStaff(String staffUsername, StaffReservationCreateRequest request) {
+    @Transactional(rollbackFor = Exception.class, isolation = Isolation.READ_COMMITTED)
+    public ReservationCheckoutResponse createWalkInReservationByStaff(String staffUsername, StaffReservationCreateRequest request) {
         LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(request.getDate(), request.getStartTime());
         User staff = getUserByUserName(staffUsername);
 
-        return createReservationInternal(request, null, staff, request.getGuestName().trim(), EReservationStatus.CONFIRMED, startDateTime);
+        return createReservationInternal(request, null, staff, request.getGuestName().trim(), request.getGuestPhone(), EReservationStatus.CONFIRMED, startDateTime);
     }
 
     @Override
@@ -77,6 +84,8 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
             throw new InvalidDataException("reservation.check_in_only_confirmed");
         }
 
+        validateCheckInTimeWindow(reservation);
+
         reservation.setStatus(EReservationStatus.CHECKED_IN);
         reservationRepository.save(reservation);
 
@@ -86,6 +95,17 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
         }
 
         log.info("Reservation id {} has been checked in successfully", reservationId);
+    }
+
+    private void validateCheckInTimeWindow(Reservation reservation) {
+        LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(reservation.getDate(), reservation.getStartTime());
+        LocalDateTime now = LocalDateTime.now();
+        LocalDateTime windowStart = startDateTime.minusMinutes(CHECK_IN_WINDOW_MINUTES);
+        LocalDateTime windowEnd = startDateTime.plusMinutes(CHECK_IN_WINDOW_MINUTES);
+
+        if (now.isBefore(windowStart) || now.isAfter(windowEnd)) {
+            throw new InvalidDataException("reservation.check_in_outside_window");
+        }
     }
 
     @Override
@@ -123,18 +143,46 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void markReservationNoShow(Long reservationId, String username) {
-        log.info("Staff/Admin {} marking reservation id {} as no-show", username, reservationId);
+    public void markNoShowDueReservations() {
+        LocalDateTime threshold = LocalDateTime.now().minusMinutes(NO_SHOW_GRACE_MINUTES);
+        var candidates = reservationRepository.findNoShowCandidates(
+                EReservationStatus.CONFIRMED,
+                threshold.toLocalDate(),
+                threshold.toLocalTime()
+        );
 
+        if (candidates.isEmpty()) {
+            return;
+        }
+
+        int updatedCount = 0;
+        for (Reservation reservation : candidates) {
+            markReservationNoShow(reservation.getId());
+            updatedCount++;
+        }
+        log.info("Auto-marked {} reservation(s) as no-show", updatedCount);
+    }
+
+    @Override
+    public void markReservationNoShow(Long reservationId) {
         Reservation reservation = getReservationById(reservationId);
-        getUserByUserName(username);
 
         if (reservation.getStatus() != EReservationStatus.CONFIRMED) {
-            throw new InvalidDataException("reservation.no_show_only_confirmed");
+            return;
+        }
+
+        if (!isNoShowGraceElapsed(reservation)) {
+            return;
         }
 
         cancelReservationWithStatus(reservation, EReservationStatus.NO_SHOW);
-        log.info("Reservation id {} has been marked as no-show", reservationId);
+        log.info("Reservation id {} has been auto-marked as no-show by scheduler", reservationId);
+    }
+
+    private boolean isNoShowGraceElapsed(Reservation reservation) {
+        LocalDateTime startDateTime = reservationTimePolicy.toStartDateTime(reservation.getDate(), reservation.getStartTime());
+        LocalDateTime threshold = startDateTime.plusMinutes(NO_SHOW_GRACE_MINUTES);
+        return !LocalDateTime.now().isBefore(threshold);
     }
 
     @Override
@@ -164,7 +212,7 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public void updateReservationTable(Long reservationId, ReservationUpdateTableRequest request, String username) {
+    public ReservationCheckoutResponse updateReservationTable(Long reservationId, ReservationUpdateTableRequest request, String username) {
         log.info("Updating table for reservation id {} to table id {} for user {}", reservationId, request.getTableId(), username);
 
         Reservation reservation = getReservationById(reservationId);
@@ -175,7 +223,10 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
             throw new InvalidDataException("reservation.update_table_only_pending");
         }
 
-        RestaurantTable newTable = tableRepository.findById(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
+        /*
+         * Lock bàn đích trước khi check availability để tránh 2 request đổi/chọn cùng 1 bàn trong cùng thời điểm.
+         */
+        RestaurantTable newTable = tableRepository.findByIdForUpdate(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
 
         validateTableForReservation(newTable, reservation.getGuestNumber());
 
@@ -188,6 +239,7 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
 
         reservationRepository.save(reservation);
         log.info("Reservation id {} table updated to table id {}", reservationId, request.getTableId());
+        return reservationOrderService.getReservationCheckout(reservationId);
     }
 
     private void validateTableForReservation(RestaurantTable table, Integer guestNumber) {
@@ -220,18 +272,22 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
     }
 
     private void validateReservationForUser(Reservation reservation, User user) {
-        if (reservation.getUser() == null || !reservation.getUser().getId().equals(user.getId())) {
+        boolean isOwner = reservation.getUser() != null && reservation.getUser().getId().equals(user.getId());
+        boolean hasPrivilege = user.getRoles().stream()
+                .anyMatch(role -> role.getName() == ERole.STAFF || role.getName() == ERole.ADMIN);
+
+        if (!isOwner && !hasPrivilege) {
             throw new InvalidDataException("reservation.access_denied");
         }
     }
 
-    private ReservationCreateResponse createReservationInternal(ReservationCreateRequest request, User customer,
-                                                                User createdByStaff, String guestName,
-                                                                EReservationStatus initialStatus, LocalDateTime startDateTime) {
+    private ReservationCheckoutResponse createReservationInternal(ReservationCreateRequest request, User customer,
+                                                                  User createdByStaff, String guestName, String guestPhone,
+                                                                  EReservationStatus initialStatus, LocalDateTime startDateTime) {
         LocalDateTime endDateTime = reservationTimePolicy.calculatePlannedEndTime(startDateTime);
         reservationTimePolicy.validateStartTime(startDateTime);
 
-        RestaurantTable table = tableRepository.findById(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
+        RestaurantTable table = tableRepository.findByIdForUpdate(request.getTableId()).orElseThrow(() -> new ResourceNotFoundException("table.not_found"));
 
         validateTableForReservation(table, request.getGuestNumber());
         reservationAvailabilityService.ensureTableAvailable(request.getDate(), request.getStartTime(), table.getId());
@@ -246,17 +302,14 @@ public class ReservationLifecycleServiceImpl implements ReservationLifecycleServ
         reservation.setUser(customer);
         reservation.setCreatedByStaff(createdByStaff);
         reservation.setGuestName(guestName);
+        reservation.setGuestPhone(guestPhone);
         reservation.setCode(CodeUtils.generateReservationCode());
         reservation.setTable(table);
         applyInitialStatus(reservation, initialStatus);
 
         Reservation saved = reservationRepository.save(reservation);
         log.info("Reservation has been saved with id: {}", saved.getId());
-
-        ReservationCreateResponse response = new ReservationCreateResponse();
-        response.setReservationId(saved.getId());
-        response.setReservationCode(saved.getCode());
-        return response;
+        return reservationOrderService.getReservationCheckout(saved.getId());
     }
 
     private void applyInitialStatus(Reservation reservation, EReservationStatus initialStatus) {

@@ -17,11 +17,11 @@ export function ComboTable({ combos, onRowClick, onEdit, onDelete }: ComboTableP
             <tr>
               <th className='min-w-[150px] px-6 py-4'>
                 <div className='hover:text-foreground flex cursor-pointer items-center gap-2'>
-                  Combo Name <ArrowUpDown className='h-3 w-3' />
+                  Tên Combo <ArrowUpDown className='h-3 w-3' />
                 </div>
               </th>
-              <th className='hidden px-6 py-4 md:table-cell'>Price</th>
-              <th className='w-[100px] px-6 py-4 text-end'>Actions</th>
+              <th className='hidden px-6 py-4 md:table-cell'>Giá</th>
+              <th className='w-[100px] px-6 py-4 text-end'>Thao tác</th>
             </tr>
           </thead>
           <tbody className='divide-border divide-y'>
@@ -35,7 +35,7 @@ export function ComboTable({ combos, onRowClick, onEdit, onDelete }: ComboTableP
                   <div className='text-base font-semibold'>{combo.name}</div>
                 </td>
                 <td className='text-muted-foreground hidden px-6 py-4 md:table-cell'>
-                  {combo.price.toLocaleString('vi-VN')}đ
+                  {combo.price.toLocaleString('en-US')}đ
                 </td>
                 <td className='px-6 py-4'>
                   <div className='flex items-center justify-end gap-2'>

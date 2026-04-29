@@ -16,7 +16,7 @@ public class OrderPaidEventListener {
     private final ProductSalesService productSalesService;
     private final com.crowndine.service.user.RewardPointService rewardPointService;
 
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @TransactionalEventListener(phase = TransactionPhase.BEFORE_COMMIT)
     public void handle(OrderPaidEvent event) {
         log.info("Handling OrderPaidEvent for order id {}", event.orderId());
         productSalesService.syncSoldCountFromPaidOrder(event.orderId());

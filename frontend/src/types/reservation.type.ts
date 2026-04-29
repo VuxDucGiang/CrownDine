@@ -12,11 +12,21 @@ export interface ReservationCreateRequest {
 
 export interface StaffReservationCreateRequest extends ReservationCreateRequest {
   guestName: string
+  guestPhone: string
 }
 
 export interface ReservationCreateResponse {
   reservationId: number
   reservationCode: string
+  expiratedAt: string | null
+}
+
+export interface ReservationCheckoutTableResponse {
+  id: number
+  name: string
+  areaName?: string | null
+  floorName?: string | null
+  deposit: number
 }
 
 export interface OrderLineResponse {
@@ -29,20 +39,35 @@ export interface OrderLineResponse {
   totalPrice: number
   note?: string
   hasFeedback?: boolean
+  feedback?: ReservationFeedbackSummary
+  canEditFeedback?: boolean
 }
 
-export interface OrderDetailResponse {
+export interface ReservationFeedbackSummary {
+  id: number
+  rating: number
+  comment: string
+  orderId?: number | null
+  orderDetailId?: number | null
+  itemId?: number | null
+  comboId?: number | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ReservationCheckoutResponse {
+  reservationId: number
+  reservationCode: string
+  reservationStatus: string
+  expiratedAt: string | null
   orderId: number | null
-  tableName: string
-  status: string
-  totalPrice: number
-  discountPrice: number
-  finalPrice: number
+  table: ReservationCheckoutTableResponse | null
   itemsTotal: number
+  discountAmount: number
+  finalAmount: number
   tableDeposit: number
   depositAmount: number
   remainingAmount: number
-  createdAt: string
   items: OrderLineResponse[]
 }
 
@@ -76,12 +101,14 @@ export type PreOrderItem = MenuItemIdentity & {
   type: 'item'
   price: number
   image: string
+  description?: string
 }
 
 export type PreOrderCombo = ComboIdentity & {
   type: 'combo'
   price: number
   image: string
+  description?: string
 }
 
 export type PreOrderEntry = PreOrderItem | PreOrderCombo
@@ -105,6 +132,8 @@ export interface ReservationHistoryResponse {
   finalPrice?: number
   items?: OrderLineResponse[]
   hasGeneralFeedback?: boolean
+  generalFeedback?: ReservationFeedbackSummary
+  canEditGeneralFeedback?: boolean
   hasFeedback?: boolean // Keep for backward compatibility or during migration
 }
 
@@ -125,4 +154,6 @@ export interface StaffReservationResponse {
   status: string
   orderId: number | null
   orderDetails: Array<any>
+  floorName?: string
+  areaName?: string
 }

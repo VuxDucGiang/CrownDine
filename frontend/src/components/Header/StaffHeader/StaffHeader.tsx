@@ -1,6 +1,6 @@
 import { Logo } from '@/components/ui/logo'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Moon, Sun, User, LogOut, Settings } from 'lucide-react'
+import { Menu, X, Moon, Sun, User, LogOut } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
@@ -47,12 +47,10 @@ const StaffHeader = () => {
   }
   const navItems = [
     { label: 'Thu ngân', href: 'staff/cashier' },
-    { label: 'Trạng thái bàn', href: 'staff/floor-plan' },
     { label: 'Đơn đặt bàn', href: 'staff/reservation-list' },
     { label: 'Đơn gọi món', href: 'staff/order-management' },
     { label: 'Bếp', href: 'staff/kitchen-display' },
-    { label: 'Lịch làm việc', href: 'staff/work-schedule' },
-    { label: 'Chat', href: 'staff/chat' }
+    { label: 'Lịch làm việc', href: 'staff/work-schedule' }
   ]
   return (
     <header className='bg-background/95 supports-[backdrop-filter]:bg-background/60 border-border/50 sticky top-0 z-50 border-b backdrop-blur'>
@@ -116,12 +114,6 @@ const StaffHeader = () => {
                   <Link to='/profile' className='cursor-pointer'>
                     <User className='mr-2 h-4 w-4' />
                     <span>Hồ sơ của tôi</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to='/settings' className='cursor-pointer'>
-                    <Settings className='mr-2 h-4 w-4' />
-                    <span>Cài đặt</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

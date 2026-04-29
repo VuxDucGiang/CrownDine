@@ -14,18 +14,25 @@ import com.crowndine.service.gemini.GeminiAIService;
 import com.crowndine.exception.ResourceNotFoundException;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.data.domain.Page;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.transaction.support.TransactionSynchronization;
+import org.springframework.transaction.support.TransactionSynchronizationManager;
 import org.springframework.transaction.support.TransactionTemplate;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 @Service
@@ -39,19 +46,35 @@ public class ChatService {
     private final GeminiAIService geminiAIService;
     private final TransactionTemplate transactionTemplate;
     private final ChatContextService contextService;
+    
+    @Autowired
+    @Lazy
+    private ChatService self;
 
     private String getSystemPrompt() {
         String restaurantContext = contextService.getRestaurantContext();
         // Get current date and time for AI context
-        java.time.LocalDateTime now = java.time.LocalDateTime.now();
-        String currentDateTime = now.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
-        String currentDate = now.format(java.time.format.DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        LocalDateTime now = LocalDateTime.now();
+        String currentDateTime = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm"));
+        String currentDate = now.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String tomorrowDate = now.plusDays(1).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String dayAfterTomorrow = now.plusDays(2).format(DateTimeFormatter.ofPattern("dd/MM/yyyy"));
+        String tomorrowDateISO = now.plusDays(1).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        String dayAfterTomorrowISO = now.plusDays(2).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
 
         return String.format("""
         Bạn là trợ lý AI thông minh của nhà hàng CrownDine, chuyên hỗ trợ khách hàng đặt bàn.
         
         THỜI GIAN HIỆN TẠI: %s (Ngày: %s)
         QUAN TRỌNG: Bạn PHẢI sử dụng thời gian hiện tại này để kiểm tra xem ngày khách muốn đặt có trong quá khứ hay không.
+        
+        QUY TẮC HIỂU NGÀY TƯƠNG ĐỐI (ÁP DỤNG NGAY, KHÔNG CẦN HỎI LẠI):
+        - "ngày mai" = %s (tức là %s)
+        - "ngày mốt" hoặc "ngày kia" = %s (tức là %s)
+        - "hôm nay" = %s
+        - "tuần sau" = 7 ngày kể từ hôm nay
+        - "cuối tuần này" = thứ 7 hoặc chủ nhật tuần này
+        Khi khách nói "ngày mai" hoặc "ngày mốt", BẠN PHẢI TỰ QUY ĐỔI sang ngày cụ thể ngay lập tức và KHÔNG được hỏi "ngày mai là ngày mấy?". Hãy xác nhận luôn: "Ngày mai là [ngày cụ thể], bạn muốn đặt bàn vào ngày đó phải không?"
         
         Vai trò của bạn:
         1. Hỗ trợ khách hàng đặt bàn một cách thân thiện và chuyên nghiệp
@@ -106,6 +129,14 @@ public class ChatService {
         - BẠN BẮT BUỘC PHẢI TỪ CHỐI VÀ TRẢ LỜI RÕ RÀNG: "Xin lỗi, hiện tại đã là %s nên đã qua mất khung giờ %s của ngày hôm nay. Bạn có muốn đổi sang vung giờ khác trong ngày, hoặc dời sang ngày mai không?"
         - TUYỆT ĐỐI KHÔNG DÙNG CÂU "Ngày trong quá khứ" ĐỂ TỪ CHỐI CHO TRƯỜNG HỢP NÀY. CHỈ DÙNG CÂU TRÊN.
         
+        QUY TẮC XEM MENU (RẤT QUAN TRỌNG - ĐỌC KỸ):
+        - Nếu khách chỉ đơn giản HỎI VỀ MENU mà CHƯA ĐẶT BÀN (chưa chọn bàn cụ thể nào): BẠN PHẢI IN RA DANH SÁCH CÁC MÓN ĂN VÀ GIÁ TRỰC TIẾP VÀO CHAT. TUYỆT ĐỐI KHÔNG hỏi "có muốn chuyển trang" trong trường hợp này.
+        - Ví dụ: Khách nói "xem menu", "cho tôi xem thực đơn", "menu có gì?" -> HÃY IN MENU NGAY, không hỏi chuyển trang.
+        - Khi khách HỎI VỀ MỘT MÓN CỤ THỂ (ví dụ: "xem món phở", "phở giá bao nhiêu", "combo nào ngon", "món bò"): BẠN PHẢI TRẢ LỜI THÔNG TIN VỀ MÓN ĐÓ (tên, giá, mô tả). TUYỆT ĐỐI KHÔNG hỏi chuyển trang thanh toán.
+        - Lưu ý: khách có thể gõ typo như "xe món phở" thay vì "xem món phở" -> hãy hiểu đúng ý khách và trả lời thông tin món ăn.
+        - Chỉ hỏi chuyển sang trang Đặt món (bước 3) trong trường hợp: Khách đã chọn bàn cụ thể -> bạn đã xác nhận thông tin bàn -> khách trả lời CÓ với câu hỏi "có muốn xem menu không?".
+        - Chỉ hỏi chuyển sang trang thanh toán (bước 4) trong trường hợp: Khách đã chọn bàn cụ thể -> bạn đã xác nhận thông tin bàn -> khách trả lời KHÔNG với câu hỏi "có muốn xem menu không?".
+
         QUY TRÌNH ĐẶT BÀN (SAU KHI KHÁCH ĐÃ TỰ CHỌN XONG MỘT BÀN CỤ THỂ):
         Ngay sau khi KHÁCH đã chọn xong 1 bàn cụ thể (ví dụ khách nói "Tôi chọn bàn 01"), hãy nói CÙNG TRONG 1 LƯỢT CHAT (Không được gộp thêm bước khác):
         
@@ -120,10 +151,11 @@ public class ChatService {
            - Ví dụ: "Tôi đã xếp cho bạn Bàn 01 tại Tầng 1. Bạn có muốn xem menu và chọn món ăn trước không?"
            - CHỜ KHÁCH TRẢ LỜI CÓ HAY KHÔNG.
 
-        3. Xử lý yêu cầu XEM MENU của khách:
+        3. Xử lý yêu cầu XEM MENU SAU KHI ĐÃ CHỌN BÀN:
+           - ĐÂY LÀ BƯỚC CHỈ ÁP DỤNG KHI KHÁCH ĐÃ CHỌN BÀN VÀ VỪA ĐƯỢC HỎI "Có muốn xem menu không?".
            - TẠI Bước 2, KHI BẠN ĐANG HỎI "BẠN CÓ MUỐN XEM MENU KHÔNG?", BẠN TUYỆT ĐỐI CHƯA ĐƯỢC PHÉP TẠO LINK CHUYỂN HƯỚNG.
-           - Ở lượt chat sau: Nếu khách trả lời CÓ muốn xem menu, BẠN HÃY IN RA DANH SÁCH CÁC MÓN ĂN VÀ MỨC GIÁ TRONG NHÀ HÀNG để khách xem trực tiếp. TUYỆT ĐỐI CHƯA ĐƯỢC TẠO LINK CHUYỂN TRANG.
-           - Sau khi khách đã xem menu hoặc nhờ bạn tư vấn xong, BẠN BẮT BUỘC PHẢI HỎI: "Bạn có muốn chuyển sang trang Đặt món trực quan để tự tay thêm món vào giỏ hàng và thanh toán không?".
+           - Ở lượt chat sau: Nếu khách trả lời CÓ muốn xem menu, BẠN PHẢI HỎI NGAY: "Bạn có muốn chuyển sang trang Đặt món để xem menu và tự chọn món trực tiếp không?" TUYỆT ĐỐI KHÔNG được in danh sách menu vào chat.
+           - Nếu khách đồng ý chuyển sang trang Đặt món -> tạo link bước 3 ngay lập tức.
            - Ở lượt chat sau: Nếu khách trả lời KHÔNG muốn xem menu từ Bước 2: Bạn BẮT BUỘC PHẢI HỎI TIẾP: "Bạn có muốn chuyển đến trang thanh toán đặt cọc để hoàn tất giữ bàn ngay bây giờ không?". VẪN TUYỆT ĐỐI CHƯA ĐƯỢC TẠO LINK.
 
         4. Xử lý câu trả lời chuyển trang (Bước 3 / Bước 4):
@@ -180,8 +212,11 @@ public class ChatService {
         
         VÍ DỤ FLOW KHI KHÁCH XÁC NHẬN:
         
-        Tình huống 1: Khách muốn đặt món
-        Khách: "có, tôi muốn đặt món"
+        Tình huống 1: Khách muốn xem menu
+        AI: "Bạn có muốn xem menu và chọn món ăn trước không?"
+        Khách: "có"
+        AI: "Bạn có muốn chuyển sang trang Đặt món để xem menu và tự chọn món trực tiếp không?"
+        Khách: "có" hoặc "đồng ý" hoặc "ok"
         AI: "Tuyệt vời! Tôi sẽ chuyển bạn đến trang đặt món ngay bây giờ.
         /reservation?step=3&tableName=Bàn 01&date=2025-01-20&startTime=16:00&guests=2"
         (Link ở dòng riêng sẽ tự động được xử lý, không hiển thị cho khách)
@@ -198,9 +233,14 @@ public class ChatService {
         - Link phải ở trên một dòng riêng sau câu trả lời chính
         - KHÔNG được chỉ xác nhận lại thông tin mà không có link
         - Link sẽ tự động được xử lý và không hiển thị cho khách
+        - TUYỆT ĐỐI KHÔNG in danh sách menu vào chat trong bất kỳ trường hợp nào
         
         DỮ LIỆU NHÀ HÀNG (SỬ DỤNG ĐỂ TRẢ LỜI):
-        """, currentDateTime, currentDate, currentDateTime, currentDate, currentDateTime, currentDate, currentDate) + restaurantContext;
+        """, currentDateTime, currentDate,
+                tomorrowDate, tomorrowDateISO,
+                dayAfterTomorrow, dayAfterTomorrowISO,
+                currentDate,
+                currentDateTime, currentDate, currentDateTime, currentDate, currentDateTime, currentDate, currentDate) + restaurantContext;
     }
 
     @Transactional
@@ -266,13 +306,18 @@ public class ChatService {
                 conversationRepository.save(conversation);
             }
 
-            // Process AI response asynchronously (fire and forget)
-            try {
-                processAIResponse(conversation.getId(), user.getId());
-            } catch (Exception e) {
-                log.error("Error triggering async AI response processing", e);
-                // Don't fail the request if async processing fails
-            }
+            // Process AI response asynchronously after transaction commits
+            // This ensures the user message is visible to the background thread
+            final Long conversationId = conversation.getId();
+            final Long userId = user.getId();
+            
+            TransactionSynchronizationManager.registerSynchronization(new TransactionSynchronization() {
+                @Override
+                public void afterCommit() {
+                    log.info("Transaction committed, triggering async AI response for conversation: {}", conversationId);
+                    self.processAIResponse(conversationId, userId);
+                }
+            });
 
             return mapToMessageResponse(userMessage);
         } catch (ResourceNotFoundException e) {
@@ -289,116 +334,115 @@ public class ChatService {
         try {
             log.info("Processing AI response for conversation: {}, user: {}", conversationId, userId);
 
-            // Use transaction template for async method
-            transactionTemplate.execute(status -> {
-                try {
-                    ChatConversation conversation = conversationRepository.findById(conversationId)
-                            .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
+            // 1. Fetch data for prompt building (read-only or short transaction)
+            ChatConversation conversation = conversationRepository.findById(conversationId)
+                    .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
 
-                    // Get last 20 messages for context - use conversation ID instead of entity
-                    org.springframework.data.domain.Pageable pageable = PageRequest.of(0, 20);
-                    List<ChatMessage> recentMessages = messageRepository.findLastMessagesByConversationId(conversationId, pageable);
+            // Get last 20 messages for context
+            org.springframework.data.domain.Pageable pageable = PageRequest.of(0, 20);
+            List<ChatMessage> recentMessages = messageRepository.findLastMessagesByConversationId(conversationId, pageable);
 
-                    // Reverse to get chronological order
-                    List<ChatMessage> messages = new ArrayList<>(recentMessages);
-                    java.util.Collections.reverse(messages);
+            // Reverse to get chronological order
+            List<ChatMessage> messages = new ArrayList<>(recentMessages);
+            Collections.reverse(messages);
 
-                    // Convert to format for AI
-                    List<Map<String, String>> aiMessages = new ArrayList<>();
-                    
-                    // Always inject the fresh system prompt FIRST so time is correct, and old rules are removed
-                    Map<String, String> sysMap = new HashMap<>();
-                    sysMap.put("role", "system");
-                    sysMap.put("content", getSystemPrompt());
-                    aiMessages.add(sysMap);
+            // Convert to format for AI
+            List<Map<String, String>> aiMessages = new ArrayList<>();
+            
+            // Always inject the fresh system prompt FIRST
+            Map<String, String> sysMap = new HashMap<>();
+            sysMap.put("role", "system");
+            sysMap.put("content", getSystemPrompt());
+            aiMessages.add(sysMap);
 
-                    // Add all other messages, carefully IGNORING any old "system" messages from the database
-                    aiMessages.addAll(messages.stream()
-                            .filter(msg -> !"system".equals(msg.getRole()))
-                            .map(msg -> {
-                                Map<String, String> map = new HashMap<>();
-                                map.put("role", msg.getRole());
-                                map.put("content", msg.getContent());
-                                return map;
-                            })
-                            .collect(Collectors.toList()));
+            // Add all other messages
+            aiMessages.addAll(messages.stream()
+                    .filter(msg -> !"system".equals(msg.getRole()))
+                    .map(msg -> {
+                        Map<String, String> map = new HashMap<>();
+                        map.put("role", msg.getRole());
+                        map.put("content", msg.getContent());
+                        return map;
+                    })
+                    .collect(Collectors.toList()));
 
-                    // Add context if user asks about menu, tables, or prices
-                    String lastUserMessage = messages.stream()
-                            .filter(m -> "user".equals(m.getRole()))
-                            .reduce((first, second) -> second)
-                            .map(ChatMessage::getContent)
-                            .orElse("");
+            // Add context if user asks about menu, tables, or prices
+            String lastUserMessage = messages.stream()
+                    .filter(m -> "user".equals(m.getRole()))
+                    .reduce((first, second) -> second)
+                    .map(ChatMessage::getContent)
+                    .orElse("");
 
-                    // Enhance context based on user query - add before the last user message
-                    if (lastUserMessage != null && !lastUserMessage.isEmpty()) {
-                        String lowerMessage = lastUserMessage.toLowerCase();
-                        if (lowerMessage.contains("menu") || lowerMessage.contains("món") ||
-                                lowerMessage.contains("giá") || lowerMessage.contains("combo") ||
-                                lowerMessage.contains("ăn") || lowerMessage.contains("thức ăn")) {
-                            // Add menu context before last user message
-                            String menuContext = contextService.getRestaurantContext();
-                            Map<String, String> contextMsg = new HashMap<>();
-                            contextMsg.put("role", "system");
-                            contextMsg.put("content", "Thông tin cập nhật về menu và bàn:\n" + menuContext);
-                            // Find index of last user message and insert before it
-                            int lastUserIndex = aiMessages.size() - 1;
-                            for (int i = aiMessages.size() - 1; i >= 0; i--) {
-                                if ("user".equals(aiMessages.get(i).get("role"))) {
-                                    lastUserIndex = i;
-                                    break;
-                                }
-                            }
-                            aiMessages.add(lastUserIndex, contextMsg);
-                        } else if (lowerMessage.contains("bàn") || lowerMessage.contains("đặt bàn") ||
-                                lowerMessage.matches(".*\\d+.*người.*") || lowerMessage.matches(".*\\d+.*khách.*")) {
-                            // Extract guest number if mentioned
-                            java.util.regex.Pattern pattern = java.util.regex.Pattern.compile("(\\d+)\\s*(người|khách)");
-                            java.util.regex.Matcher matcher = pattern.matcher(lowerMessage);
-                            if (matcher.find()) {
-                                int guestNumber = Integer.parseInt(matcher.group(1));
-                                String tableInfo = contextService.getAvailableTablesInfo(guestNumber);
-                                Map<String, String> contextMsg = new HashMap<>();
-                                contextMsg.put("role", "system");
-                                contextMsg.put("content", "Thông tin bàn phù hợp (CHỈ báo cho khách danh sách này NẾU khách đã chốt đủ Số khách, Ngày đến, và Giờ đến. Nếu khách chưa cho biết Giờ đến thì tuyệt đối giữ bí mật và hỏi Giờ đến trước):\n" + tableInfo);
-                                // Find index of last user message and insert before it
-                                int lastUserIndex = aiMessages.size() - 1;
-                                for (int i = aiMessages.size() - 1; i >= 0; i--) {
-                                    if ("user".equals(aiMessages.get(i).get("role"))) {
-                                        lastUserIndex = i;
-                                        break;
-                                    }
-                                }
-                                aiMessages.add(lastUserIndex, contextMsg);
-                            }
+            // Enhance context based on user query
+            if (lastUserMessage != null && !lastUserMessage.isEmpty()) {
+                String lowerMessage = lastUserMessage.toLowerCase();
+                if (lowerMessage.contains("menu") || lowerMessage.contains("món") ||
+                        lowerMessage.contains("giá") || lowerMessage.contains("combo") ||
+                        lowerMessage.contains("ăn") || lowerMessage.contains("thức ăn")) {
+                    String menuContext = contextService.getRestaurantContext();
+                    Map<String, String> contextMsg = new HashMap<>();
+                    contextMsg.put("role", "system");
+                    contextMsg.put("content", "Thông tin cập nhật về menu và bàn:\n" + menuContext);
+                    int lastUserIndex = aiMessages.size() - 1;
+                    for (int i = aiMessages.size() - 1; i >= 0; i--) {
+                        if ("user".equals(aiMessages.get(i).get("role"))) {
+                            lastUserIndex = i;
+                            break;
                         }
                     }
+                    aiMessages.add(lastUserIndex, contextMsg);
+                } else if (lowerMessage.contains("bàn") || lowerMessage.contains("đặt bàn") ||
+                        lowerMessage.matches(".*\\d+.*người.*") || lowerMessage.matches(".*\\d+.*khách.*")) {
+                    Pattern pattern = Pattern.compile("(\\d+)\\s*(người|khách)");
+                    Matcher matcher = pattern.matcher(lowerMessage);
+                    if (matcher.find()) {
+                        int guestNumber = Integer.parseInt(matcher.group(1));
+                        String tableInfo = contextService.getAvailableTablesInfo(guestNumber);
+                        Map<String, String> contextMsg = new HashMap<>();
+                        contextMsg.put("role", "system");
+                        contextMsg.put("content", "Thông tin bàn phù hợp (CHỈ báo cho khách danh sách này NẾU khách đã chốt đủ Số khách, Ngày đến, và Giờ đến. Nếu khách chưa cho biết Giờ đến thì tuyệt đối giữ bí mật và hỏi Giờ đến trước):\n" + tableInfo);
+                        int lastUserIndex = aiMessages.size() - 1;
+                        for (int i = aiMessages.size() - 1; i >= 0; i--) {
+                            if ("user".equals(aiMessages.get(i).get("role"))) {
+                                lastUserIndex = i;
+                                break;
+                            }
+                        }
+                        aiMessages.add(lastUserIndex, contextMsg);
+                    }
+                }
+            }
 
-                    // Call Gemini AI
-                    log.info("Calling Gemini AI for conversation: {}", conversationId);
-                    String aiResponse = geminiAIService.generateContent(aiMessages, "google/gemini-2.0-flash-001");
-                    log.info("Gemini AI response received");
+            // 2. Call AI API OUTSIDE of any transaction
+            log.info("Calling Gemini AI for conversation: {}", conversationId);
+            String aiResponse = geminiAIService.generateContent(aiMessages, "google/gemini-2.0-flash-001");
+            log.info("Gemini AI response received");
 
-                    // Remove emoji and special characters from AI response, then format with line breaks
-                    String cleanedResponse = cleanText(aiResponse);
-                    cleanedResponse = formatTextWithLineBreaks(cleanedResponse);
+            // Cleaning and formatting (still outside transaction)
+            String cleanedResponse = cleanText(aiResponse);
+            cleanedResponse = formatTextWithLineBreaks(cleanedResponse);
 
-                    // Save assistant message
+            // 3. Save results in a short transaction
+            final String finalResponse = cleanedResponse;
+            transactionTemplate.execute(status -> {
+                try {
+                    ChatConversation conv = conversationRepository.findById(conversationId)
+                            .orElseThrow(() -> new ResourceNotFoundException("Conversation not found"));
+
                     ChatMessage assistantMessage = new ChatMessage();
-                    assistantMessage.setConversation(conversation);
+                    assistantMessage.setConversation(conv);
                     assistantMessage.setRole("assistant");
-                    assistantMessage.setContent(cleanedResponse);
+                    assistantMessage.setContent(finalResponse);
                     assistantMessage.setModel("google/gemini-2.0-flash-001");
                     messageRepository.save(assistantMessage);
 
-                    // Update conversation's updatedAt timestamp
-                    conversation.setUpdatedAt(java.time.LocalDateTime.now());
-                    conversationRepository.save(conversation);
+                    conv.setUpdatedAt(LocalDateTime.now());
+                    conversationRepository.save(conv);
 
-                    log.info("Assistant message saved successfully, conversation updated");
+                    log.info("Assistant message saved successfully");
                     return null;
                 } catch (Exception e) {
-                    log.error("Error in transaction for AI response", e);
+                    log.error("Error saving AI response", e);
                     status.setRollbackOnly();
                     throw new RuntimeException(e);
                 }
@@ -551,8 +595,8 @@ public class ChatService {
         text = text.replaceAll("(?m)^(.*?Giờ muốn đến.*?):\\s*$", "$1");
         text = text.replaceAll("(?m)^(.*?Yêu cầu đặc biệt.*?):\\s*$", "$1");
 
-        // Add line break before common question patterns, EXCEPT when they are already bullet points or on a new line
-        text = text.replaceAll("(?<!\\n)(?<!-\\s)(Số lượng khách|Ngày muốn đặt|Giờ muốn đến|Bạn có yêu cầu|Vui lòng cho tôi|Có yêu cầu đặc biệt|Yêu cầu đặc biệt)", "\n$1");
+        // Add line break before common question patterns, EXCEPT when already on a new line, bullet point, or numbered list item
+        text = text.replaceAll("(?<!\\n)(?<!\\. )(?<!-\\s)(Số lượng khách|Ngày muốn đặt|Giờ muốn đến|Bạn có yêu cầu|Vui lòng cho tôi|Có yêu cầu đặc biệt|Yêu cầu đặc biệt)", "\n$1");
 
         // Add line break after periods if followed by capital letter (new sentence), but NOT for numbers (e.g. "1. Bàn")
         text = text.replaceAll("(\\p{L})\\.\\s+([A-ZĐ])", "$1.\n\n$2");
@@ -563,8 +607,8 @@ public class ChatService {
         // Format table listings - ensure each table detail is on a new line
         text = text.replaceAll("(Bàn [^\\n]+)\\s+ở\\s+(tầng|Tầng)\\s+(\\d+),\\s+(khu vực|Khu vực)\\s+([^\\n\\.]+)", "$1\n   - $2 $3, $4 $5");
 
-        // Add line break before "Bạn thích" or similar questions after table list
-        text = text.replaceAll("([^\\n])(Bạn thích|Bạn muốn|Bạn có muốn)", "$1\n\n$2");
+        // Add line break before "Bạn thích" or similar questions, but NOT when part of a numbered list (e.g. "2. Bạn muốn")
+        text = text.replaceAll("(?<!\\d\\. )(?<!\\n)([^\\n\\d\\.\\s])(Bạn thích|Bạn muốn|Bạn có muốn)", "$1\n\n$2");
 
         // Clean up multiple consecutive line breaks (max 2)
         text = text.replaceAll("\\n{3,}", "\n\n");

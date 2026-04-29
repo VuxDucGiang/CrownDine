@@ -1,7 +1,7 @@
 import { MoreHorizontal, Mail, Phone, Calendar, Unlock, Trash2, Edit, Lock } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EStatus, type Staff } from '@/types/profile.type'
-import { getImageUrl } from '@/utils/utils'
+import { getImageUrl, DEFAULT_PLACEHOLDER } from '@/utils/utils'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,6 +24,19 @@ const RoleBadge = ({ role }: { role: string }) => {
   )
 }
 
+const StatusBadge = ({ status }: { status: EStatus }) => {
+  const isActive = status === EStatus.ACTIVE
+  const baseClasses = 'rounded-full px-2.5 py-0.5 text-xs font-medium'
+  const activeClasses = 'bg-green-100 text-green-700 dark:bg-green-500/10 dark:text-green-400'
+  const inactiveClasses = 'bg-red-100 text-red-700 dark:bg-red-500/10 dark:text-red-400'
+
+  return (
+    <span className={`${baseClasses} ${isActive ? activeClasses : inactiveClasses}`}>
+      {isActive ? 'Active' : 'Inactive'}
+    </span>
+  )
+}
+
 interface StaffCardProps {
   staff: Staff
   onEdit?: (staff: Staff) => void
@@ -32,7 +45,6 @@ interface StaffCardProps {
 }
 
 export function StaffCard({ staff, onDelete, onEdit, ontoggleStatus }: StaffCardProps) {
-  const joinDate = staff.joinDate ? new Date(staff.joinDate).toLocaleDateString() : 'N/A'
   return (
     <div className='group bg-card hover:bg-muted/40 border-border relative rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md'>
       <div className='mb-4 flex items-start justify-between'>
@@ -42,13 +54,22 @@ export function StaffCard({ staff, onDelete, onEdit, ontoggleStatus }: StaffCard
               src={getImageUrl((staff as any).avatarUrl || (staff as any).avatar)}
               alt={`${staff.firstName} ${staff.lastName}` || 'Staff Member'}
               className='border-background h-14 w-14 rounded-full border-2 object-cover shadow-sm'
+              onError={(e) => {
+                const target = e.target as HTMLImageElement
+                if (target.src !== DEFAULT_PLACEHOLDER) {
+                  target.src = DEFAULT_PLACEHOLDER
+                }
+              }}
             />
           </div>
           <div>
             <h3 className='group-hover:text-primary mb-1 text-lg leading-none font-semibold transition-colors'>
               {`${staff.firstName} ${staff.lastName}` || 'Staff Member'}
             </h3>
-            <RoleBadge role={staff.role || 'Staff'} />
+            <div className='mt-2 flex items-center gap-2'>
+              <RoleBadge role={staff.role || 'Staff'} />
+              <StatusBadge status={staff.status} />
+            </div>
           </div>
         </div>
         <DropdownMenu>
@@ -98,13 +119,13 @@ export function StaffCard({ staff, onDelete, onEdit, ontoggleStatus }: StaffCard
           <Mail className='mr-2.5 h-3.5 w-3.5 opacity-70' />
           {staff.email}
         </div>
-        <div className='text-muted-foreground flex items-center text-sm'>
+        <div className='text-muted-foreground itegitms-center flex text-sm'>
           <Phone className='mr-2.5 h-3.5 w-3.5 opacity-70' />
           {staff.phone}
         </div>
         <div className='text-muted-foreground flex items-center text-sm'>
           <Calendar className='mr-2.5 h-3.5 w-3.5 opacity-70' />
-          Joined {staff.joinDate}
+          Joined {staff.joinDate ? new Date(staff.joinDate).toLocaleDateString() : 'N/A'}
         </div>
       </div>
     </div>

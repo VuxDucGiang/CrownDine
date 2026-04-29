@@ -1,5 +1,6 @@
 import type {
   Order,
+  OrderCheckout,
   OrderStatus,
   OrderRequest,
   OrderItemBatchRequest,
@@ -27,6 +28,10 @@ const orderApi = {
     return http.post<ApiResponse<null>>(`${TABLE_URL}/${orderId}/details`, body)
   },
 
+  getOrderCheckout(orderId: number) {
+    return http.get<ApiResponse<OrderCheckout>>(`${TABLE_URL}/${orderId}/checkout`)
+  },
+
   updateOrderDetail(detailId: number, body: UpdateOrderDetailRequest) {
     return http.patch<ApiResponse<null>>(`order-details/${detailId}/upd`, body)
   },
@@ -39,8 +44,12 @@ const orderApi = {
     return http.post<ApiResponse<any>>('payments/create', body)
   },
 
-  updateOrderStatus(orderId: number, status: OrderStatus) {
-    return http.patch<ApiResponse<any>>(`${TABLE_URL}/${orderId}/status?status=${status}`)
+  updateOrderStatus(orderId: number, status: OrderStatus, cancelReason?: string) {
+    let url = `${TABLE_URL}/${orderId}/status?status=${status}`
+    if (cancelReason) {
+      url += `&cancelReason=${encodeURIComponent(cancelReason)}`
+    }
+    return http.patch<ApiResponse<any>>(url)
   },
 
   applyVoucher(orderId: number, code: string) {

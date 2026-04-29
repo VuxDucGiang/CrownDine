@@ -1,0 +1,66 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:crowndine_test;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password:
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+  flyway:
+    enabled: false
+  mail:
+    host: localhost
+    port: 2525
+    username: test
+    password: test
+    from: test@crowndine.local
+  ai:
+    google:
+      genai:
+        api-key: test-api-key
+        project-id: test-project-id
+
+jwt:
+  access-key: test-access-key-should-be-at-least-32-characters
+  refresh-key: test-refresh-key-should-be-at-least-32-characters
+  reset-password-key: test-reset-password-key-at-least-32-chars
+  access-key-expiration: 3600000
+  refresh-key-expiration: 86400000
+  reset-password-key-expiration: 600000
+
+cloudinary:
+  cloud_name: test-cloud
+  api_key: test-key
+  api_secret: test-secret
+
+payos:
+  client-id: test-client-id
+  api-key: test-api-key
+  checksum-key: test-checksum-key
+  return-url: http://localhost:5173/payment/success
+  cancel-url: http://localhost:5173/payment/cancel
+
+google:
+  client-id: test-google-client-id
+
+openrouter:
+  api:
+    key: test-openrouter-key
+
+endpoint:
+  confirmUser: http://localhost:8080/api/auth/confirm
+  endPointResetPassword: http://localhost:8080/api/auth/reset-password
+
+openapi:
+  service:
+    api-docs: /api-docs
+    title: CrownDine Test API
+    version: test
+    server: http://localhost:8080
+
+app:
+  frontend-url: http://localhost:5173

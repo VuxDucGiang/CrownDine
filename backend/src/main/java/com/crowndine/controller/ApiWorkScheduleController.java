@@ -5,10 +5,7 @@ import com.crowndine.dto.request.WorkScheduleCreateRequest;
 import com.crowndine.dto.request.WorkScheduleUpdateRequest;
 import com.crowndine.dto.response.ApiResponse;
 import com.crowndine.exception.ResourceNotFoundException;
-import com.crowndine.repository.ShiftRepository;
 import com.crowndine.repository.UserRepository;
-import com.crowndine.repository.WorkScheduleRepository;
-import com.crowndine.service.user.UserService;
 import com.crowndine.service.workschedule.WorkScheduleService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -16,10 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -35,19 +28,16 @@ import java.util.Collections;
 public class ApiWorkScheduleController {
 
     private final WorkScheduleService workScheduleService;
-    private final WorkScheduleRepository workScheduleRepository;
     private final UserRepository userRepository;
-    private final UserService userService;
-    private final ShiftRepository shiftRepository;
 
     @GetMapping
     @PreAuthorize("hasAnyAuthority('ADMIN', 'STAFF')")
     public ApiResponse getWorkSchedules(@RequestParam(required = false) LocalDate fromDate,
-            @RequestParam(required = false) LocalDate toDate,
-            @RequestParam(required = false) LocalDate date,
-            @RequestParam(required = false) EWorkScheduleStatus status,
-            @RequestParam(required = false) Long userId,
-            @RequestParam(required = false) Long shiftId) {
+                                        @RequestParam(required = false) LocalDate toDate,
+                                        @RequestParam(required = false) LocalDate date,
+                                        @RequestParam(required = false) EWorkScheduleStatus status,
+                                        @RequestParam(required = false) Long userId,
+                                        @RequestParam(required = false) Long shiftId) {
 
         return ApiResponse.builder()
                 .status(200)
@@ -115,8 +105,8 @@ public class ApiWorkScheduleController {
     @DeleteMapping("/{id}")
     @PreAuthorize("hasAuthority('ADMIN')")
     public ApiResponse deleteWorkSchedule(@PathVariable("id") Long id,
-            @RequestParam(required = false) Boolean deletePattern,
-            @RequestParam(required = false) LocalDate workDate) {
+                                          @RequestParam(required = false) Boolean deletePattern,
+                                          @RequestParam(required = false) LocalDate workDate) {
         log.info("Request to delete work schedules with id {}, deletePattern {}, workDate {}", id, deletePattern,
                 workDate);
 

@@ -23,6 +23,18 @@ export interface Order {
   }
   updatedAt: string
   createdAt: string
+  cancelReason?: string
+}
+
+export interface OrderCheckout {
+  orderId: number
+  orderCode: string
+  totalAmount: number
+  voucherDiscount: number
+  depositedAmount: number
+  tableDepositPaidAmount: number
+  orderDepositPaidAmount: number
+  finalAmount: number
 }
 
 export interface OrderDetail {

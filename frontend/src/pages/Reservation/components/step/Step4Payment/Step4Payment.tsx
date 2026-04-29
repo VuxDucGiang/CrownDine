@@ -1,7 +1,8 @@
 import { RESTAURANT_CONFIG } from '@/pages/Reservation/data'
 import { formatCurrency } from '@/utils/utils'
-import { CreditCard, XCircle, Utensils, Loader2, Info } from 'lucide-react'
-import type { OrderDetailResponse } from '@/types/reservation.type'
+import { UtensilsCrossed, Loader2, Info, User, Calendar, Clock, PhoneCall } from 'lucide-react'
+import type { ReservationCheckoutResponse } from '@/types/reservation.type'
+import { toast } from 'react-toastify'
 import type { ReservationTable as Table } from '@/types/reservation.type'
 import CountdownTimer from '@/pages/Reservation/components/CountdownTimer'
 import type { UserSummary } from '@/types/profile.type'
@@ -13,6 +14,8 @@ interface CartItem {
   name: string
   price: number
   quantity: number
+  image?: string
+  description?: string
   note?: string
 }
 
@@ -29,12 +32,13 @@ interface Props {
   onPay: () => void
   onCancel: () => void
   isProcessing: boolean
-  orderDetails: OrderDetailResponse | null
+  checkoutSummary: ReservationCheckoutResponse | null
   isLoadingOrderDetails: boolean
   expiratedAt: string | null
   voucherPreview: VoucherValidateResponse | null
   onVoucherPreviewChange: (preview: VoucherValidateResponse | null) => void
 }
+
 const Step4Payment = ({
   user,
   bookingData,
@@ -42,268 +46,246 @@ const Step4Payment = ({
   onPay,
   onCancel,
   isProcessing,
-  orderDetails,
+  checkoutSummary,
   isLoadingOrderDetails,
   expiratedAt,
   voucherPreview,
   onVoucherPreviewChange
 }: Props) => {
   const fullName = user ? `${user.firstName} ${user.lastName}`.trim() : 'Khách'
-  const genderLabel =
-    user?.gender === 'MALE' ? 'Nam' : user?.gender === 'FEMALE' ? 'Nữ' : user?.gender === 'OTHER' ? 'Khác' : ''
   const phone = user?.phone ?? ''
   const email = user?.email ?? ''
   const foodTotal = cartItems.reduce((acc, i) => acc + i.price * i.quantity, 0)
 
   // Sử dụng dữ liệu từ API nếu có, nếu không thì tính từ local state
-  const itemsTotal = orderDetails?.itemsTotal ?? foodTotal
-  const tableDeposit = orderDetails?.tableDeposit ?? RESTAURANT_CONFIG.depositAmount
+  const itemsTotal = checkoutSummary?.itemsTotal ?? foodTotal
+  const tableDeposit = checkoutSummary?.tableDeposit ?? RESTAURANT_CONFIG.depositAmount
   const previewFinalAmount = voucherPreview?.finalAmount ?? itemsTotal
 
-  // Tính depositAmount: nếu có orderDetails thì dùng từ API, nếu không thì tính = 20% món + cọc bàn
-  const depositAmount = orderDetails?.depositAmount ?? itemsTotal * 0.2 + tableDeposit
+  // Tính depositAmount: nếu có checkout summary thì dùng từ API, nếu không thì tính = 20% món + cọc bàn
+  const depositAmount = checkoutSummary?.depositAmount ?? itemsTotal * 0.2 + tableDeposit
   const discountedFoodDeposit = previewFinalAmount * 0.2
-  const discountedRemainingAmount = previewFinalAmount - discountedFoodDeposit
+
   const discountedPayableNow =
     voucherPreview && depositAmount > 0 ? Math.max(0, discountedFoodDeposit + tableDeposit) : depositAmount
 
-  // Tính cọc 20% món ăn
-  const foodDeposit = itemsTotal * 0.2
-
-  // Tính số tiền còn lại (80% món ăn)
-  const remainingAmount = orderDetails?.remainingAmount ?? itemsTotal * 0.8
-
   if (isLoadingOrderDetails) {
     return (
-      <div className='min-100 flex items-center justify-center'>
+      <div className='min-100 flex items-center justify-center p-12'>
         <div className='flex flex-col items-center gap-4 text-gray-400'>
-          <Loader2 className='h-8 w-8 animate-spin' />
-          <p>Đang tải thông tin thanh toán...</p>
+          <Loader2 className='h-6 w-6 animate-spin' />
+          <p className='text-sm'>Đang tải thông tin thanh toán...</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className='animate-fade-in space-y-6'>
-      {/* Alert Header & Timer */}
+    <div className='animate-fade-in space-y-4 pt-1'>
+      {/* Expiry Alert Bar - More Compact */}
       {expiratedAt && (
-        <div className='rounded-lg border border-yellow-300 bg-yellow-50 p-4'>
-          <div className='flex flex-col items-center justify-between gap-4 md:flex-row'>
-            <div className='flex items-center gap-3'>
-              <Info className='text-yellow-600' size={20} />
-              <span className='text-sm font-medium text-yellow-900'>Vui lòng hoàn tất trong thời gian giữ vé.</span>
+        <div className='rounded-lg border border-orange-500/20 bg-orange-500/10 px-3 py-2 shadow-sm'>
+          <div className='flex flex-col items-center justify-between gap-2 sm:flex-row'>
+            <div className='flex items-center gap-2'>
+              <Info size={14} className='text-orange-500' />
+              <span className='text-[11px] font-semibold text-orange-700 dark:text-orange-300'>Vui lòng hoàn tất giao dịch để giữ bàn thành công.</span>
             </div>
-            <CountdownTimer
-              expiratedAt={expiratedAt}
-              onExpire={() => {
-                alert('Hết phiên giao dịch! Vui lòng đặt lại.')
-                window.location.reload()
-              }}
-            />
+            <div className='flex items-center gap-1.5 rounded-md bg-background/90 px-2 py-1 text-[11px] font-bold text-orange-600 dark:text-orange-400 shadow-xs'>
+                <Clock size={12} />
+                <CountdownTimer
+                    expiratedAt={expiratedAt}
+                    onExpire={() => {
+                        toast.error('Hết phiên giao dịch! Vui lòng đặt lại.')
+                        window.location.reload()
+                    }}
+                />
+            </div>
           </div>
         </div>
       )}
 
-      <div className='rounded-lg border border-gray-200 bg-white shadow-sm'>
-        <div className='flex items-center justify-between border-b border-gray-200 bg-gray-50 px-6 py-4'>
-          <h3 className='flex items-center gap-2 text-xl font-bold text-gray-900'>
-            <CreditCard className='text-orange-500' size={20} />
-            Xác nhận thông tin
-          </h3>
-        </div>
-
-        <div className='grid grid-cols-1 gap-8 p-6 md:grid-cols-2'>
-          {/* Cột 1: Thông tin khách hàng */}
-          <div className='space-y-4'>
-            <h4 className='border-b border-gray-200 pb-2 text-sm font-semibold text-gray-700 uppercase'>Khách hàng</h4>
-            <div className='flex items-start gap-4'>
-              <div className='flex h-12 w-12 shrink-0 items-center justify-center rounded-full bg-orange-500 text-lg font-bold text-white'>
-                {fullName.charAt(0)}
-              </div>
-              <div className='space-y-1'>
-                <p className='font-semibold text-gray-900'>
-                  {fullName}
-                  {genderLabel ? <span className='text-xs font-normal text-gray-500'> ({genderLabel})</span> : null}
-                </p>
-                <p className='text-sm text-gray-600'>{phone}</p>
-                <p className='text-sm text-gray-600'>{email}</p>
-              </div>
-            </div>
-          </div>
-
-          {/* Cột 2: Chi tiết đặt bàn */}
-          <div className='space-y-4'>
-            <h4 className='border-b border-gray-200 pb-2 text-sm font-semibold text-gray-700 uppercase'>
-              Chi tiết đặt chỗ
-            </h4>
-            <div className='grid grid-cols-2 gap-3'>
-              <div className='rounded-lg bg-gray-50 p-3'>
-                <span className='mb-1 block text-xs text-gray-500'>Ngày</span>
-                <span className='font-semibold text-gray-900'>{bookingData.date}</span>
-              </div>
-              <div className='rounded-lg bg-orange-50 p-3'>
-                <span className='mb-1 block text-xs text-gray-600'>Khung giờ dự kiến</span>
-                <span className='font-semibold text-orange-600'>
-                  {bookingData.startTime} - {bookingData.plannedEndTime}
-                </span>
-              </div>
-              <div className='rounded-lg bg-gray-50 p-3'>
-                <span className='mb-1 block text-xs text-gray-500'>Số khách</span>
-                <span className='font-semibold text-gray-900'>{bookingData.guests} Người</span>
-              </div>
-              <div className='rounded-lg bg-gray-50 p-3'>
-                <span className='mb-1 block text-xs text-gray-500'>Vị trí bàn</span>
-                <span className='font-semibold text-gray-900'>
-                  {bookingData.selectedTable?.name ?? '—'}
-                  {bookingData.selectedTable?.floorName && bookingData.selectedTable?.areaName ? 
-                    ` - ${bookingData.selectedTable.floorName} - ${bookingData.selectedTable.areaName}` : ''}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Phần Món ăn đã chọn */}
-        {cartItems.length > 0 && (
-          <div className='border-t border-gray-200 bg-orange-50/30 p-6'>
-            <h4 className='mb-4 flex items-center gap-2 text-sm font-semibold text-gray-700 uppercase'>
-              <Utensils className='h-4 w-4 text-orange-600' />
-              Món ăn đã chọn ({cartItems.length})
-            </h4>
-            <div className='custom-scrollbar max-h-64 space-y-2 overflow-y-auto'>
-              {cartItems.map((item) => (
-                <div
-                  key={`${item.id}-${item.name}`}
-                  className='border-border flex flex-col rounded-lg border bg-white p-3'
-                >
-                  <div className='flex items-center justify-between'>
-                    <div className='flex items-center gap-3'>
-                      <span className='flex h-8 w-8 items-center justify-center rounded-lg bg-orange-500 text-xs font-bold text-white'>
-                        {item.quantity}x
-                      </span>
-                      <div>
-                        <p className='text-sm font-medium text-gray-900'>{item.name}</p>
-                        <p className='text-xs text-gray-500'>{formatCurrency(item.price)} / phần</p>
-                      </div>
+      {/* Grid Layout */}
+      <div className='grid grid-cols-1 gap-6 lg:grid-cols-12'>
+        {/* Left Side: Forms and Menu (8/12) */}
+        <div className='space-y-4 lg:col-span-8'>
+          
+          <div className='grid grid-cols-1 gap-4 md:grid-cols-2'>
+            {/* Customer Info Section - More Compact */}
+            <section className='overflow-hidden rounded-xl border border-border bg-card shadow-sm'>
+                <div className='flex items-center gap-2 border-b border-border bg-muted/30 px-5 py-3'>
+                    <User size={16} className='text-orange-500' />
+                    <h3 className='text-xs font-bold text-foreground uppercase tracking-tight'>Thông tin liên hệ</h3>
+                </div>
+                <div className='space-y-3 p-5'>
+                    <div className='flex items-center justify-between'>
+                        <span className='text-[9px] font-bold text-muted-foreground uppercase tracking-widest'>Tên khách</span>
+                        <span className='text-xs font-semibold text-foreground'>{fullName}</span>
                     </div>
-                    <span className='font-semibold text-gray-900'>{formatCurrency(item.price * item.quantity)}</span>
+                    <div className='flex items-center justify-between'>
+                        <span className='text-[9px] font-bold text-muted-foreground uppercase tracking-widest'>Số điện thoại</span>
+                        <span className='text-xs font-semibold text-foreground'>{phone}</span>
+                    </div>
+                    <div className='flex items-center justify-between gap-4'>
+                        <span className='text-[9px] font-bold text-muted-foreground uppercase tracking-widest shrink-0'>Email</span>
+                        <span className='text-xs font-semibold text-foreground truncate'>{email}</span>
+                    </div>
+                </div>
+            </section>
+
+            {/* Table Details Section - More Compact */}
+            <section className='overflow-hidden rounded-xl border border-border bg-card shadow-sm'>
+                <div className='flex items-center gap-2 border-b border-border bg-muted/30 px-5 py-3'>
+                    <Calendar size={16} className='text-orange-500' />
+                    <h3 className='text-xs font-bold text-foreground uppercase tracking-tight'>Chi tiết đặt bàn</h3>
+                </div>
+                <div className='space-y-3 p-5'>
+                    <div className='flex items-center justify-between'>
+                        <span className='text-[9px] font-bold text-muted-foreground uppercase tracking-widest'>Ngày hẹn</span>
+                        <span className='text-xs font-semibold text-foreground'>{bookingData.date}</span>
+                    </div>
+                    <div className='flex items-center justify-between'>
+                        <span className='text-[9px] font-bold text-muted-foreground uppercase tracking-widest'>Thời gian</span>
+                        <span className='text-xs font-semibold text-foreground'>{bookingData.startTime} - {bookingData.plannedEndTime}</span>
+                    </div>
+                    <div className='flex items-center justify-between'>
+                        <span className='text-[9px] font-bold text-muted-foreground uppercase tracking-widest'>Bàn / Chỗ</span>
+                        <span className='text-xs font-semibold text-foreground'>
+                            {bookingData.selectedTable?.name ?? '—'}
+                            {bookingData.selectedTable?.floorName ? ` (${bookingData.selectedTable.floorName})` : ''}
+                        </span>
+                    </div>
+                </div>
+            </section>
+          </div>
+
+          {/* Menu Items - Reduced sizes */}
+          <section className='space-y-3'>
+            <div className='flex items-center gap-2 px-1'>
+              <UtensilsCrossed size={16} className='text-orange-500' />
+              <h3 className='text-sm font-bold text-foreground'>Danh sách món đã đặt</h3>
+            </div>
+            
+            <div className='grid grid-cols-1 gap-3'>
+              {cartItems.length > 0 ? (
+                cartItems.map((item) => (
+                  <div key={`${item.id}-${item.name}`} className='group flex items-center gap-3 rounded-xl border border-border bg-card p-2.5 shadow-xs transition-all hover:border-orange-200 dark:hover:border-orange-500/30'>
+                    <div className='h-14 w-14 shrink-0 overflow-hidden rounded-lg bg-muted border border-border'>
+                      {item.image ? (
+                        <img src={item.image} alt={item.name} className='h-full w-full object-cover transition-transform group-hover:scale-105' />
+                      ) : (
+                        <div className='flex h-full w-full items-center justify-center text-muted-foreground/30'>
+                          <UtensilsCrossed size={18} />
+                        </div>
+                      )}
+                    </div>
+                    <div className='flex flex-1 flex-col justify-center min-w-0'>
+                      <h4 className='text-xs font-bold text-foreground truncate'>{item.name}</h4>
+                      {item.note ? (
+                        <p className='mt-0.5 text-[10px] italic text-orange-500 line-clamp-1'>“{item.note}”</p>
+                      ) : (
+                        <p className='mt-0.5 text-[10px] text-muted-foreground line-clamp-1 italic'>{item.description || 'Deluxe Dining Signature'}</p>
+                      )}
+                    </div>
+                    <div className='flex flex-col items-end gap-0.5 px-3 border-l border-border flex-shrink-0'>
+                      <span className='text-[9px] font-black text-muted-foreground/70 uppercase'>x{item.quantity}</span>
+                      <span className='text-xs font-bold text-foreground whitespace-nowrap'>{formatCurrency(item.price * item.quantity)}</span>
+                    </div>
                   </div>
-
-                  {item.note && (
-                    <div className='mt-2 border-t border-dashed border-orange-200 pt-2'>
-                        <p className='text-[11px] italic text-orange-600 flex items-center gap-1'>
-                           <span className='font-bold bg-orange-100 px-1 rounded'>Ghi chú:</span> {item.note}
-                        </p>
-                    </div>
-                  )}
+                ))
+              ) : (
+                <div className='flex flex-col items-center justify-center rounded-xl border border-dashed border-border bg-card/50 p-10 mt-2'>
+                  <UtensilsCrossed size={32} className='mb-3 text-muted-foreground/30' />
+                  <p className='text-xs font-semibold text-muted-foreground'>Không có món ăn trong đơn hàng</p>
                 </div>
-              ))}
-            </div>
-            <div className='mt-4 flex justify-between rounded-lg border border-gray-200 bg-white p-4'>
-              <span className='text-sm font-semibold text-gray-700'>Tổng tiền món ăn:</span>
-              <span className='text-lg font-bold text-gray-900'>{formatCurrency(foodTotal)}</span>
-            </div>
-          </div>
-        )}
-
-        {/* Phần Payment Breakdown */}
-        <div className='space-y-3 border-t border-gray-200 bg-gray-50 p-6'>
-          {itemsTotal > 0 && (
-            <>
-              <div className='flex justify-between rounded-lg border border-gray-200 bg-white p-3 text-sm'>
-                <span className='text-gray-700'>Tổng tiền món ăn tạm tính</span>
-                <div className='text-right'>
-                  {voucherPreview && (
-                    <p className='text-sm font-semibold text-gray-400 line-through'>{formatCurrency(itemsTotal)}</p>
-                  )}
-                  <span className='font-semibold text-gray-900'>{formatCurrency(previewFinalAmount)}</span>
-                </div>
-              </div>
-              <div className='flex justify-between rounded-lg border border-amber-200 bg-amber-50 p-3 text-sm'>
-                <span className='text-gray-700'>{voucherPreview ? 'Cọc 20% món ăn sau ưu đãi' : 'Cọc 20% món ăn'}</span>
-                <div className='text-right'>
-                  {voucherPreview && (
-                    <p className='text-sm font-semibold text-gray-400 line-through'>{formatCurrency(foodDeposit)}</p>
-                  )}
-                  <span className='font-semibold text-amber-700'>
-                    {formatCurrency(voucherPreview ? discountedFoodDeposit : foodDeposit)}
-                  </span>
-                </div>
-              </div>
-            </>
-          )}
-
-          {itemsTotal > 0 && (
-            <div className='flex justify-between rounded-lg bg-gray-100 p-3 text-sm'>
-              <span className='text-gray-600'>Món ăn còn lại (Thanh toán sau)</span>
-              <div className='text-right'>
-                {voucherPreview && (
-                  <p className='text-sm font-semibold text-gray-400 line-through'>{formatCurrency(remainingAmount)}</p>
-                )}
-                <span className='font-semibold text-gray-700'>
-                  {formatCurrency(voucherPreview ? discountedRemainingAmount : remainingAmount)}
-                </span>
-              </div>
-            </div>
-          )}
-
-          <div className='flex justify-between rounded-lg border border-gray-200 bg-white p-3 text-sm'>
-            <span className='text-gray-700'>Cọc bàn</span>
-            <span className='font-semibold text-gray-900'>{formatCurrency(tableDeposit)}</span>
-          </div>
-
-          <div className='mt-4 flex items-center justify-between rounded-lg border-2 border-orange-200 bg-orange-50 p-5'>
-            <div>
-              <span className='mb-1 block text-xl font-extrabold text-gray-900'>Tổng thanh toán ngay</span>
-              <span className='text-xs text-gray-600'>
-                {voucherPreview
-                  ? 'Khoản cần thanh toán ngay đã được cập nhật sau khi áp dụng voucher.'
-                  : 'Tiền cọc giữ bàn hiện tại.'}
-              </span>
-            </div>
-            <div className='text-right'>
-              {voucherPreview && (
-                <p className='mb-1 text-sm font-semibold text-gray-400 line-through'>{formatCurrency(depositAmount)}</p>
               )}
-              <span className='text-4xl font-black text-orange-600'>
-                {formatCurrency(voucherPreview ? discountedPayableNow : depositAmount)}
-              </span>
+            </div>
+          </section>
+        </div>
+
+        {/* Right Side: Sidebar - Reduced sizes and padding */}
+        <aside className='lg:col-span-4'>
+          <div className='sticky top-4 flex flex-col gap-4'>
+            <div className='rounded-2xl border border-border bg-card p-5 shadow-lg'>
+                <h3 className='mb-4 text-sm font-black text-foreground uppercase tracking-wider'>Tóm tắt thanh toán</h3>
+                
+                <div className='space-y-3 border-b border-border pb-5 text-xs'>
+                    <div className='flex justify-between text-muted-foreground font-small'>
+                        <span>Số lượng ({cartItems.reduce((acc, i) => acc + i.quantity, 0)} món)</span>
+                        <span className='font-bold text-foreground'>{formatCurrency(itemsTotal)}</span>
+                    </div>
+                    
+                    {voucherPreview && (
+                        <div className='flex justify-between items-center'>
+                            <span className='font-bold text-emerald-600 dark:text-emerald-400 bg-emerald-500/10 px-1.5 py-0.5 rounded'>Voucher tiết kiệm</span>
+                            <span className='font-black text-emerald-600 dark:text-emerald-400'>-{formatCurrency(voucherPreview.discountAmount)}</span>
+                        </div>
+                    )}
+                    
+                    <div className='flex items-baseline justify-between pt-2 border-t border-border'>
+                        <span className='text-xs font-bold text-foreground uppercase'>Tổng tiền món</span>
+                        <span className='text-xl font-black text-orange-600'>{formatCurrency(previewFinalAmount)}</span>
+                    </div>
+                </div>
+
+                <div className='py-4'>
+                    <VoucherInput
+                        orderId={checkoutSummary?.orderId ?? undefined}
+                        disabled={isProcessing}
+                        onPreviewChange={onVoucherPreviewChange}
+                    />
+                </div>
+
+                <div className='space-y-3 rounded-2xl bg-orange-500/10 p-4 border border-orange-500/20 shadow-sm'>
+                    <div className='flex items-center gap-1.5 text-[9px] font-black text-orange-700 dark:text-orange-400 uppercase tracking-widest'>
+                        <Info size={12} className='text-orange-500' />
+                        Quy định đặt cọc
+                    </div>
+                    <p className='text-[10px] leading-relaxed text-muted-foreground font-semibold'>
+                        Khu vực của bạn được xác nhận ngay khi bạn thanh toán tiền cọc tối thiểu.
+                    </p>
+                    <div className='flex items-center justify-between pt-3 border-t border-orange-500/20'>
+                        <span className='text-[9px] font-black text-orange-700 dark:text-orange-300'>CỌC CẦN TRẢ:</span>
+                        <span className='text-lg font-black text-orange-600 dark:text-orange-500'>{formatCurrency(discountedPayableNow)}</span>
+                    </div>
+                </div>
+
+                <div className='mt-6 space-y-3 font-sans'>
+                    <button
+                        onClick={onPay}
+                        disabled={isProcessing}
+                        className='w-full rounded-xl bg-foreground py-3.5 text-xs font-black text-background hover:opacity-90 active:scale-[0.98] disabled:opacity-70 shadow-sm transition-all'
+                    >
+                        {isProcessing ? (
+                            <span className='flex items-center justify-center gap-2'>
+                                <Loader2 className='h-4 w-4 animate-spin' /> Đang xử lý...
+                            </span>
+                        ) : (
+                            'Xác nhận & Thanh toán'
+                        )}
+                    </button>
+                    
+                    <button
+                        onClick={onCancel}
+                        disabled={isProcessing}
+                        className='w-full rounded-xl bg-red-500 py-3.5 text-xs font-black text-white hover:bg-red-600 active:scale-[0.98] disabled:opacity-70 shadow-sm transition-all'
+                    >
+                        Huỷ quy trình đặt bàn
+                    </button>
+                </div>
+            </div>
+
+            {/* Compact Support */}
+            <div className='rounded-xl bg-card border border-border p-3.5 flex items-center gap-3 shadow-sm'>
+                <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500/10 text-orange-600'>
+                    <PhoneCall size={18} />
+                </div>
+                <div>
+                    <p className='text-[9px] font-bold text-muted-foreground uppercase tracking-widest'>Hỗ trợ đặt bàn</p>
+                    <p className='text-sm font-black text-foreground'>1900 8888</p>
+                </div>
             </div>
           </div>
-
-          <VoucherInput
-            orderId={orderDetails?.orderId ?? undefined}
-            disabled={isProcessing}
-            onPreviewChange={onVoucherPreviewChange}
-          />
-        </div>
-      </div>
-
-      {/* Action Buttons */}
-      <div className='flex gap-4 pt-4'>
-        <button
-          onClick={onCancel}
-          disabled={isProcessing}
-          className='flex flex-1 items-center justify-center gap-2 rounded-lg border border-red-300 bg-white px-6 py-3 font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:opacity-50'
-        >
-          <XCircle size={18} /> Huỷ bỏ
-        </button>
-        <button
-          onClick={onPay}
-          disabled={isProcessing}
-          className='flex flex-2 items-center justify-center gap-2 rounded-lg bg-orange-500 px-8 py-3 font-bold text-white transition-colors hover:bg-orange-600 disabled:cursor-wait disabled:opacity-70'
-        >
-          {isProcessing ? (
-            <span className='flex items-center gap-2'>
-              <Loader2 className='h-5 w-5 animate-spin' /> Đang xử lý...
-            </span>
-          ) : (
-            <>
-              <CreditCard size={20} /> Thanh toán & Xác nhận
-            </>
-          )}
-        </button>
+        </aside>
       </div>
     </div>
   )

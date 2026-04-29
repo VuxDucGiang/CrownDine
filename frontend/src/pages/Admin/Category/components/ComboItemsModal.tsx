@@ -29,7 +29,7 @@ export function ComboItemsModal({ isOpen, onClose, combo, onEdit }: ComboItemsMo
           </div>
           <div className='text-right'>
             <p className='text-sm font-medium'>Giá Combo</p>
-            <p className='text-primary text-lg font-bold'>{combo.price.toLocaleString('vi-VN')}đ</p>
+            <p className='text-primary text-lg font-bold'>{combo.price.toLocaleString('en-US')}đ</p>
           </div>
         </div>
 

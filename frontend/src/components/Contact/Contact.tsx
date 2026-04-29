@@ -1,4 +1,9 @@
+import { RESTAURANT_CONFIG } from '@/pages/Reservation/data'
+
 const Contact = () => {
+  const openTime = `${String(RESTAURANT_CONFIG.openHour).padStart(2, '0')}:00`
+  const closeTime = `${String(RESTAURANT_CONFIG.closeHour).padStart(2, '0')}:00`
+
   return (
     <section id='contact' className='bg-card py-20'>
       <div className='container mx-auto px-4'>
@@ -44,16 +49,16 @@ const Contact = () => {
               </div>
 
               <div>
-                <h3 className='mb-2 text-lg font-bold'>Visit Us</h3>
+                <h3 className='mb-2 text-lg font-bold'>Địa chỉ nhà hàng</h3>
                 <p className='text-foreground/70'>
                   Chúng tôi rất mong được chào đón bạn tại nhà hàng của chúng tôi. Dưới đây là địa chỉ của chúng tôi:
                 </p>
-                <p className='text-primary mt-2 text-lg font-bold'>123 Gourmet Street, New York, NY 10001</p>
+                <p className='text-primary mt-2 text-lg font-bold'>123 Gourmet Street, Da Nang</p>
               </div>
 
               <div className='border-border border-t pt-6'>
                 <p className='text-foreground/70 text-sm'>
-                  Hours: Mon - Thu 11:00 AM - 10:00 PM | Fri - Sat 11:00 AM - 11:00 PM | Sun 12:00 PM - 9:00 PM
+                  Giờ mở cửa: {openTime} - {closeTime} (hằng ngày)
                 </p>
               </div>
             </div>

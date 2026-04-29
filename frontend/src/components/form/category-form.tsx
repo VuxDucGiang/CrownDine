@@ -31,21 +31,21 @@ export const CategoryForm = ({ initialData, onSubmit, onCancel }: CategoryFormPr
   return (
     <form onSubmit={handleSubmit} className='space-y-4'>
       <div className='space-y-2'>
-        <Label htmlFor='name'>Name</Label>
+        <Label htmlFor='name'>Tên</Label>
         <Input
           id='name'
-          placeholder='e.g. Starters'
+          placeholder='VD: Khai vị'
           value={formData.name}
           onChange={(e) => setFormData({ ...formData, name: e.target.value })}
           required
         />
       </div>
       <div className='space-y-2'>
-        <Label htmlFor='description'>Description</Label>
+        <Label htmlFor='description'>Mô tả</Label>
         <textarea
           id='description'
           className='border-input placeholder:text-muted-foreground focus-visible:ring-ring flex min-h-[80px] w-full rounded-md border bg-transparent px-3 py-2 text-sm shadow-sm focus-visible:ring-1 focus-visible:outline-none disabled:cursor-not-allowed disabled:opacity-50'
-          placeholder='Brief description...'
+          placeholder='Mô tả ngắn gọn...'
           rows={3}
           value={formData.description}
           onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -53,11 +53,11 @@ export const CategoryForm = ({ initialData, onSubmit, onCancel }: CategoryFormPr
       </div>
       <div className='flex justify-end gap-3 pt-4'>
         <Button type='button' variant='outline' onClick={onCancel}>
-          Cancel
+          Hủy
         </Button>
         <Button type='submit'>
           <Save className='mr-2 h-4 w-4' />
-          Save
+          Lưu
         </Button>
       </div>
     </form>

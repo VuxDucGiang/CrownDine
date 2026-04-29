@@ -1,5 +1,5 @@
 import { useState, useMemo } from 'react'
-import { Search, LayoutGrid, ChevronLeft, ChevronRight, UtensilsCrossed, Users, Clock, CheckCircle2 } from 'lucide-react'
+import { LayoutGrid, ChevronLeft, ChevronRight, UtensilsCrossed, Users, Clock, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { useQuery, useMutation } from '@tanstack/react-query'
@@ -14,7 +14,13 @@ import { useSubscription } from 'react-stomp-hooks'
 import type { Order } from '@/types/order.type'
 
 const Cashier = () => {
-  const [activeTab, setActiveTab] = useState('Tất cả')
+  // Pagination State
+  const [currentPage, setCurrentPage] = useState(1)
+  const pageSize = 15
+
+  // Filter States
+  const [activeFloor, setActiveFloor] = useState('')
+  const [activeArea, setActiveArea] = useState('Tất cả')
   const [activeFilter, setActiveFilter] = useState('Tất cả')
 
   // UI States for Modals/Drawer
@@ -27,15 +33,13 @@ const Cashier = () => {
   // Fetch Tables
   const { data: tableData, isLoading: isLoadingTables } = useQuery({
     queryKey: ['tables'],
-    queryFn: () => tableApi.getAllTables(),
-    refetchInterval: 2500
+    queryFn: () => tableApi.getAllTables()
   })
 
   // Fetch Active Orders (all to ensure matching regardless of specific served status)
   const { data: orderData } = useQuery({
     queryKey: ['orders-active'],
     queryFn: () => orderApi.getAllOrders({}),
-    refetchInterval: 5000,
     select: (response) => {
       const all = response?.data?.data?.data ?? []
       return all.filter(
@@ -57,33 +61,67 @@ const Cashier = () => {
   const rawTables = tableData?.data.data || []
   const activeOrders = orderData || []
 
-  const tabs = ['Tất cả', 'Lầu 2', 'Lầu 3', 'Phòng VIP']
+  // Dynamic Filters based on data
+  const floors = useMemo(() => {
+    return Array.from(new Set(rawTables.map((t: any) => t.floorName).filter(Boolean)))
+  }, [rawTables])
+
+  // Default to first floor if not selected
+  useMemo(() => {
+    if (!activeFloor && floors.length > 0) {
+      setActiveFloor(floors[0])
+    }
+  }, [floors, activeFloor])
+
+  const areas = useMemo(() => {
+    let filtered = rawTables
+    if (activeFloor) {
+      filtered = rawTables.filter((t: any) => t.floorName === activeFloor)
+    }
+    const list = Array.from(new Set(filtered.map((t: any) => t.areaName).filter(Boolean)))
+    return ['Tất cả', ...list]
+  }, [rawTables, activeFloor])
 
   // Table Stats
   const stats = useMemo(() => {
     const total = rawTables.length
     const using = rawTables.filter((t: any) => t.status === 'OCCUPIED').length
     const empty = rawTables.filter((t: any) => t.status === 'AVAILABLE').length
-    return { total, using, empty }
+    const reserved = rawTables.filter((t: any) => t.status === 'RESERVED').length
+    return { total, using, empty, reserved }
   }, [rawTables])
 
   const filters = [
     { label: 'Tất cả', icon: LayoutGrid, count: stats.total, color: 'text-primary' },
     { label: 'Sử dụng', icon: Users, count: stats.using, color: 'text-orange-600' },
+    { label: 'Đã đặt trước', icon: Clock, count: stats.reserved, color: 'text-amber-600' },
     { label: 'Còn trống', icon: CheckCircle2, count: stats.empty, color: 'text-emerald-600' }
   ]
 
   // Filter logic
-  const filteredTables = rawTables.filter((table: any) => {
-    if (activeTab === 'Lầu 2' && !table.name.includes('L2')) return false
-    if (activeTab === 'Lầu 3' && !table.name.includes('L3')) return false
-    if (activeTab === 'Phòng VIP' && !table.name.includes('VIP')) return false
+  const filteredTables = useMemo(() => {
+    return rawTables.filter((table: any) => {
+      // 1. Floor Filter
+      if (activeFloor && table.floorName !== activeFloor) return false
+      
+      // 2. Area Filter (Khu vực / Phòng)
+      if (activeArea !== 'Tất cả' && table.areaName !== activeArea) return false
 
-    if (activeFilter === 'Sử dụng' && table.status !== 'OCCUPIED') return false
-    if (activeFilter === 'Còn trống' && table.status !== 'AVAILABLE') return false
+      // 3. Status Filter
+      if (activeFilter === 'Sử dụng' && table.status !== 'OCCUPIED') return false
+      if (activeFilter === 'Đã đặt trước' && table.status !== 'RESERVED') return false
+      if (activeFilter === 'Còn trống' && table.status !== 'AVAILABLE') return false
 
-    return true
-  })
+      return true
+    })
+  }, [rawTables, activeFloor, activeArea, activeFilter])
+
+  // Pagination calculation
+  const totalPages = Math.ceil(filteredTables.length / pageSize)
+  const paginatedTables = useMemo(() => {
+    const start = (currentPage - 1) * pageSize
+    return filteredTables.slice(start, start + pageSize)
+  }, [filteredTables, currentPage, pageSize])
 
   const getTableOrder = (tableName: string) => {
     return activeOrders.find((o) => o.tableName === tableName)
@@ -133,38 +171,54 @@ const Cashier = () => {
   return (
     <div className='animate-fade-in flex min-h-[calc(100vh-160px)] flex-col gap-8'>
       {/* Top Header & Navigation */}
-      <div className='bg-card/50 sticky top-0 z-10 -mx-4 flex flex-col gap-6 px-4 pb-4 pt-2 backdrop-blur-md lg:mx-0 lg:px-0'>
-        <div className='flex items-center justify-between'>
-          <div className='flex flex-col gap-1'>
-            <h1 className='text-3xl font-black tracking-tighter text-slate-900'>QUẢN LÝ BÀN</h1>
-            <p className='text-muted-foreground text-sm font-medium'>Sơ đồ bàn thời gian thực • {stats.using} bàn đang phục vụ</p>
+      <div className='bg-white/80 sticky top-4 z-10 mx-auto flex w-full max-w-5xl flex-col gap-4 rounded-[2rem] border border-slate-100 p-4 backdrop-blur-xl shadow-soft transition-all lg:px-8 mb-6'>
+        <div className='flex flex-col gap-3'>
+          <div className='flex flex-wrap items-center justify-center gap-2 pb-1 scrollbar-hide'>
+            <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2'>Tầng:</span>
+            {floors.map((floor: any) => (
+              <Button
+                key={floor}
+                variant='ghost'
+                size='sm'
+                className={cn(
+                  'h-8 px-5 text-sm font-bold transition-all rounded-xl border',
+                  activeFloor === floor 
+                    ? 'bg-primary text-white shadow-md border-primary' 
+                    : 'bg-white text-slate-500 border-slate-100 hover:border-primary/30 shadow-sm'
+                )}
+                onClick={() => {
+                  setActiveFloor(floor)
+                  setActiveArea('Tất cả')
+                  setCurrentPage(1)
+                }}
+              >
+                {floor}
+              </Button>
+            ))}
           </div>
-          <div className='flex items-center gap-3'>
-            <Button variant='outline' size='icon' className='h-12 w-12 rounded-2xl bg-white shadow-soft transition-all hover:scale-105 active:scale-95'>
-              <Search className='h-5 w-5' />
-            </Button>
-            <Button variant='outline' size='icon' className='h-12 w-12 rounded-2xl bg-white shadow-soft transition-all hover:scale-105 active:scale-95'>
-              <LayoutGrid className='h-5 w-5 text-primary' />
-            </Button>
-          </div>
-        </div>
 
-        <div className='flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide'>
-          {tabs.map((tab) => (
-            <Button
-              key={tab}
-              variant='ghost'
-              className={cn(
-                'relative h-11 px-8 font-bold transition-all duration-300 rounded-xl',
-                activeTab === tab 
-                  ? 'bg-primary text-white shadow-lg shadow-primary/30 ring-1 ring-primary/20 scale-105' 
-                  : 'bg-white/50 text-slate-600 hover:bg-white hover:text-primary'
-              )}
-              onClick={() => setActiveTab(tab)}
-            >
-              {tab}
-            </Button>
-          ))}
+          <div className='flex flex-wrap items-center justify-center gap-2 pb-1 scrollbar-hide'>
+            <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2'>Khu vực:</span>
+            {areas.map((area: any) => (
+              <Button
+                key={area}
+                variant='ghost'
+                size='sm'
+                className={cn(
+                  'h-7 px-4 text-[10px] font-extrabold transition-all rounded-lg border uppercase tracking-wider',
+                  activeArea === area 
+                    ? 'bg-orange-500 text-white shadow-md border-orange-500' 
+                    : 'bg-white text-slate-400 border-slate-100 hover:border-orange-200 shadow-sm'
+                )}
+                onClick={() => {
+                  setActiveArea(area)
+                  setCurrentPage(1)
+                }}
+              >
+                {area}
+              </Button>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -209,9 +263,11 @@ const Cashier = () => {
 
         {/* Right Side: Table Grid */}
         <div className='flex-1'>
-          <div className='grid grid-cols-2 gap-6 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5'>
-            {filteredTables.map((table: any) => {
+          <div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'>
+            {paginatedTables.map((table: any) => {
               const isOccupied = table.status === 'OCCUPIED'
+              const isReserved = table.status === 'RESERVED'
+              const isUnavailable = table.status === 'UNAVAILABLE'
               const order = isOccupied ? getTableOrder(table.name) : null
               const itemCount = order?.orderDetails?.reduce((acc: number, d: any) => acc + d.quantity, 0) || 0
 
@@ -226,20 +282,40 @@ const Cashier = () => {
                       'relative flex h-44 w-full cursor-pointer flex-col items-center justify-center rounded-[2rem] transition-all duration-500 hover:-translate-y-2',
                       isOccupied
                         ? 'bg-primary text-white shadow-2xl shadow-primary/40 ring-4 ring-primary/20 active:scale-95'
-                        : 'border border-slate-200 bg-white hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 active:scale-95'
+                        : isReserved
+                          ? 'border border-amber-200 bg-amber-50 text-amber-900 hover:border-amber-300 hover:shadow-xl hover:shadow-amber-100 active:scale-95'
+                          : isUnavailable
+                            ? 'border border-slate-300 bg-slate-100 text-slate-600 hover:border-slate-400 hover:shadow-xl hover:shadow-slate-100 active:scale-95'
+                            : 'border border-slate-200 bg-white hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 active:scale-95'
                     )}
                   >
                     <div className='relative flex flex-col items-center'>
                       {/* Detailed Table Icon */}
                       <div className='flex gap-5 mb-1'>
-                        <div className={cn('h-2 w-7 rounded-t-full transition-all', isOccupied ? 'bg-white/40' : 'bg-slate-100')} />
-                        <div className={cn('h-2 w-7 rounded-t-full transition-all', isOccupied ? 'bg-white/40' : 'bg-slate-100')} />
+                        <div
+                          className={cn(
+                            'h-2 w-7 rounded-t-full transition-all',
+                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                          )}
+                        />
+                        <div
+                          className={cn(
+                            'h-2 w-7 rounded-t-full transition-all',
+                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                          )}
+                        />
                       </div>
 
                       <div
                         className={cn(
                           'relative h-20 w-32 rounded-[1.5rem] border-2 shadow-inner flex items-center justify-center p-3 z-10 transition-all duration-500',
-                          isOccupied ? 'border-white/50 bg-white/15' : 'border-slate-100 bg-slate-50/50'
+                          isOccupied
+                            ? 'border-white/50 bg-white/15'
+                            : isReserved
+                              ? 'border-amber-200 bg-amber-100/60'
+                              : isUnavailable
+                                ? 'border-slate-300 bg-slate-200/60'
+                                : 'border-slate-100 bg-slate-50/50'
                         )}
                       >
                         {isOccupied && order ? (
@@ -265,14 +341,37 @@ const Cashier = () => {
                           </div>
                         ) : (
                           <div className='h-full w-full rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center'>
-                             <span className={cn('text-[10px] font-black tracking-widest uppercase', isOccupied ? 'text-white/40' : 'text-slate-300')}>Phòng: {table.capacity}</span>
+                             <span
+                               className={cn(
+                                 'text-[10px] font-black tracking-widest uppercase',
+                                 isOccupied
+                                   ? 'text-white/40'
+                                   : isReserved
+                                     ? 'text-amber-400'
+                                     : isUnavailable
+                                       ? 'text-slate-400'
+                                       : 'text-slate-300'
+                               )}
+                             >
+                               Phòng: {table.capacity}
+                             </span>
                           </div>
                         )}
                       </div>
 
                       <div className='flex gap-5 mt-1'>
-                        <div className={cn('h-2 w-7 rounded-b-full transition-all', isOccupied ? 'bg-white/40' : 'bg-slate-100')} />
-                        <div className={cn('h-2 w-7 rounded-b-full transition-all', isOccupied ? 'bg-white/40' : 'bg-slate-100')} />
+                        <div
+                          className={cn(
+                            'h-2 w-7 rounded-b-full transition-all',
+                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                          )}
+                        />
+                        <div
+                          className={cn(
+                            'h-2 w-7 rounded-b-full transition-all',
+                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                          )}
+                        />
                       </div>
                     </div>
 
@@ -289,22 +388,36 @@ const Cashier = () => {
         </div>
       </div>
 
-      {/* Modern Footer Navigation */}
+      {/* Modern Footer Navigation (Pagination) */}
       <div className='bg-card/40 sticky bottom-4 z-10 flex flex-col items-center justify-between gap-6 rounded-[2.5rem] border border-white/40 px-8 py-5 backdrop-blur-xl shadow-2xl sm:flex-row'>
         <div className='flex-1 hidden sm:block'>
-           <p className='text-xs font-black text-slate-400 uppercase tracking-widest'>Navigation</p>
+           <p className='text-xs font-black text-slate-400 uppercase tracking-widest'>
+             Hiển thị {Math.min(filteredTables.length, (currentPage - 1) * pageSize + 1)} - {Math.min(filteredTables.length, currentPage * pageSize)} trên {filteredTables.length} bàn
+           </p>
         </div>
 
         <div className='flex items-center gap-4'>
-          <Button variant='ghost' size='icon' className='h-12 w-12 rounded-2xl border border-slate-100 bg-white/50 shadow-soft' disabled>
-            <ChevronLeft className='h-5 w-5 text-slate-400' />
+          <Button 
+            variant='ghost' 
+            size='icon' 
+            className='h-12 w-12 rounded-2xl border border-slate-100 bg-white/50 shadow-soft' 
+            disabled={currentPage === 1}
+            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+          >
+            <ChevronLeft className='h-5 w-5 text-slate-700' />
           </Button>
           <div className='flex h-12 min-w-[5rem] items-center justify-center rounded-2xl bg-white/80 px-4 text-sm font-black tracking-widest ring-1 ring-slate-100 shadow-sm'>
-            <span className='text-primary'>01</span>
+            <span className='text-primary'>{currentPage.toString().padStart(2, '0')}</span>
             <span className='mx-2 text-slate-300'>/</span>
-            <span className='text-slate-500'>02</span>
+            <span className='text-slate-500'>{totalPages.toString().padStart(2, '0')}</span>
           </div>
-          <Button variant='ghost' size='icon' className='h-12 w-12 rounded-2xl border border-slate-100 bg-white/50 shadow-soft'>
+          <Button 
+            variant='ghost' 
+            size='icon' 
+            className='h-12 w-12 rounded-2xl border border-slate-100 bg-white/50 shadow-soft'
+            disabled={currentPage === totalPages || totalPages === 0}
+            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+          >
             <ChevronRight className='h-5 w-5 text-slate-700' />
           </Button>
         </div>

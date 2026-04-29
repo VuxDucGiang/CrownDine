@@ -16,4 +16,6 @@ public class OrderLineResponse {
     private BigDecimal unitPrice;
     private BigDecimal totalPrice;
     private boolean hasFeedback;
+    private FeedbackResponse feedback;
+    private Boolean canEditFeedback;
 }

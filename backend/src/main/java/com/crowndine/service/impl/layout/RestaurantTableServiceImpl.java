@@ -9,6 +9,7 @@ import com.crowndine.model.Area;
 import com.crowndine.model.RestaurantTable;
 import com.crowndine.repository.AreaRepository;
 import com.crowndine.repository.RestaurantTableRepository;
+import com.crowndine.service.layout.RestaurantTableStateService;
 import com.crowndine.service.layout.RestaurantTableService;
 import com.crowndine.service.reservation.ReservationAvailabilityService;
 import com.crowndine.service.reservation.ReservationTimePolicy;
@@ -31,6 +32,7 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
     private final AreaRepository areaRepository;
     private final ReservationTimePolicy reservationTimePolicy;
     private final ReservationAvailabilityService reservationAvailabilityService;
+    private final RestaurantTableStateService restaurantTableStateService;
 
     @Override
     public TableLayoutResponse create(Long areaId, TableRequest request) {
@@ -49,6 +51,15 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
                         : ETableStatus.AVAILABLE
         );
         table.setArea(area);
+        
+        table.setBaseDeposit(request.getDeposit() != null ? request.getDeposit() : java.math.BigDecimal.ZERO);
+        table.setPositionX(request.getX() != null ? request.getX() : 0);
+        table.setPositionY(request.getY() != null ? request.getY() : 0);
+        table.setWidth(request.getWidth() != null ? request.getWidth() : 60);
+        table.setHeight(request.getHeight() != null ? request.getHeight() : 60);
+        table.setRotation(request.getRotation() != null ? request.getRotation() : 0);
+        table.setImageUrl(request.getImageUrl());
+        table.setDescription(request.getDescription());
 
         return map(tableRepository.save(table));
     }
@@ -63,7 +74,20 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
         table.setName(request.getName());
         table.setCapacity(request.getCapacity());
         table.setShape(request.getShape());
-        table.setStatus(request.getStatus());
+        
+        if (request.getStatus() != null) {
+            table.setStatus(request.getStatus());
+        }
+
+        if (request.getDeposit() != null) table.setBaseDeposit(request.getDeposit());
+        if (request.getX() != null) table.setPositionX(request.getX());
+        if (request.getY() != null) table.setPositionY(request.getY());
+        if (request.getWidth() != null) table.setWidth(request.getWidth());
+        if (request.getHeight() != null) table.setHeight(request.getHeight());
+        if (request.getRotation() != null) table.setRotation(request.getRotation());
+        
+        if (request.getImageUrl() != null) table.setImageUrl(request.getImageUrl());
+        if (request.getDescription() != null) table.setDescription(request.getDescription());
 
         return map(tableRepository.save(table));
     }
@@ -101,20 +125,22 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
 
     @Override
     public RestaurantTableResponse updateTableStatus(Long id, ETableStatus status) {
-        RestaurantTable table = tableRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Table not found"));
-
-        table.setStatus(status);
-        tableRepository.save(table);
-        log.info("Table id {} updated successfully to status {}", id, status);
-
-        return toResponse(table);
+        return restaurantTableStateService.changeStatus(id, status);
     }
 
     private RestaurantTableResponse toResponse(RestaurantTable restaurantTable) {
         RestaurantTableResponse response = new RestaurantTableResponse();
         BeanUtils.copyProperties(restaurantTable, response);
         response.setId(restaurantTable.getId());
+
+        if (restaurantTable.getArea() != null) {
+            response.setAreaId(restaurantTable.getArea().getId());
+            response.setAreaName(restaurantTable.getArea().getName());
+            if (restaurantTable.getArea().getFloor() != null) {
+                response.setFloorId(restaurantTable.getArea().getFloor().getId());
+                response.setFloorName(restaurantTable.getArea().getFloor().getName());
+            }
+        }
         return response;
     }
 
@@ -130,6 +156,9 @@ public class RestaurantTableServiceImpl implements RestaurantTableService {
         dto.setHeight(table.getHeight());
         dto.setRotation(table.getRotation());
         dto.setCapacity(table.getCapacity());
+        dto.setDeposit(table.getBaseDeposit());
+        dto.setImageUrl(table.getImageUrl());
+        dto.setDescription(table.getDescription());
         return dto;
     }
 }

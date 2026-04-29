@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
-import { Menu, X, Moon, Sun, User, LogOut, Settings, Heart, Trash2, Bell } from 'lucide-react'
+import { Menu, X, Moon, Sun, User, LogOut, Heart, Trash2, Bell } from 'lucide-react'
 import { useTheme } from 'next-themes'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/useAuthStore'
@@ -28,9 +28,8 @@ const Header = () => {
   const queryClient = useQueryClient()
 
   const navItems = [
-    { label: 'Thực Đơn', href: '#menu' },
+    { label: 'Thực Đơn', href: 'menu' },
     { label: 'Câu Chuyện', href: '#story' },
-    { label: 'Đặt Bàn', href: 'reservation' },
     { label: 'Liên Hệ', href: '#contact' }
   ]
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
@@ -204,9 +203,9 @@ const Header = () => {
                 <DropdownMenuTrigger asChild>
                   <Button variant='ghost' size='icon' className='hover:bg-accent/10 relative cursor-pointer'>
                     <Heart className='h-5 w-5' />
-                    {favorites.length > 0 && (
+                    {(favorites?.length ?? 0) > 0 && (
                       <span className='bg-primary absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full text-[10px] text-white'>
-                        {favorites.length}
+                        {favorites?.length}
                       </span>
                     )}
                   </Button>
@@ -214,17 +213,17 @@ const Header = () => {
                 <DropdownMenuContent className='border-border w-80 bg-card opacity-100 shadow-lg' align='end'>
                   <DropdownMenuLabel className='flex items-center justify-between'>
                     <span>Món ăn yêu thích</span>
-                    <span className='text-muted-foreground text-xs font-normal'>{favorites.length} món</span>
+                    <span className='text-muted-foreground text-xs font-normal'>{(favorites?.length ?? 0)} món</span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <div className='max-h-87.5 overflow-y-auto'>
-                    {favorites.length === 0 ? (
+                    {(favorites?.length ?? 0) === 0 ? (
                       <div className='text-muted-foreground flex flex-col items-center justify-center py-8 text-sm'>
                         <Heart className='mb-2 h-8 w-8 opacity-20' />
                         <p>Chưa có món yêu thích nào</p>
                       </div>
                     ) : (
-                      favorites.map((fav) => {
+                      favorites?.map((fav) => {
                         const item = fav.item || fav.combo
                         if (!item) return null
                         const isCombo = !!fav.combo
@@ -267,7 +266,7 @@ const Header = () => {
                       })
                     )}
                   </div>
-                  {favorites.length > 0 && (
+                  {(favorites?.length ?? 0) > 0 && (
                     <>
                       <DropdownMenuSeparator />
                       <Link
@@ -284,7 +283,7 @@ const Header = () => {
           )}
 
           {/* Book Button */}
-          <Link to='/#reservation'>
+          <Link to='/reservation'>
             <Button className='bg-primary hover:bg-primary/90 btn-lift border-primary hidden cursor-pointer rounded-full border px-6 py-2 font-semibold text-white transition-all duration-300 sm:inline-flex'>
               Đặt Bàn
             </Button>
@@ -316,12 +315,6 @@ const Header = () => {
                   <Link to='/profile' className='cursor-pointer'>
                     <User className='mr-2 h-4 w-4' />
                     <span>Hồ sơ của tôi</span>
-                  </Link>
-                </DropdownMenuItem>
-                <DropdownMenuItem asChild>
-                  <Link to='/settings' className='cursor-pointer'>
-                    <Settings className='mr-2 h-4 w-4' />
-                    <span>Cài đặt</span>
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />

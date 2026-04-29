@@ -17,11 +17,11 @@ export function CategoryTable({ categories, onRowClick, onEdit, onDelete }: Cate
                 <tr>
                     <th className='min-w-[200px] px-6 py-4'>
                     <div className='hover:text-foreground flex cursor-pointer items-center gap-2'>
-                        Name <ArrowUpDown className='h-3 w-3' />
+                        Tên <ArrowUpDown className='h-3 w-3' />
                     </div>
                     </th>
-                    <th className='hidden px-6 py-4 md:table-cell'>Description</th>
-                    <th className='w-[100px] px-6 py-4 text-end'>Actions</th>
+                    <th className='hidden px-6 py-4 md:table-cell'>Mô tả</th>
+                    <th className='w-[100px] px-6 py-4 text-end'>Thao tác</th>
                 </tr>
                 </thead>
                 <tbody className='divide-border divide-y'>

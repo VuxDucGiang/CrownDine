@@ -44,6 +44,16 @@ public class ApiOrderController {
     }
 
     @PreAuthorize("hasAnyAuthority('STAFF', 'ADMIN')")
+    @GetMapping("/{orderId}/checkout")
+    public ApiResponse getOrderCheckout(@Min(1) @PathVariable Long orderId) {
+        return ApiResponse.builder()
+                .status(200)
+                .message("Successfully retrieved order checkout")
+                .data(orderService.getOrderCheckout(orderId))
+                .build();
+    }
+
+    @PreAuthorize("hasAnyAuthority('STAFF', 'ADMIN')")
     @PostMapping
     public ApiResponse createOrder(@Valid @RequestBody OrderRequest request, Principal principal) {
         orderService.createWalkInOrder(request, principal.getName());
@@ -106,12 +116,14 @@ public class ApiOrderController {
     }
 
     @PatchMapping("/{id}/status")
-    public ApiResponse updateOrderStatus(@Min(1) @PathVariable Long id, @RequestParam EOrderStatus status,
+    public ApiResponse updateOrderStatus(@Min(1) @PathVariable Long id, 
+                                         @RequestParam EOrderStatus status,
+                                         @RequestParam(required = false) String cancelReason,
                                          Principal principal) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Successfully updated order status")
-                .data(orderStatusService.updateOrderStatus(id, status))
+                .data(orderStatusService.updateOrderStatus(id, status, cancelReason))
                 .build();
     }
 

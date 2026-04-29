@@ -12,7 +12,7 @@ function formatShiftTime(start: string, end: string) {
 }
 
 function getStatusColor(status: string): string {
-  return ATTENDANCE_STATUS_COLORS[status as EAttendanceStatus] ?? 'bg-gray-300'
+  return ATTENDANCE_STATUS_COLORS[status as EAttendanceStatus] ?? '#d1d5db'
 }
 
 interface ScheduleByShiftTableProps {
@@ -21,7 +21,7 @@ interface ScheduleByShiftTableProps {
 }
 
 export function ScheduleByShiftTable({ data, onCellClick }: ScheduleByShiftTableProps) {
-  const { shifts, cells, weekStart, weekEnd } = data
+  const { shifts, cells, weekStart } = data
   const weekDays = 7
   const start = new Date(weekStart)
   const dayLabels: { dayOfWeek: string; dateShort: string; date: string }[] = []
@@ -93,10 +93,8 @@ export function ScheduleByShiftTable({ data, onCellClick }: ScheduleByShiftTable
                             }
                           >
                             <span
-                              className={cn(
-                                'h-2.5 w-2.5 shrink-0 rounded-full',
-                                getStatusColor(emp.status)
-                              )}
+                              className='h-2.5 w-2.5 shrink-0 rounded-full'
+                              style={{ backgroundColor: getStatusColor(emp.status) }}
                             />
                             <span className='truncate'>{emp.fullName}</span>
                           </div>

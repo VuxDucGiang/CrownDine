@@ -39,7 +39,7 @@ const Hero = () => {
 
             {/* Buttons */}
             <div className='mb-12 flex flex-col gap-4 sm:flex-row'>
-              <a href='#reservation'>
+              <a href='reservation'>
                 <Button className='bg-primary hover:bg-primary/90 btn-lift border-primary rounded-full border-2 px-8 py-6 text-base font-semibold text-white'>
                   Đặt Bàn
                 </Button>
@@ -111,16 +111,6 @@ const Hero = () => {
               <div className='text-xl'>15+</div>
               <div className='text-xs tracking-wide uppercase'>Nhiều năm xuất sắc</div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Scroll Indicator */}
-      <div className='absolute bottom-8 left-1/2 z-10 -translate-x-1/2 transform animate-bounce'>
-        <div className='flex flex-col items-center gap-2'>
-          <p className='text-foreground/60 text-sm'>Cuộn để khám phá</p>
-          <div className='border-primary/40 flex h-10 w-6 items-start justify-center rounded-full border-2 p-2'>
-            <div className='bg-primary h-2 w-1 animate-pulse rounded-full'></div>
           </div>
         </div>
       </div>

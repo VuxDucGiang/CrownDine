@@ -15,7 +15,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.text.DecimalFormat;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
@@ -40,19 +43,25 @@ public class ChatContextService {
         context.append("- Địa chỉ: [Cập nhật địa chỉ]\n");
         context.append("- Số điện thoại: [Cập nhật số điện thoại]\n\n");
         
-        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+        DecimalFormat df = new DecimalFormat("#,###");
         
         // Categories and Menu Items
         context.append("MENU:\n");
         List<Category> categories = categoryRepository.findAll();
+        List<Item> allAvailableItems = itemRepository.findAll().stream()
+                .filter(item -> item.getStatus() == EItemStatus.AVAILABLE)
+                .collect(Collectors.toList());
+        
+        // Map items by category ID for fast lookup
+        Map<Long, List<Item>> itemsByCategory = allAvailableItems.stream()
+                .filter(item -> item.getCategory() != null)
+                .collect(Collectors.groupingBy(item -> item.getCategory().getId()));
+
         for (Category category : categories) {
+            List<Item> items = itemsByCategory.getOrDefault(category.getId(), Collections.emptyList());
+            if (items.isEmpty()) continue;
+
             context.append("\n").append(category.getName()).append(":\n");
-            List<Item> items = itemRepository.findAll().stream()
-                    .filter(item -> item.getCategory() != null && 
-                            item.getCategory().getId().equals(category.getId()) &&
-                            item.getStatus() == EItemStatus.AVAILABLE)
-                    .collect(Collectors.toList());
-            
             for (Item item : items) {
                 context.append("  - ").append(item.getName());
                 if (item.getDescription() != null && !item.getDescription().isEmpty()) {
@@ -180,7 +189,7 @@ public class ChatContextService {
             }
             
             if (table.getBaseDeposit() != null) {
-                java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+                DecimalFormat df = new DecimalFormat("#,###");
                 info.append("\n   - Đặt cọc: ").append(df.format(table.getBaseDeposit())).append(" VNĐ");
             }
             info.append("\n");
@@ -210,7 +219,7 @@ public class ChatContextService {
             return "Không tìm thấy món nào với từ khóa \"" + keyword + "\"";
         }
         
-        java.text.DecimalFormat df = new java.text.DecimalFormat("#,###");
+        DecimalFormat df = new DecimalFormat("#,###");
         StringBuilder result = new StringBuilder("Kết quả tìm kiếm cho \"" + keyword + "\":\n");
         for (Item item : items) {
             result.append("  - ").append(item.getName());

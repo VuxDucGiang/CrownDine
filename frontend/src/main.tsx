@@ -3,7 +3,6 @@ import { createRoot } from 'react-dom/client'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
 import { ThemeProvider } from 'next-themes'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Toaster } from 'sonner'
 import { StompSessionProvider } from 'react-stomp-hooks'
 import '@/index.css'
@@ -33,9 +32,11 @@ function AppWebSocketProvider({ children }: { children: React.ReactNode }) {
   }
 
   const rawAccessToken = accessToken?.startsWith('Bearer ') ? accessToken.slice(7) : accessToken
+  const defaultWsBaseUrl = import.meta.env.PROD ? 'wss://crowndine.onrender.com' : 'ws://localhost:8080'
+  const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL || defaultWsBaseUrl
   const websocketUrl = rawAccessToken
-    ? `ws://localhost:8080/ws-restaurant?access_token=${encodeURIComponent(rawAccessToken)}`
-    : 'ws://localhost:8080/ws-restaurant'
+    ? `${wsBaseUrl}/ws-restaurant?access_token=${encodeURIComponent(rawAccessToken)}`
+    : `${wsBaseUrl}/ws-restaurant`
 
   return (
     <WebSocketEnabledProvider enabled={true}>
@@ -61,12 +62,13 @@ createRoot(document.getElementById('root')!).render(
     <GoogleOAuthProvider clientId={import.meta.env.VITE_GOOGLE_CLIENT_ID}>
       <QueryClientProvider client={queryClient}>
         <AppProvider>
-          <AppWebSocketProvider>
-            <RouterProvider router={router} />
-            <Toaster richColors position='top-right' />
-          </AppWebSocketProvider>
+          <ThemeProvider attribute='class' defaultTheme='light' disableTransitionOnChange>
+            <AppWebSocketProvider>
+              <RouterProvider router={router} />
+              <Toaster richColors position='top-right' offset='70px' />
+            </AppWebSocketProvider>
+          </ThemeProvider>
         </AppProvider>
-        <ReactQueryDevtools initialIsOpen={false} />
       </QueryClientProvider>
     </GoogleOAuthProvider>
   </StrictMode>
