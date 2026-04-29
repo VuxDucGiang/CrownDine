@@ -1,11 +1,14 @@
 package com.crowndine;
 
 import org.junit.jupiter.api.Test;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
+@SpringBootTest
+@ActiveProfiles("test")
 class CrownDineApplicationTests {
     @Test
-    void testSuiteLoads() {
-        assertTrue(true);
+    void contextLoads() {
     }
+//    ./mvnw -Ptest clean test
 }

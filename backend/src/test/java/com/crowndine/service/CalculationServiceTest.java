@@ -14,6 +14,7 @@ import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+//./mvnw -Ptest -Dtest=CrownDineApplicationTests test
 class CalculationServiceTest {
 
     private CalculationService calculationService;
