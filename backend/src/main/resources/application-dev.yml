@@ -81,6 +81,8 @@ jwt:
 logging:
   level:
     org.flywaydb: DEBUG
+    org.springframework.security: DEBUG
+
 
 #Clooudinary
 cloudinary:

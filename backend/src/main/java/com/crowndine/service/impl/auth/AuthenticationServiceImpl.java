@@ -16,6 +16,7 @@ import com.crowndine.repository.RoleRepository;
 import com.crowndine.repository.UserRepository;
 import com.crowndine.service.auth.AuthenticationService;
 import com.crowndine.service.auth.JwtService;
+import com.crowndine.service.auth.RefreshTokenSessionStateService;
 import com.crowndine.service.auth.ResetPasswordTokenStateService;
 import com.crowndine.service.mail.MailService;
 import com.crowndine.service.token.TokenService;
@@ -57,6 +58,7 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     private final AuthenticationManager authenticationManager;
     private final PasswordEncoder passwordEncoder;
     private final TokenService tokenService;
+    private final RefreshTokenSessionStateService refreshTokenSessionStateService;
     private final ResetPasswordTokenStateService resetPasswordTokenStateService;
 
     @Value("${google.client-id}")
@@ -67,22 +69,22 @@ public class AuthenticationServiceImpl implements AuthenticationService {
     public TokenResponse accessToken(LoginRequest request, HttpServletRequest httpServletRequest) {
         List<String> roles;
 
-        try {
-            Authentication authentication = authenticationManager.authenticate(
-                    new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(request.getUsername(), request.getPassword()));
 
-            roles = extractRoles(authentication.getAuthorities());
+        roles = extractRoles(authentication.getAuthorities());
 
-        } catch (BadCredentialsException e) {
-            log.error("errorMessage: {}", e.getMessage());
-            throw new BadCredentialsException(e.getMessage());
-        }
-
-        String accessToken = jwtService.generateAccessToken(request.getUsername(), roles);
-        String refreshToken = jwtService.generateRefreshToken(request.getUsername(), roles);
+        String accessToken = jwtService.generateAccessToken(authentication.getName(), roles);
+        String refreshToken = jwtService.generateRefreshToken(authentication.getName(), roles);
+        String refreshTokenId = jwtService.extractTokenId(refreshToken, ETokenType.REFRESH_TOKEN);
+        String deviceId = resolveDeviceId(httpServletRequest);
 
         // save token to db
         tokenService.saveToken(request.getUsername(), refreshToken, httpServletRequest);
+
+        //set refreshtoken to redis
+        refreshTokenSessionStateService.storeLatestRefreshTokenId(authentication.getName(), deviceId,
+                refreshTokenId, jwtService.getRemainingValidity(refreshToken, ETokenType.REFRESH_TOKEN));
 
         return TokenResponse.builder()
                 .accessToken(accessToken)
@@ -101,6 +103,8 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         // Kiem tra JWT
         final String username = jwtService.extractUsername(refreshToken, ETokenType.REFRESH_TOKEN);
+        final String refreshTokenId = jwtService.extractTokenId(refreshToken, ETokenType.REFRESH_TOKEN);
+        final String deviceId = resolveDeviceId(request);
 
         // Kiem tra DB sau
         Token token = tokenService.getByRefreshToken(refreshToken);
@@ -111,6 +115,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         if (token.getExpiredAt().isBefore(LocalDateTime.now())) {
             throw new InvalidDataException("auth.refresh_token_expired");
+        }
+
+        if (!refreshTokenSessionStateService.isLatestRefreshToken(username, deviceId, refreshTokenId)) {
+            throw new InvalidDataException("auth.refresh_token_invalid");
         }
 
         User user = userRepository.findByUsername(username)
@@ -146,8 +154,10 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         // Kiem tra JWT
         final String username = jwtService.extractUsername(refreshToken, ETokenType.REFRESH_TOKEN);
+        final String deviceId = resolveDeviceId(request);
 
         tokenService.revokedByRefreshToken(refreshToken);
+        refreshTokenSessionStateService.clearSession(username, deviceId);
 
         log.info("Logout successful username {} ", username);
     }
@@ -327,8 +337,16 @@ public class AuthenticationServiceImpl implements AuthenticationService {
             List<String> roles = extractRoles(user.getAuthorities());
             String accessToken = jwtService.generateAccessToken(user.getUsername(), roles);
             String refreshToken = jwtService.generateRefreshToken(user.getUsername(), roles);
+            String refreshTokenId = jwtService.extractTokenId(refreshToken, ETokenType.REFRESH_TOKEN);
+            String deviceId = resolveDeviceId(httpServletRequest);
 
             tokenService.saveToken(user.getUsername(), refreshToken, httpServletRequest);
+            refreshTokenSessionStateService.storeLatestRefreshTokenId(
+                    user.getUsername(),
+                    deviceId,
+                    refreshTokenId,
+                    jwtService.getRemainingValidity(refreshToken, ETokenType.REFRESH_TOKEN)
+            );
 
             return TokenResponse.builder()
                     .accessToken(accessToken)
@@ -361,6 +379,20 @@ public class AuthenticationServiceImpl implements AuthenticationService {
 
         jwtService.isTokenValid(token, ETokenType.RESET_PASSWORD_TOKEN, user);
         return user;
+    }
+
+    private String resolveDeviceId(HttpServletRequest request) {
+        String deviceIdHeader = request.getHeader("X-Device-Id");
+        if (StringUtils.hasText(deviceIdHeader)) {
+            return deviceIdHeader.trim();
+        }
+
+        String userAgent = request.getHeader("User-Agent");
+        if (StringUtils.hasText(userAgent)) {
+            return userAgent.trim();
+        }
+
+        return "unknown-device";
     }
 
 }
