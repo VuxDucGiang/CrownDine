@@ -60,6 +60,25 @@ spring:
     password: ${RABBITMQ_PASSWORD:guest}
     virtual-host: ${RABBITMQ_VHOST:/}
 
+    publisher-confirm-type: correlated # Xác nhận tin đã đến Exchange chưa
+    publisher-returns: true            # Trả về tin nhắn nếu không thể routing vào Queue
+    template:
+      mandatory: true                  # Bắt buộc trả về tin nếu lỗi routing
+      retry:
+        enabled: true                  # Tự động gửi lại nếu gặp lỗi mạng tạm thời
+        initial-interval: 1000ms
+        max-attempts: 3
+
+    listener:
+      simple:
+        acknowledge-mode: manual       # Chế độ xác nhận thủ công (an toàn nhất)
+        prefetch: 1                    # Mỗi lần chỉ lấy 1 tin (tránh quá tải)
+        concurrency: 2                 # Số lượng luồng xử lý song song tối thiểu
+        max-concurrency: 5             # Số lượng luồng tối đa
+        retry:
+          enabled: true
+          max-attempts: 3              # Thử lại 3 lần nếu code xử lý bị exception
+
 springdoc:
   api-docs:
     enabled: false
