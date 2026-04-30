@@ -181,6 +181,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-websocket</artifactId>
         </dependency>
+        <!--  RABBIT MQ (Advanced Message Queuing Protocol) -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-amqp</artifactId>
+        </dependency>
         <!-- Excel Export -->
         <dependency>
             <groupId>org.apache.poi</groupId>
