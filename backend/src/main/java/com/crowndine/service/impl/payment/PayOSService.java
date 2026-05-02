@@ -98,13 +98,19 @@ public class PayOSService extends AbstractPaymentStrategy {
     @Override
     @Transactional(rollbackFor = Exception.class)
     public void handleWebHook(Map<String, Object> body) {
+        long startNs = System.nanoTime();
+        String eventId;
+        Long orderCode;
         WebhookData data = payOS.webhooks().verify(body);
-        Long orderCode = data.getOrderCode();
-        log.info("Processing PAYOS webhook for orderCode: {}", orderCode);
+        orderCode = data.getOrderCode();
+        eventId = !data.getReference().isBlank() ? data.getReference() : String.valueOf(orderCode);
+        log.info("Processing PAYOS webhook, eventId={}, orderCode={}", eventId, orderCode);
         try {
             Payment payment = paymentRepository.findByCode(orderCode).orElseThrow(() -> new ResourceNotFoundException("Payment not found"));
             if (payment.getStatus() == EPaymentStatus.SUCCESS) {
-                log.info("Payment code {} already marked as success, skipping duplicate webhook", orderCode);
+                long duplicateMs = (System.nanoTime() - startNs) / 1_000_000;
+                log.info("Payment code {} already marked as success, skipping duplicate webhook, eventId={}, webhook_ms={}",
+                        orderCode, eventId, duplicateMs);
                 return;
             }
 
@@ -115,9 +121,13 @@ public class PayOSService extends AbstractPaymentStrategy {
             paymentRepository.save(payment);
 
             handlePaymentSuccess(payment);
-            log.info("Payment id {} saved with status={}", payment.getId(), payment.getStatus());
+            long webhookMs = (System.nanoTime() - startNs) / 1_000_000;
+            log.info("Payment id {} saved with status={}, eventId={}, orderCode={}, webhook_ms={}",
+                    payment.getId(), payment.getStatus(), eventId, orderCode, webhookMs);
         } catch (Exception e) {
-            log.error("Error while handling PayOS webhook: {}", e.getMessage(), e);
+            long failedMs = (System.nanoTime() - startNs) / 1_000_000;
+            log.error("Error while handling PayOS webhook, eventId={}, orderCode={}, webhook_ms={}, message={}",
+                    eventId, orderCode, failedMs, e.getMessage(), e);
         }
     }
 

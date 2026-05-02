@@ -1,21 +1,18 @@
-package com.crowndine.service.reservation.listener;
+package com.crowndine.messaging.handler;
 
 import com.crowndine.exception.ResourceNotFoundException;
+import com.crowndine.model.OrderDetail;
 import com.crowndine.model.Reservation;
 import com.crowndine.repository.OrderDetailRepository;
 import com.crowndine.repository.ReservationRepository;
 import com.crowndine.service.mail.MailService;
 import com.crowndine.service.notification.NotificationService;
-import com.crowndine.service.reservation.event.ReservationConfirmedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.transaction.event.TransactionPhase;
-import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -23,32 +20,25 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-@Component
+@Service
 @RequiredArgsConstructor
-@Slf4j(topic = "RESERVATION-CONFIRMED-EVENT-LISTENER")
-public class ReservationConfirmedEventListener {
+@Slf4j(topic = "RESERVATION-CONFIRMED-ASYNC-HANDLER")
+public class ReservationConfirmedAsyncHandlerImpl implements ReservationConfirmedAsyncHandler {
 
     private final NotificationService notificationService;
     private final ReservationRepository reservationRepository;
     private final MailService mailService;
     private final OrderDetailRepository orderDetailRepository;
+
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendBaseUrl;
 
-    /**
-     * Tạo notification và gửi email sau khi reservation đã commit thành công.
-     */
-    @Async("notificationTaskExecutor")
-    @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
+    @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void handle(ReservationConfirmedEvent event) {
-        log.info("Handling ReservationConfirmedEvent for reservation id {}", event.reservationId());
-
-        // 1. In-app notification
-        notificationService.notifyReservationConfirmed(event.reservationId());
-
-        // 2. Send confirmation email
-        sendConfirmationEmail(event.reservationId());
+    public void handleReservationConfirmed(Long reservationId) {
+        log.info("Handling reservation confirmed async workflow for reservation id {}", reservationId);
+        notificationService.notifyReservationConfirmed(reservationId);
+        sendConfirmationEmail(reservationId);
     }
 
     private void sendConfirmationEmail(Long reservationId) {
@@ -60,7 +50,6 @@ public class ReservationConfirmedEventListener {
             return;
         }
 
-        // Order Details
         List<Map<String, Object>> items = new ArrayList<>();
         BigDecimal totalPrice = BigDecimal.ZERO;
         BigDecimal discountPrice = BigDecimal.ZERO;
@@ -71,8 +60,8 @@ public class ReservationConfirmedEventListener {
             discountPrice = reservation.getOrder().getDiscountPrice();
             finalPrice = reservation.getOrder().getFinalPrice();
 
-            List<com.crowndine.model.OrderDetail> details = orderDetailRepository.findByOrder_Id(reservation.getOrder().getId());
-            for (com.crowndine.model.OrderDetail detail : details) {
+            List<OrderDetail> details = orderDetailRepository.findByOrder_Id(reservation.getOrder().getId());
+            for (OrderDetail detail : details) {
                 Map<String, Object> itemMap = new HashMap<>();
                 itemMap.put("name", detail.getProductName());
                 itemMap.put("quantity", detail.getQuantity());
@@ -83,7 +72,6 @@ public class ReservationConfirmedEventListener {
             }
         }
 
-        // Send Email
         Map<String, Object> emailDetails = new HashMap<>();
         emailDetails.put("customerName", reservation.getUser().getFullName());
         emailDetails.put("reservationCode", reservation.getCode());

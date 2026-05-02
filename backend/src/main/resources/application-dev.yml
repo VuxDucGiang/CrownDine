@@ -143,5 +143,9 @@ app:
     allowed-origin-patterns: ${WS_ALLOWED_ORIGIN_PATTERNS:http://localhost:5173}
   rabbitmq:
     exchange: ${RABBITMQ_EXCHANGE:crowndine.events}
-    queue: ${RABBITMQ_QUEUE_ORDER_PAID:crowndine.order.paid}
-    routing-key: ${RABBITMQ_ROUTING_KEY_ORDER_PAID:order.paid}
+    queue:
+      order-paid: ${RABBITMQ_QUEUE_ORDER_PAID:crowndine.order.paid}
+      reservation-confirmed: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED:crowndine.reservation.confirmed}
+    routing-key:
+      order-paid: ${RABBITMQ_ROUTING_KEY_ORDER_PAID:order.paid}
+      reservation-confirmed: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED:reservation.confirmed}
