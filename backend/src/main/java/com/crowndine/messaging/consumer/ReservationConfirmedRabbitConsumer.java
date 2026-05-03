@@ -32,7 +32,7 @@ public class ReservationConfirmedRabbitConsumer {
         } catch (Exception ex) {
             channel.basicNack(deliveryTag, false, false);
             log.error("Failed to process reservation confirmed message, reservationId={}, error={}", reservationId, ex.getMessage(), ex);
-            throw ex;
+            // Do not rethrow after manual nack; broker will route to DLQ.
         }
     }
 }

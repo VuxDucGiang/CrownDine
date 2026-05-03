@@ -76,7 +76,7 @@ spring:
         concurrency: 2                 # Số lượng luồng xử lý song song tối thiểu
         max-concurrency: 5             # Số lượng luồng tối đa
         retry:
-          enabled: true
+          enabled: false
           max-attempts: 3              # Thử lại 3 lần nếu code xử lý bị exception
 
 springdoc:
@@ -142,9 +142,13 @@ app:
     queue:
       order-paid: ${RABBITMQ_QUEUE_ORDER_PAID:crowndine.order.paid}
       reservation-confirmed: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED:crowndine.reservation.confirmed}
+      reservation-confirmed-dlq: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_DLQ:crowndine.reservation.confirmed.dlq}
     routing-key:
       order-paid: ${RABBITMQ_ROUTING_KEY_ORDER_PAID:order.paid}
       reservation-confirmed: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED:reservation.confirmed}
+      reservation-confirmed-dlq: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_DLQ:reservation.confirmed.dlq}
+    test:
+      force-fail-reservation-confirmed: ${RABBITMQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED:false}
 
 logging:
   level:

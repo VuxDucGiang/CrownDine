@@ -33,9 +33,15 @@ public class ReservationConfirmedAsyncHandlerImpl implements ReservationConfirme
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendBaseUrl;
 
+    @Value("${app.rabbitmq.test.force-fail-reservation-confirmed:false}")
+    private boolean forceFailReservationConfirmed;
+
     @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void handleReservationConfirmed(Long reservationId) {
+        if (forceFailReservationConfirmed) {
+            throw new RuntimeException("DLQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED");
+        }
         log.info("Handling reservation confirmed async workflow for reservation id {}", reservationId);
         notificationService.notifyReservationConfirmed(reservationId);
         sendConfirmationEmail(reservationId);
