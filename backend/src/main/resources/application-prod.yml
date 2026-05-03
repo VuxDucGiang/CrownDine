@@ -144,13 +144,19 @@ app:
       reservation-confirmed-app: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_APP:crowndine.reservation.confirmed.inapp-notification}
       reservation-confirmed-app-dlq: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_APP_DLQ:crowndine.reservation.confirmed.inapp-notification.dlq}
       reservation-confirmed-email: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_EMAIL:crowndine.reservation.confirmed.email-notification}
+      reservation-confirmed-email-retry: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_EMAIL_RETRY:crowndine.reservation.confirmed.email-notification.retry}
       reservation-confirmed-email-dlq: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_EMAIL_DLQ:crowndine.reservation.confirmed.email-notification.dlq}
     routing-key:
       order-paid: ${RABBITMQ_ROUTING_KEY_ORDER_PAID:order.paid}
       reservation-confirmed-app: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_APP:reservation.confirmed.inapp-notification}
       reservation-confirmed-app-dlq: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_APP_DLQ:reservation.confirmed.inapp-notification.dlq}
       reservation-confirmed-email: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_EMAIL:reservation.confirmed.email-notification}
+      reservation-confirmed-email-retry: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_EMAIL_RETRY:reservation.confirmed.email-notification.retry}
       reservation-confirmed-email-dlq: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_EMAIL_DLQ:reservation.confirmed.email-notification.dlq}
+    retry:
+      reservation-confirmed-email:
+        max-attempts: ${RABBITMQ_RETRY_EMAIL_MAX_ATTEMPTS:3}
+        ttl-ms: ${RABBITMQ_RETRY_EMAIL_TTL_MS:30000}
     test:
       force-fail-reservation-confirmed-app: ${RABBITMQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED_APP:false}
       force-fail-reservation-confirmed-email: ${RABBITMQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED_EMAIL:false}

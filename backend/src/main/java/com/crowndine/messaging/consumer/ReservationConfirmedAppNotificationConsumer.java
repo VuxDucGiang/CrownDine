@@ -17,7 +17,7 @@ public class ReservationConfirmedAppNotificationConsumer {
 
     private final ReservationConfirmedAppNotificationHandler appNotificationHandler;
 
-    @RabbitListener(queues = "${app.rabbitmq.queue.reservation-confirmed-app:crowndine.reservation.confirmed.app}")
+    @RabbitListener(queues = "${app.rabbitmq.queue.reservation-confirmed-app:crowndine.reservation.confirmed.inapp-notification}")
     public void consume(Long reservationId,
                         Message message,
                         Channel channel,

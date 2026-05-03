@@ -19,10 +19,10 @@ public class ReservationConfirmedMessageProducer {
     @Value("${app.rabbitmq.exchange:crowndine.events}")
     private String exchangeName;
 
-    @Value("${app.rabbitmq.routing-key.reservation-confirmed-app:reservation.confirmed.app}")
+    @Value("${app.rabbitmq.routing-key.reservation-confirmed-app:reservation.confirmed.inapp-notification}")
     private String reservationConfirmedAppRoutingKey;
 
-    @Value("${app.rabbitmq.routing-key.reservation-confirmed-email:reservation.confirmed.email}")
+    @Value("${app.rabbitmq.routing-key.reservation-confirmed-email:reservation.confirmed.email-notification}")
     private String reservationConfirmedEmailRoutingKey;
 
     @TransactionalEventListener(phase = TransactionPhase.AFTER_COMMIT)
