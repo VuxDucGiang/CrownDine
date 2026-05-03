@@ -27,6 +27,12 @@ public class RabbitMqConfig {
     @Value("${app.rabbitmq.routing-key.reservation-confirmed-app:reservation.confirmed.inapp-notification}")
     private String reservationConfirmedAppRoutingKey;
 
+    @Value("${app.rabbitmq.queue.reservation-confirmed-app-retry:crowndine.reservation.confirmed.inapp-notification.retry}")
+    private String reservationConfirmedAppRetryQueueName;
+
+    @Value("${app.rabbitmq.routing-key.reservation-confirmed-app-retry:reservation.confirmed.inapp-notification.retry}")
+    private String reservationConfirmedAppRetryRoutingKey;
+
     @Value("${app.rabbitmq.queue.reservation-confirmed-app-dlq:crowndine.reservation.confirmed.inapp-notification.dlq}")
     private String reservationConfirmedAppDlqName;
 
@@ -54,6 +60,9 @@ public class RabbitMqConfig {
     @Value("${app.rabbitmq.retry.reservation-confirmed-email.ttl-ms:30000}")
     private Long reservationConfirmedEmailRetryTtlMs;
 
+    @Value("${app.rabbitmq.retry.reservation-confirmed-app.ttl-ms:30000}")
+    private Long reservationConfirmedAppRetryTtlMs;
+
     @Bean
     public TopicExchange crowndineExchange() {
         return new TopicExchange(exchangeName, true, false);
@@ -73,13 +82,27 @@ public class RabbitMqConfig {
     public Queue reservationConfirmedAppQueue() {
         return QueueBuilder.durable(reservationConfirmedAppQueueName)
                 .withArgument("x-dead-letter-exchange", exchangeName)
-                .withArgument("x-dead-letter-routing-key", reservationConfirmedAppDlqRoutingKey)
+                .withArgument("x-dead-letter-routing-key", reservationConfirmedAppRetryRoutingKey)
                 .build();
     }
 
     @Bean
     public Binding reservationConfirmedAppBinding(Queue reservationConfirmedAppQueue, TopicExchange crowndineExchange) {
         return BindingBuilder.bind(reservationConfirmedAppQueue).to(crowndineExchange).with(reservationConfirmedAppRoutingKey);
+    }
+
+    @Bean
+    public Queue reservationConfirmedAppRetryQueue() {
+        return QueueBuilder.durable(reservationConfirmedAppRetryQueueName)
+                .withArgument("x-message-ttl", reservationConfirmedAppRetryTtlMs)
+                .withArgument("x-dead-letter-exchange", exchangeName)
+                .withArgument("x-dead-letter-routing-key", reservationConfirmedAppRoutingKey)
+                .build();
+    }
+
+    @Bean
+    public Binding reservationConfirmedAppRetryBinding(Queue reservationConfirmedAppRetryQueue, TopicExchange crowndineExchange) {
+        return BindingBuilder.bind(reservationConfirmedAppRetryQueue).to(crowndineExchange).with(reservationConfirmedAppRetryRoutingKey);
     }
 
     @Bean
