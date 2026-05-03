@@ -141,14 +141,19 @@ app:
     exchange: ${RABBITMQ_EXCHANGE:crowndine.events}
     queue:
       order-paid: ${RABBITMQ_QUEUE_ORDER_PAID:crowndine.order.paid}
-      reservation-confirmed: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED:crowndine.reservation.confirmed}
-      reservation-confirmed-dlq: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_DLQ:crowndine.reservation.confirmed.dlq}
+      reservation-confirmed-app: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_APP:crowndine.reservation.confirmed.inapp-notification}
+      reservation-confirmed-app-dlq: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_APP_DLQ:crowndine.reservation.confirmed.inapp-notification.dlq}
+      reservation-confirmed-email: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_EMAIL:crowndine.reservation.confirmed.email-notification}
+      reservation-confirmed-email-dlq: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_EMAIL_DLQ:crowndine.reservation.confirmed.email-notification.dlq}
     routing-key:
       order-paid: ${RABBITMQ_ROUTING_KEY_ORDER_PAID:order.paid}
-      reservation-confirmed: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED:reservation.confirmed}
-      reservation-confirmed-dlq: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_DLQ:reservation.confirmed.dlq}
+      reservation-confirmed-app: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_APP:reservation.confirmed.inapp-notification}
+      reservation-confirmed-app-dlq: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_APP_DLQ:reservation.confirmed.inapp-notification.dlq}
+      reservation-confirmed-email: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_EMAIL:reservation.confirmed.email-notification}
+      reservation-confirmed-email-dlq: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_EMAIL_DLQ:reservation.confirmed.email-notification.dlq}
     test:
-      force-fail-reservation-confirmed: ${RABBITMQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED:false}
+      force-fail-reservation-confirmed-app: ${RABBITMQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED_APP:false}
+      force-fail-reservation-confirmed-email: ${RABBITMQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED_EMAIL:false}
 
 logging:
   level:

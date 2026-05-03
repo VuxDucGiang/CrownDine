@@ -6,7 +6,6 @@ import com.crowndine.model.Reservation;
 import com.crowndine.repository.OrderDetailRepository;
 import com.crowndine.repository.ReservationRepository;
 import com.crowndine.service.mail.MailService;
-import com.crowndine.service.notification.NotificationService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
@@ -22,10 +21,9 @@ import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
-@Slf4j(topic = "RESERVATION-CONFIRMED-ASYNC-HANDLER")
-public class ReservationConfirmedAsyncHandlerImpl implements ReservationConfirmedAsyncHandler {
+@Slf4j(topic = "RESERVATION-CONFIRMED-EMAIL-HANDLER")
+public class ReservationConfirmedEmailHandler {
 
-    private final NotificationService notificationService;
     private final ReservationRepository reservationRepository;
     private final MailService mailService;
     private final OrderDetailRepository orderDetailRepository;
@@ -33,17 +31,14 @@ public class ReservationConfirmedAsyncHandlerImpl implements ReservationConfirme
     @Value("${app.frontend-url:http://localhost:5173}")
     private String frontendBaseUrl;
 
-    @Value("${app.rabbitmq.test.force-fail-reservation-confirmed:false}")
-    private boolean forceFailReservationConfirmed;
+    @Value("${app.rabbitmq.test.force-fail-reservation-confirmed-email:false}")
+    private boolean forceFailReservationConfirmedEmail;
 
-    @Override
     @Transactional(propagation = Propagation.REQUIRES_NEW)
-    public void handleReservationConfirmed(Long reservationId) {
-        if (forceFailReservationConfirmed) {
-            throw new RuntimeException("DLQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED");
+    public void handle(Long reservationId) {
+        if (forceFailReservationConfirmedEmail) {
+            throw new RuntimeException("DLQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED_EMAIL");
         }
-        log.info("Handling reservation confirmed async workflow for reservation id {}", reservationId);
-        notificationService.notifyReservationConfirmed(reservationId);
         sendConfirmationEmail(reservationId);
     }
 

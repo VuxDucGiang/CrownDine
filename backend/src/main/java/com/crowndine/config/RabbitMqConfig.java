@@ -21,17 +21,29 @@ public class RabbitMqConfig {
     @Value("${app.rabbitmq.routing-key.order-paid:order.paid}")
     private String routingKey;
 
-    @Value("${app.rabbitmq.queue.reservation-confirmed:crowndine.reservation.confirmed}")
-    private String reservationConfirmedQueueName;
+    @Value("${app.rabbitmq.queue.reservation-confirmed-app:crowndine.reservation.confirmed.inapp-notification}")
+    private String reservationConfirmedAppQueueName;
 
-    @Value("${app.rabbitmq.routing-key.reservation-confirmed:reservation.confirmed}")
-    private String reservationConfirmedRoutingKey;
+    @Value("${app.rabbitmq.routing-key.reservation-confirmed-app:reservation.confirmed.inapp-notification}")
+    private String reservationConfirmedAppRoutingKey;
 
-    @Value("${app.rabbitmq.queue.reservation-confirmed-dlq:crowndine.reservation.confirmed.dlq}")
-    private String reservationConfirmedDlqName;
+    @Value("${app.rabbitmq.queue.reservation-confirmed-app-dlq:crowndine.reservation.confirmed.inapp-notification.dlq}")
+    private String reservationConfirmedAppDlqName;
 
-    @Value("${app.rabbitmq.routing-key.reservation-confirmed-dlq:reservation.confirmed.dlq}")
-    private String reservationConfirmedDlqRoutingKey;
+    @Value("${app.rabbitmq.routing-key.reservation-confirmed-app-dlq:reservation.confirmed.inapp-notification.dlq}")
+    private String reservationConfirmedAppDlqRoutingKey;
+
+    @Value("${app.rabbitmq.queue.reservation-confirmed-email:crowndine.reservation.confirmed.email-notification}")
+    private String reservationConfirmedEmailQueueName;
+
+    @Value("${app.rabbitmq.routing-key.reservation-confirmed-email:reservation.confirmed.email-notification}")
+    private String reservationConfirmedEmailRoutingKey;
+
+    @Value("${app.rabbitmq.queue.reservation-confirmed-email-dlq:crowndine.reservation.confirmed.email-notification.dlq}")
+    private String reservationConfirmedEmailDlqName;
+
+    @Value("${app.rabbitmq.routing-key.reservation-confirmed-email-dlq:reservation.confirmed.email-notification.dlq}")
+    private String reservationConfirmedEmailDlqRoutingKey;
 
     @Bean
     public TopicExchange crowndineExchange() {
@@ -49,25 +61,48 @@ public class RabbitMqConfig {
     }
 
     @Bean
-    public Queue reservationConfirmedQueue() {
-        return QueueBuilder.durable(reservationConfirmedQueueName)
+    public Queue reservationConfirmedAppQueue() {
+        return QueueBuilder.durable(reservationConfirmedAppQueueName)
                 .withArgument("x-dead-letter-exchange", exchangeName)
-                .withArgument("x-dead-letter-routing-key", reservationConfirmedDlqRoutingKey)
+                .withArgument("x-dead-letter-routing-key", reservationConfirmedAppDlqRoutingKey)
                 .build();
     }
 
     @Bean
-    public Binding reservationConfirmedBinding(Queue reservationConfirmedQueue, TopicExchange crowndineExchange) {
-        return BindingBuilder.bind(reservationConfirmedQueue).to(crowndineExchange).with(reservationConfirmedRoutingKey);
+    public Binding reservationConfirmedAppBinding(Queue reservationConfirmedAppQueue, TopicExchange crowndineExchange) {
+        return BindingBuilder.bind(reservationConfirmedAppQueue).to(crowndineExchange).with(reservationConfirmedAppRoutingKey);
     }
 
     @Bean
-    public Queue reservationConfirmedDlq() {
-        return QueueBuilder.durable(reservationConfirmedDlqName).build();
+    public Queue reservationConfirmedAppDlq() {
+        return QueueBuilder.durable(reservationConfirmedAppDlqName).build();
     }
 
     @Bean
-    public Binding reservationConfirmedDlqBinding(Queue reservationConfirmedDlq, TopicExchange crowndineExchange) {
-        return BindingBuilder.bind(reservationConfirmedDlq).to(crowndineExchange).with(reservationConfirmedDlqRoutingKey);
+    public Binding reservationConfirmedAppDlqBinding(Queue reservationConfirmedAppDlq, TopicExchange crowndineExchange) {
+        return BindingBuilder.bind(reservationConfirmedAppDlq).to(crowndineExchange).with(reservationConfirmedAppDlqRoutingKey);
+    }
+
+    @Bean
+    public Queue reservationConfirmedEmailQueue() {
+        return QueueBuilder.durable(reservationConfirmedEmailQueueName)
+                .withArgument("x-dead-letter-exchange", exchangeName)
+                .withArgument("x-dead-letter-routing-key", reservationConfirmedEmailDlqRoutingKey)
+                .build();
+    }
+
+    @Bean
+    public Binding reservationConfirmedEmailBinding(Queue reservationConfirmedEmailQueue, TopicExchange crowndineExchange) {
+        return BindingBuilder.bind(reservationConfirmedEmailQueue).to(crowndineExchange).with(reservationConfirmedEmailRoutingKey);
+    }
+
+    @Bean
+    public Queue reservationConfirmedEmailDlq() {
+        return QueueBuilder.durable(reservationConfirmedEmailDlqName).build();
+    }
+
+    @Bean
+    public Binding reservationConfirmedEmailDlqBinding(Queue reservationConfirmedEmailDlq, TopicExchange crowndineExchange) {
+        return BindingBuilder.bind(reservationConfirmedEmailDlq).to(crowndineExchange).with(reservationConfirmedEmailDlqRoutingKey);
     }
 }
