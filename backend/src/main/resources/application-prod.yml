@@ -53,6 +53,31 @@ spring:
       password: ${REDIS_PASSWORD:}
       timeout: 3000ms
       connect-timeout: 3000ms
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+
+    publisher-confirm-type: correlated # Xác nhận tin đã đến Exchange chưa
+    publisher-returns: true            # Trả về tin nhắn nếu không thể routing vào Queue
+    template:
+      mandatory: true                  # Bắt buộc trả về tin nếu lỗi routing
+      retry:
+        enabled: true                  # Tự động gửi lại nếu gặp lỗi mạng tạm thời
+        initial-interval: 1000ms
+        max-attempts: 3
+
+    listener:
+      simple:
+        acknowledge-mode: manual       # Chế độ xác nhận thủ công (an toàn nhất)
+        prefetch: 1                    # Mỗi lần chỉ lấy 1 tin (tránh quá tải)
+        concurrency: 2                 # Số lượng luồng xử lý song song tối thiểu
+        max-concurrency: 5             # Số lượng luồng tối đa
+        retry:
+          enabled: false
+          max-attempts: 3              # Thử lại 3 lần nếu code xử lý bị exception
 
 springdoc:
   api-docs:
@@ -112,6 +137,34 @@ app:
     allowed-origin-patterns: ${CORS_ALLOWED_ORIGIN_PATTERNS:https://crown-dine.vercel.app,https://*.vercel.app}
   websocket:
     allowed-origin-patterns: ${WS_ALLOWED_ORIGIN_PATTERNS:https://crown-dine.vercel.app}
+  rabbitmq:
+    exchange: ${RABBITMQ_EXCHANGE:crowndine.events}
+    queue:
+      order-paid: ${RABBITMQ_QUEUE_ORDER_PAID:crowndine.order.paid}
+      reservation-confirmed-app: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_APP:crowndine.reservation.confirmed.inapp-notification}
+      reservation-confirmed-app-retry: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_APP_RETRY:crowndine.reservation.confirmed.inapp-notification.retry}
+      reservation-confirmed-app-dlq: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_APP_DLQ:crowndine.reservation.confirmed.inapp-notification.dlq}
+      reservation-confirmed-email: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_EMAIL:crowndine.reservation.confirmed.email-notification}
+      reservation-confirmed-email-retry: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_EMAIL_RETRY:crowndine.reservation.confirmed.email-notification.retry}
+      reservation-confirmed-email-dlq: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_EMAIL_DLQ:crowndine.reservation.confirmed.email-notification.dlq}
+    routing-key:
+      order-paid: ${RABBITMQ_ROUTING_KEY_ORDER_PAID:order.paid}
+      reservation-confirmed-app: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_APP:reservation.confirmed.inapp-notification}
+      reservation-confirmed-app-retry: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_APP_RETRY:reservation.confirmed.inapp-notification.retry}
+      reservation-confirmed-app-dlq: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_APP_DLQ:reservation.confirmed.inapp-notification.dlq}
+      reservation-confirmed-email: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_EMAIL:reservation.confirmed.email-notification}
+      reservation-confirmed-email-retry: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_EMAIL_RETRY:reservation.confirmed.email-notification.retry}
+      reservation-confirmed-email-dlq: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_EMAIL_DLQ:reservation.confirmed.email-notification.dlq}
+    retry:
+      reservation-confirmed-app:
+        max-attempts: ${RABBITMQ_RETRY_APP_MAX_ATTEMPTS:3}
+        ttl-ms: ${RABBITMQ_RETRY_APP_TTL_MS:30000}
+      reservation-confirmed-email:
+        max-attempts: ${RABBITMQ_RETRY_EMAIL_MAX_ATTEMPTS:3}
+        ttl-ms: ${RABBITMQ_RETRY_EMAIL_TTL_MS:30000}
+    test:
+      force-fail-reservation-confirmed-app: ${RABBITMQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED_APP:false}
+      force-fail-reservation-confirmed-email: ${RABBITMQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED_EMAIL:false}
 
 logging:
   level:

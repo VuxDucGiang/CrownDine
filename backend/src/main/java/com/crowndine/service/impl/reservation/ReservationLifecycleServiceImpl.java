@@ -24,7 +24,7 @@ import com.crowndine.service.reservation.ReservationLifecycleService;
 import com.crowndine.service.reservation.ReservationOrderService;
 import com.crowndine.service.reservation.ReservationTimePolicy;
 import com.crowndine.service.reservation.event.ReservationCancelledEvent;
-import com.crowndine.service.reservation.event.ReservationConfirmedEvent;
+import com.crowndine.messaging.event.ReservationConfirmedEvent;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.context.ApplicationEventPublisher;
