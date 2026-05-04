@@ -1,5 +1,6 @@
 package com.crowndine.controller;
 
+import com.crowndine.common.enums.EMenuType;
 import com.crowndine.dto.response.ApiResponse;
 import com.crowndine.dto.response.MenuResponse;
 import com.crowndine.dto.response.PageResponse;
@@ -25,7 +26,7 @@ public class ApiMenuController {
     @GetMapping
     public ApiResponse getMenu(@RequestParam(required = false) Long categoryId,
                                @RequestParam(required = false) String search,
-                               @RequestParam(required = false, defaultValue = "ALL") String type,
+                               @RequestParam(required = false, defaultValue = "ALL") EMenuType type,
                                @RequestParam(required = false) String dir,
                                @RequestParam(required = false) String sortBy,
                                @RequestParam(required = false, defaultValue = "1") int page,

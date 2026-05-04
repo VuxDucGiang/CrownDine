@@ -6,6 +6,7 @@ export interface ComboItem {
 
 export interface Combo {
   id: number
+  slug?: string
   name: string
   description: string
   price: number
@@ -14,5 +15,6 @@ export interface Combo {
   imageUrl: string | null
   averageRating?: number
   feedbackCount?: number
+  soldCount?: number
   items?: ComboItem[]
 }

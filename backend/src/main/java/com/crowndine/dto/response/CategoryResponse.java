@@ -1,11 +1,11 @@
 package com.crowndine.dto.response;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 @Getter
 @Setter
+@NoArgsConstructor
+@AllArgsConstructor
 @Builder
 public class CategoryResponse {
     private Long id;

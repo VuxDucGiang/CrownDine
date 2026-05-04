@@ -111,6 +111,9 @@ logging:
         amqp:
           rabbit:
             listener: DEBUG
+#      data:
+#        redis: DEBUG
+#    io.lettuce.core: DEBUG
 
 
 #Clooudinary

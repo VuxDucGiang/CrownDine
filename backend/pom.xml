@@ -115,6 +115,14 @@
             <optional>true</optional>
         </dependency>
 
+        <!--   Slugify     -->
+        <dependency>
+            <groupId>com.github.slugify</groupId>
+            <artifactId>slugify</artifactId>
+            <version>4.0.0</version>
+            <scope>compile</scope>
+        </dependency>
+
 
         <!-- Swagger -->
         <dependency>

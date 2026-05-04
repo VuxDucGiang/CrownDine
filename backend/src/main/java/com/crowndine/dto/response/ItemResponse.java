@@ -2,9 +2,7 @@ package com.crowndine.dto.response;
 
 
 import com.crowndine.common.enums.EItemStatus;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -12,11 +10,14 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ItemResponse {
 
     private Long id;
 
     private String name;
+    private String slug;
     private String description;
     private String imageUrl;
 

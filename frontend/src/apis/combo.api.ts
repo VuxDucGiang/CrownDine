@@ -11,6 +11,9 @@ const comboApi = {
   getComboById(id: number | string) {
     return http.get<ApiResponse<Combo>>(`${COMBO_URL}/${id}`)
   },
+  getComboBySlug(slug: string) {
+    return http.get<ApiResponse<Combo>>(`${COMBO_URL}/slug/${slug}`)
+  },
   createCombo(data: any) {
     return http.post<ApiResponse<Combo>>(COMBO_URL, data)
   },

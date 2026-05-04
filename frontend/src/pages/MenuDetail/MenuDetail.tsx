@@ -9,7 +9,7 @@ import { formatCurrency, getImageUrl } from '@/utils/utils'
 import { formatDate } from '@/utils/date'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
-import { Link, useLocation, useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import path from '@/constants/path'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useFavoriteStore } from '@/stores/useFavoriteStore'
@@ -19,10 +19,8 @@ import { toast } from 'sonner'
 type TabType = 'description' | 'comboItems' | 'reviews'
 
 export default function MenuDetail() {
-  const { id } = useParams<{ id: string }>()
-  const location = useLocation()
-  const isCombo = location.pathname.includes('/combo/')
-  const [activeTab, setActiveTab] = useState<TabType>(isCombo ? 'comboItems' : 'reviews')
+  const { slug } = useParams<{ slug: string }>()
+  const [activeTab, setActiveTab] = useState<TabType>('reviews')
 
   const {
     isFavoriteItem,
@@ -34,7 +32,25 @@ export default function MenuDetail() {
   } = useFavoriteStore()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
 
-  const isFavorite = isCombo ? isFavoriteCombo(Number(id)) : isFavoriteItem(Number(id))
+  const { data: itemData } = useQuery({
+    queryKey: ['item-slug', slug],
+    queryFn: () => itemApi.getItemBySlug(slug!),
+    enabled: !!slug,
+    retry: false
+  })
+
+  const { data: comboData } = useQuery({
+    queryKey: ['combo-slug', slug],
+    queryFn: () => comboApi.getComboBySlug(slug!),
+    enabled: !!slug,
+    retry: false
+  })
+
+  const item = itemData?.data?.data
+  const combo = comboData?.data?.data
+  const isCombo = !!combo && !item
+  const id = item?.id ?? combo?.id
+  const isFavorite = id ? (isCombo ? isFavoriteCombo(id) : isFavoriteItem(id)) : false
 
   const handleToggleFavorite = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -42,58 +58,42 @@ export default function MenuDetail() {
       toast.error('Vui lòng đăng nhập để sử dụng tính năng này')
       return
     }
+    if (!id) return
 
     if (isFavorite) {
       if (isCombo) {
-        await removeFavoriteCombo(Number(id))
+        await removeFavoriteCombo(id)
       } else {
-        await removeFavoriteItem(Number(id))
+        await removeFavoriteItem(id)
       }
     } else {
       if (isCombo) {
-        await addFavoriteCombo(Number(id))
+        await addFavoriteCombo(id)
       } else {
-        await addFavoriteItem(Number(id))
+        await addFavoriteItem(id)
       }
     }
   }
 
-  const itemId = isCombo ? undefined : id
-  const comboId = isCombo ? id : undefined
-
-  const { data: itemData } = useQuery({
-    queryKey: ['item', itemId],
-    queryFn: () => itemApi.getItemById(itemId!),
-    enabled: !!itemId
-  })
-
-  const { data: comboData } = useQuery({
-    queryKey: ['combo', comboId],
-    queryFn: () => comboApi.getComboById(comboId!),
-    enabled: !!comboId
-  })
-
   const { data: categoriesData } = useQuery({
     queryKey: ['categories'],
     queryFn: () => categoryApi.getCategories(),
-    enabled: !!itemId
+    enabled: !!item
   })
 
   const { data: feedbacksItemData } = useQuery({
-    queryKey: ['feedbacks-item', itemId],
-    queryFn: () => feedbackApi.getFeedbacksByItem(itemId!),
-    enabled: !!itemId
+    queryKey: ['feedbacks-item', item?.id],
+    queryFn: () => feedbackApi.getFeedbacksByItem(item!.id),
+    enabled: !!item
   })
 
   const { data: feedbacksComboData } = useQuery({
-    queryKey: ['feedbacks-combo', comboId],
-    queryFn: () => feedbackApi.getFeedbacksByCombo(comboId!),
-    enabled: !!comboId
+    queryKey: ['feedbacks-combo', combo?.id],
+    queryFn: () => feedbackApi.getFeedbacksByCombo(combo!.id),
+    enabled: !!combo
   })
 
   const categories: Category[] = categoriesData?.data?.data ?? []
-  const item = itemData?.data?.data
-  const combo = comboData?.data?.data
   const feedbacks: Feedback[] = isCombo
     ? (feedbacksComboData?.data?.data ?? [])
     : (feedbacksItemData?.data?.data ?? [])
@@ -126,7 +126,7 @@ export default function MenuDetail() {
       ? feedbacks.reduce((sum, f) => sum + (f.rating || 0), 0) / feedbacks.length
       : null
 
-  if (!id) {
+  if (!slug) {
     return (
       <div className='bg-background text-foreground flex min-h-screen items-center justify-center'>
         <p className='text-muted-foreground'>Không tìm thấy món/combo.</p>

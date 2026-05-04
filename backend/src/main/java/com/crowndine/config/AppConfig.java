@@ -49,6 +49,7 @@ public class AppConfig {
                         .requestMatchers("/api/categories/**").permitAll()
                         .requestMatchers("/api/combos/**").permitAll()
                         .requestMatchers("/api/items/**").permitAll()
+                        .requestMatchers("/api/menu/**").permitAll()
                         .requestMatchers("/api/combos/**").permitAll()
                         .requestMatchers("/api/feedbacks/**").permitAll()
                         .requestMatchers("/img/**").permitAll()

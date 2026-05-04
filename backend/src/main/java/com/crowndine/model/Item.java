@@ -39,6 +39,9 @@ public class Item extends AbstractEntity<Long> {
     @Column(name = "image_url")
     private String imageUrl;
 
+    @Column(name = "slug")
+    private String slug;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private EItemStatus status;

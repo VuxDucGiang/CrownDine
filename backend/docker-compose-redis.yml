@@ -1,5 +1,6 @@
 version: "3.8"
 #docker compose -f docker-compose-redis.yml up -d
+#docker exec -it crowndine_redis redis-cli FLUSHDB
 services:
   redis:
     image: redis:latest

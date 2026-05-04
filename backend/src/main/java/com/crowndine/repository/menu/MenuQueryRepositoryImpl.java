@@ -26,7 +26,7 @@ public class MenuQueryRepositoryImpl implements MenuQueryRepository {
         String sql = "SELECT * FROM (" + unionSql + ") m " + orderBy + " LIMIT :limit OFFSET :offset";
 
         Query query = entityManager.createNativeQuery(sql);
-        bindCommonParams(query, categoryId, search, includeItems);
+        bindCommonParams(query, categoryId, search, includeItems, includeCombos);
         query.setParameter("limit", pageable.getPageSize());
         query.setParameter("offset", (int) pageable.getOffset());
 
@@ -44,7 +44,7 @@ public class MenuQueryRepositoryImpl implements MenuQueryRepository {
         String unionSql = buildUnionSql(includeItems, includeCombos);
         String countSql = "SELECT COUNT(*) FROM (" + unionSql + ") m";
         Query query = entityManager.createNativeQuery(countSql);
-        bindCommonParams(query, categoryId, search, includeItems);
+        bindCommonParams(query, categoryId, search, includeItems, includeCombos);
         Number total = (Number) query.getSingleResult();
         return total.longValue();
     }
@@ -56,6 +56,7 @@ public class MenuQueryRepositoryImpl implements MenuQueryRepository {
                     SELECT
                         i.id,
                         'ITEM' AS type,
+                        i.slug AS slug,
                         i.name,
                         i.description,
                         i.image_url,
@@ -80,6 +81,7 @@ public class MenuQueryRepositoryImpl implements MenuQueryRepository {
                     SELECT
                         cb.id,
                         'COMBO' AS type,
+                        cb.slug AS slug,
                         cb.name,
                         cb.description,
                         cb.image_url,
@@ -87,13 +89,15 @@ public class MenuQueryRepositoryImpl implements MenuQueryRepository {
                         cb.price_after_discount,
                         COALESCE(cb.price_after_discount, cb.price) AS display_price,
                         cb.status,
-                        NULL AS category_id,
-                        'Combo' AS category_name,
+                        cb.category_id,
+                        c.name AS category_name,
                         COALESCE(cb.sold_count, 0) AS sold_count,
                         COALESCE((SELECT AVG(f.rating) FROM feedbacks f WHERE f.combo_id = cb.id), 0) AS average_rating,
                         (SELECT COUNT(1) FROM feedbacks f WHERE f.combo_id = cb.id) AS feedback_count
                     FROM combos cb
+                    LEFT JOIN categories c ON c.id = cb.category_id
                     WHERE (:search IS NULL OR LOWER(cb.name) LIKE LOWER(CONCAT('%', :search, '%')))
+                      AND (:categoryId IS NULL OR cb.category_id = :categoryId)
                     """);
         }
 
@@ -102,6 +106,7 @@ public class MenuQueryRepositoryImpl implements MenuQueryRepository {
                     SELECT
                         NULL AS id,
                         'NONE' AS type,
+                        NULL AS slug,
                         NULL AS name,
                         NULL AS description,
                         NULL AS image_url,
@@ -134,8 +139,8 @@ public class MenuQueryRepositoryImpl implements MenuQueryRepository {
         return "ORDER BY " + sortField + " " + direction;
     }
 
-    private void bindCommonParams(Query query, Long categoryId, String search, boolean includeItems) {
-        if (includeItems) {
+    private void bindCommonParams(Query query, Long categoryId, String search, boolean includeItems, boolean includeCombos) {
+        if (includeItems || includeCombos) {
             query.setParameter("categoryId", categoryId);
         }
         query.setParameter("search", StringUtils.hasText(search) ? search.trim() : null);
@@ -145,18 +150,19 @@ public class MenuQueryRepositoryImpl implements MenuQueryRepository {
         return MenuResponse.builder()
                 .id(toLong(row[0]))
                 .type(toStringValue(row[1]))
-                .name(toStringValue(row[2]))
-                .description(toStringValue(row[3]))
-                .imageUrl(toStringValue(row[4]))
-                .price(toBigDecimal(row[5]))
-                .priceAfterDiscount(toBigDecimal(row[6]))
-                .displayPrice(toBigDecimal(row[7]))
-                .status(toStringValue(row[8]))
-                .categoryId(toLong(row[9]))
-                .categoryName(toStringValue(row[10]))
-                .soldCount(toLong(row[11]))
-                .averageRating(toDouble(row[12]))
-                .feedbackCount(toInteger(row[13]))
+                .slug(toStringValue(row[2]))
+                .name(toStringValue(row[3]))
+                .description(toStringValue(row[4]))
+                .imageUrl(toStringValue(row[5]))
+                .price(toBigDecimal(row[6]))
+                .priceAfterDiscount(toBigDecimal(row[7]))
+                .displayPrice(toBigDecimal(row[8]))
+                .status(toStringValue(row[9]))
+                .categoryId(toLong(row[10]))
+                .categoryName(toStringValue(row[11]))
+                .soldCount(toLong(row[12]))
+                .averageRating(toDouble(row[13]))
+                .feedbackCount(toInteger(row[14]))
                 .build();
     }
 

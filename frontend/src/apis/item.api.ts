@@ -20,6 +20,9 @@ const itemApi = {
   getItemById(id: number | string) {
     return http.get<ApiResponse<Item>>(`${ITEM_URL}/${id}`)
   },
+  getItemBySlug(slug: string) {
+    return http.get<ApiResponse<Item>>(`${ITEM_URL}/slug/${slug}`)
+  },
   /** Lọc theo category + search ở backend (phân trang) */
   getListItems(params: GetListItemsParams = {}) {
     const { categoryId, search, sortBy = 'id', dir = 'desc', page = 1, size = 100 } = params

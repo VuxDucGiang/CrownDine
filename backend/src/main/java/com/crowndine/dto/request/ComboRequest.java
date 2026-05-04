@@ -29,5 +29,8 @@ public class ComboRequest {
 
     private String imageUrl;
 
+    @NotNull(message = "Danh mục combo không được để trống")
+    private Long categoryId;
+
     private List<ComboItemRequest> items;
 }

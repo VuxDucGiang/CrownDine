@@ -9,10 +9,13 @@ import java.util.List;
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class ComboResponse {
     private Long id;
 
     private String name;
+    private String slug;
     private String description;
 
     private BigDecimal price;
@@ -21,6 +24,7 @@ public class ComboResponse {
     private EComboStatus status;
 
     private String imageUrl;
+    private Long categoryId;
     private Double averageRating;
     private Integer feedbackCount;
 

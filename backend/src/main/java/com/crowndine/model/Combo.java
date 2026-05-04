@@ -45,4 +45,8 @@ public class Combo extends AbstractEntity<Long> {
 
     @OneToMany(mappedBy = "combo", cascade = CascadeType.ALL, orphanRemoval = true)
     private java.util.List<ComboItem> comboItems;
+
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Category category;
 }
