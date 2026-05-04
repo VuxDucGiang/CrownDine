@@ -3,6 +3,7 @@ import useMenuQueryUpdater from '@/hooks/useMenuQueryUpdater'
 
 interface SortMenuFilterProps {
   search: string
+  onSearchChange: (value: string) => void
   sortBy: string
 }
 
@@ -13,14 +14,11 @@ const SORT_OPTIONS = [
   { value: 'price_desc', label: 'Giá giảm' }
 ]
 
-export default function SortMenuFilter({ search, sortBy }: SortMenuFilterProps) {
+export default function SortMenuFilter({ search, onSearchChange, sortBy }: SortMenuFilterProps) {
   const updateMenuQueryParams = useMenuQueryUpdater()
 
   const handleSearchInputChange = (value: string) => {
-    updateMenuQueryParams({
-      page: '1',
-      search: value.trim() || undefined
-    })
+    onSearchChange(value)
   }
 
   const handleSortChange = (value: string) => {

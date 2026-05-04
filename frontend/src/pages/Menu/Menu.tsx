@@ -9,7 +9,7 @@ import useMenuQueryUpdater from '@/hooks/useMenuQueryUpdater'
 import type { Category } from '@/types/category.type'
 import type { MenuResponse } from '@/types/menu.type'
 import { useQuery } from '@tanstack/react-query'
-import { useMemo } from 'react'
+import { useMemo, useRef, useState } from 'react'
 import {
   Pagination,
   PaginationContent,
@@ -23,6 +23,9 @@ const ITEMS_PER_PAGE = 12
 export default function Menu() {
   const menuConfig = useMenuConfigParam()
   const updateMenuQueryParams = useMenuQueryUpdater()
+  const [searchInput, setSearchInput] = useState('')
+  const [searchQuery, setSearchQuery] = useState('')
+  const searchDebounceRef = useRef<number | null>(null)
 
   const { data: categories = [], isPending: categoriesLoading } = useQuery({
     queryKey: ['categories'],
@@ -36,7 +39,6 @@ export default function Menu() {
       selectedCategoryId != null ? (categories.find((c) => c.id === selectedCategoryId)?.name ?? 'Tất cả') : 'Tất cả',
     [categories, selectedCategoryId]
   )
-  const searchQuery = menuConfig.search ?? ''
   const sortBy = useMemo(() => {
     const sortKey = `${menuConfig.sortBy ?? 'id'}_${menuConfig.dir ?? 'desc'}`
     if (sortKey === 'rating_desc') return 'rating'
@@ -47,10 +49,11 @@ export default function Menu() {
   const currentPage = menuConfig.page ?? 1
 
   const { data: menuPageData, isPending: menuLoading } = useQuery({
-    queryKey: ['menu', menuConfig],
+    queryKey: ['menu', menuConfig, searchQuery],
     queryFn: () =>
       menuApi.getMenu({
         ...menuConfig,
+        search: searchQuery.trim() || undefined,
         page: currentPage,
         size: ITEMS_PER_PAGE,
         categoryId: selectedCategoryId
@@ -75,7 +78,17 @@ export default function Menu() {
     })
   }
 
-  if (categoriesLoading || menuLoading) {
+  const handleSearchChange = (value: string) => {
+    setSearchInput(value)
+    if (searchDebounceRef.current) {
+      window.clearTimeout(searchDebounceRef.current)
+    }
+    searchDebounceRef.current = window.setTimeout(() => {
+      setSearchQuery(value.trim())
+    }, 400)
+  }
+
+  if (categoriesLoading) {
     return (
       <div className='bg-background text-foreground flex min-h-screen items-center justify-center px-4'>
         <p className='text-muted-foreground'>Đang tải menu...</p>
@@ -106,9 +119,17 @@ export default function Menu() {
         </div>
 
         <div className='lg:col-span-9'>
-          <SortMenuFilter search={searchQuery} sortBy={sortBy} />
+          <SortMenuFilter
+            search={searchInput}
+            onSearchChange={handleSearchChange}
+            sortBy={sortBy}
+          />
 
-          {paginatedList.length > 0 ? (
+          {menuLoading ? (
+            <div className='py-16 text-center'>
+              <p className='text-muted-foreground'>Đang tải danh sách món...</p>
+            </div>
+          ) : paginatedList.length > 0 ? (
             <>
               <div className='mt-10 grid grid-cols-1 gap-6 md:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4'>
                 {paginatedList.map((menu) => (
@@ -167,10 +188,14 @@ export default function Menu() {
                   updateMenuQueryParams({
                     page: '1',
                     categoryId: undefined,
-                    search: undefined,
                     sortBy: 'id',
                     dir: 'desc'
                   })
+                  if (searchDebounceRef.current) {
+                    window.clearTimeout(searchDebounceRef.current)
+                  }
+                  setSearchInput('')
+                  setSearchQuery('')
                 }}
                 className='text-primary mt-4 font-bold hover:underline'
               >
