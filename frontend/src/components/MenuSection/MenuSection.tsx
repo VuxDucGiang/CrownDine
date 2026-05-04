@@ -56,9 +56,9 @@ const MenuSection = () => {
   const categoryNames = useMemo(() => ['All', ...categories.map((c) => c.name), 'Combo'], [categories])
 
   const navigate = useNavigate()
-  const handleViewDetails = (item: MenuCardItem) => {
+  const handleViewDetails = (item: MenuCardItem, isCombo: boolean) => {
     if (item.slug) {
-      navigate(`/menu/${item.slug}`)
+      navigate(`/menu/${isCombo ? 'combo' : 'item'}/${item.slug}`)
       return
     }
     navigate('/menu')
@@ -123,7 +123,7 @@ const MenuSection = () => {
               key={key}
               item={item}
               isCombo={key.startsWith('combo')}
-              onViewDetails={handleViewDetails}
+              onViewDetails={(i) => handleViewDetails(i, key.startsWith('combo'))}
             />
           ))}
         </div>

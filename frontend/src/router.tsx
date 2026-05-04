@@ -36,7 +36,7 @@ const router = createBrowserRouter([
     children: [
       { index: true, element: <Home /> },
       { path: '/menu', element: <Menu /> },
-      { path: '/menu/:slug', element: <MenuDetail /> },
+      { path: '/menu/:type/:slug', element: <MenuDetail /> },
       { path: path.paymentSuccess, element: <PaymentResult /> },
       { path: path.paymentFailure, element: <PaymentResult /> },
       {

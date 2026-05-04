@@ -54,7 +54,7 @@ const ProfileFavorites = () => {
               key={fav.id}
               item={itemData}
               isCombo={isCombo}
-              onViewDetails={(item) => navigate(item.slug ? `/menu/${item.slug}` : '/menu')}
+              onViewDetails={(item) => navigate(item.slug ? `/menu/${isCombo ? 'combo' : 'item'}/${item.slug}` : '/menu')}
             />
           )
         })}

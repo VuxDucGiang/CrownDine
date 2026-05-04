@@ -47,7 +47,7 @@ export default function MenuCardItem({ menu }: MenuCardItemProps) {
 
   return (
     <Link
-      to={menuSlug ? `/menu/${menuSlug}` : '/menu'}
+      to={menuSlug ? `/menu/${isCombo ? 'combo' : 'item'}/${menuSlug}` : '/menu'}
       className='border-border bg-card hover:border-primary/40 group block overflow-hidden rounded-3xl border transition'
     >
       <div className='bg-muted relative h-56 overflow-hidden'>

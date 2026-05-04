@@ -227,7 +227,7 @@ const Header = () => {
                         const item = fav.item || fav.combo
                         if (!item) return null
                         const isCombo = !!fav.combo
-                        const link = item.slug ? `/menu/${item.slug}` : '/menu'
+                        const link = item.slug ? `/menu/${isCombo ? 'combo' : 'item'}/${item.slug}` : '/menu'
 
                         return (
                           <div key={fav.id} className='hover:bg-accent/5 flex items-center gap-3 p-3 transition-colors'>
