@@ -27,6 +27,7 @@ k6 run scripts/k6-menu-api.js
 ## Kết quả benchmark (2026-05-05)
 Nguồn: output bạn đã chạy local.
 
+### Trước khi thêm index
 - `http_req_duration`:
   - p50: **5.91ms**
   - p95: **19.23ms**
@@ -37,9 +38,47 @@ Nguồn: output bạn đã chạy local.
 - `http_reqs`: **29235** requests trong 2 phút
 - Throughput: **243.61 req/s**
 
+### Index đã thêm (chưa dùng Redis)
+Migration:
+- `backend/src/main/resources/db/migration/V14__Add_Item_Combo_Query_Indexes.sql`
+- `backend/src/main/resources/dev/db/migration/V26__Add_Item_Combo_Query_Indexes.sql`
+
+Indexes:
+- `items`
+  - `idx_items_slug (slug)`
+  - `idx_items_name (name)`
+  - `idx_items_status (status)`
+  - `idx_items_category_status (category_id, status)`
+- `combos`
+  - `idx_combos_slug (slug)`
+  - `idx_combos_name (name)`
+  - `idx_combos_status (status)`
+  - `idx_combos_category_status (category_id, status)`
+
+### Sau khi thêm index
+- `http_req_duration`:
+  - p50: **5.22ms**
+  - p95: **13.4ms**
+  - p99: **35.22ms**
+  - avg: 6.73ms
+  - max: 174.9ms
+- `http_req_failed`: **0.00%** (0/29804)
+- `http_reqs`: **29804** requests trong 2 phút
+- Throughput: **248.18 req/s**
+
+### So sánh trước vs sau index
+- p50: `5.91ms -> 5.22ms` (**-11.7%**)
+- p95: `19.23ms -> 13.4ms` (**-30.3%**)
+- p99: `47.09ms -> 35.22ms` (**-25.2%**)
+- avg: `8.39ms -> 6.73ms` (**-19.8%**)
+- max: `365.92ms -> 174.9ms` (**-52.2%**)
+- throughput: `243.61 -> 248.18 req/s` (**+1.9%**)
+- error rate: giữ nguyên **0%**
+
 ## Đánh giá nhanh
 - Kết quả rất tốt cho API danh sách menu.
-- Ở tải tối đa ~50 VUs, p95 vẫn dưới 20ms và không có lỗi.
+- Việc thêm index giúp giảm rõ rệt tail latency (p95/p99/max), đặc biệt hữu ích khi tải tăng.
+- Ở tải tối đa ~50 VUs, p95 chỉ còn ~13ms và không có lỗi.
 - `GET /api/menu` hiện chưa phải bottleneck ưu tiên refactor.
 
 ## Cách chạy các mode khác
