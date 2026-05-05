@@ -15,6 +15,19 @@ export default defineConfig([
       reactHooks.configs.flat.recommended,
       reactRefresh.configs.vite
     ],
+    rules: {
+      'no-restricted-imports': [
+        'error',
+        {
+          patterns: [
+            {
+              group: ['../*'],
+              message: "Không dùng import kiểu '../...'. Hãy dùng alias '@/...'."
+            }
+          ]
+        }
+      ]
+    },
     languageOptions: {
       ecmaVersion: 2020,
       globals: globals.browser

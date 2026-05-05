@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { startOfWeek, endOfWeek, format, addWeeks, subWeeks } from 'date-fns'
 import { ScheduleHeader } from './components/ScheduleHeader'
 import { ScheduleTable } from './components/ScheduleTable'
-import { CreateShiftModal } from '../Attendance/components/CreateShiftModal'
+import { CreateShiftModal } from '@/pages/Staffs/Attendance/components/CreateShiftModal'
 import useWorkSchedule from '@/hooks/useWorkSchedule'
 import useStaffs from '@/hooks/useStaffs'
 
