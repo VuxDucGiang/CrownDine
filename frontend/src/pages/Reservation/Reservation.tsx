@@ -21,6 +21,7 @@ import { setPaymentResultToSession } from '@/utils/paymentResultStorage'
 import { Modal } from '@/components/ui/modal'
 import { toast } from 'sonner'
 import { useSearchParams } from 'react-router-dom'
+import { isAxiosErrorConfict } from '@/utils/utils'
 
 // --- 3. MAIN COMPONENT ---
 export default function Reservation() {
@@ -162,6 +163,9 @@ export default function Reservation() {
           }
         } catch (error) {
           console.error("Lỗi khi tự động đặt bàn qua AI:", error)
+          if (isAxiosErrorConfict(error)) {
+            toast.error('Bàn đã được đặt trong khung giờ này. Vui lòng chọn bàn khác.')
+          }
           setCurrentStep(2) // Lỗi thì đưa về chọn bàn thủ công
         } finally {
           setIsCreatingReservation(false)
@@ -351,7 +355,11 @@ export default function Reservation() {
       }
     } catch (error) {
       console.error('Failed to finalize table selection:', error)
-      toast.error('Không thể giữ chỗ bàn. Vui lòng thử lại.')
+      if (isAxiosErrorConfict(error)) {
+        toast.error('Bàn đã được đặt trong khung giờ này. Vui lòng chọn bàn khác.')
+      } else {
+        toast.error('Không thể giữ chỗ bàn. Vui lòng thử lại.')
+      }
     } finally {
       setIsCreatingReservation(false)
     }
