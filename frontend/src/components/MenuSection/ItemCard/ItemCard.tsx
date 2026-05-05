@@ -13,8 +13,14 @@ interface Props {
 }
 
 const ItemCard = ({ item, isCombo = false, onViewDetails }: Props) => {
-  const { isFavoriteItem, isFavoriteCombo, addFavoriteItem, addFavoriteCombo, removeFavoriteItem, removeFavoriteCombo } =
-    useFavoriteStore()
+  const {
+    isFavoriteItem,
+    isFavoriteCombo,
+    addFavoriteItem,
+    addFavoriteCombo,
+    removeFavoriteItem,
+    removeFavoriteCombo
+  } = useFavoriteStore()
   const isAuthenticated = useAuthStore((state) => state.isAuthenticated)
 
   const isFavorite = isCombo ? isFavoriteCombo(item.id) : isFavoriteItem(item.id)
@@ -68,7 +74,9 @@ const ItemCard = ({ item, isCombo = false, onViewDetails }: Props) => {
       <button
         onClick={handleToggleFavorite}
         className={`absolute top-3 right-3 z-10 rounded-full p-2 shadow-sm backdrop-blur-sm transition-all duration-300 ${
-          isFavorite ? 'bg-primary text-white scale-110' : 'bg-white/80 text-muted-foreground hover:text-red-500 hover:scale-110'
+          isFavorite
+            ? 'bg-primary scale-110 text-white'
+            : 'text-muted-foreground bg-white/80 hover:scale-110 hover:text-red-500'
         }`}
       >
         <Heart size={18} fill={isFavorite ? 'currentColor' : 'none'} />

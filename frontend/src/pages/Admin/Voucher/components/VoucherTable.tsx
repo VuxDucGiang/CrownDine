@@ -37,17 +37,14 @@ export function VoucherTable({ vouchers, onEdit, onAssign }: VoucherTableProps) 
               </tr>
             ) : (
               vouchers.map((voucher) => (
-                <tr
-                  key={voucher.id}
-                  className='group hover:bg-muted/30 transition-colors'
-                >
+                <tr key={voucher.id} className='group hover:bg-muted/30 transition-colors'>
                   <td className='px-6 py-4'>
                     <span className='font-mono font-semibold'>{voucher.code}</span>
                   </td>
                   <td className='px-6 py-4'>
                     <div className='font-medium'>{voucher.name}</div>
                     {voucher.description && (
-                      <div className='text-muted-foreground mt-0.5 truncate max-w-[200px] text-xs'>
+                      <div className='text-muted-foreground mt-0.5 max-w-[200px] truncate text-xs'>
                         {voucher.description}
                       </div>
                     )}

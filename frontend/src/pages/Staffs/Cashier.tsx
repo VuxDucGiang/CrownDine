@@ -42,9 +42,7 @@ const Cashier = () => {
     queryFn: () => orderApi.getAllOrders({}),
     select: (response) => {
       const all = response?.data?.data?.data ?? []
-      return all.filter(
-        (o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'PRE_ORDER'
-      )
+      return all.filter((o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'PRE_ORDER')
     }
   })
 
@@ -103,7 +101,7 @@ const Cashier = () => {
     return rawTables.filter((table: any) => {
       // 1. Floor Filter
       if (activeFloor && table.floorName !== activeFloor) return false
-      
+
       // 2. Area Filter (Khu vực / Phòng)
       if (activeArea !== 'Tất cả' && table.areaName !== activeArea) return false
 
@@ -162,8 +160,8 @@ const Cashier = () => {
     return (
       <div className='flex h-[60vh] items-center justify-center'>
         <div className='flex flex-col items-center gap-4'>
-          <div className='h-12 w-12 animate-spin rounded-full border-4 border-primary border-t-transparent' />
-          <p className='animate-pulse font-bold text-primary'>Đang tải dữ liệu bàn...</p>
+          <div className='border-primary h-12 w-12 animate-spin rounded-full border-4 border-t-transparent' />
+          <p className='text-primary animate-pulse font-bold'>Đang tải dữ liệu bàn...</p>
         </div>
       </div>
     )
@@ -171,20 +169,20 @@ const Cashier = () => {
   return (
     <div className='animate-fade-in flex min-h-[calc(100vh-160px)] flex-col gap-8'>
       {/* Top Header & Navigation */}
-      <div className='bg-white/80 sticky top-4 z-10 mx-auto flex w-full max-w-5xl flex-col gap-4 rounded-[2rem] border border-slate-100 p-4 backdrop-blur-xl shadow-soft transition-all lg:px-8 mb-6'>
+      <div className='shadow-soft sticky top-4 z-10 mx-auto mb-6 flex w-full max-w-5xl flex-col gap-4 rounded-[2rem] border border-slate-100 bg-white/80 p-4 backdrop-blur-xl transition-all lg:px-8'>
         <div className='flex flex-col gap-3'>
-          <div className='flex flex-wrap items-center justify-center gap-2 pb-1 scrollbar-hide'>
-            <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2'>Tầng:</span>
+          <div className='scrollbar-hide flex flex-wrap items-center justify-center gap-2 pb-1'>
+            <span className='mr-2 text-[10px] font-black tracking-widest text-slate-400 uppercase'>Tầng:</span>
             {floors.map((floor: any) => (
               <Button
                 key={floor}
                 variant='ghost'
                 size='sm'
                 className={cn(
-                  'h-8 px-5 text-sm font-bold transition-all rounded-xl border',
-                  activeFloor === floor 
-                    ? 'bg-primary text-white shadow-md border-primary' 
-                    : 'bg-white text-slate-500 border-slate-100 hover:border-primary/30 shadow-sm'
+                  'h-8 rounded-xl border px-5 text-sm font-bold transition-all',
+                  activeFloor === floor
+                    ? 'bg-primary border-primary text-white shadow-md'
+                    : 'hover:border-primary/30 border-slate-100 bg-white text-slate-500 shadow-sm'
                 )}
                 onClick={() => {
                   setActiveFloor(floor)
@@ -197,18 +195,18 @@ const Cashier = () => {
             ))}
           </div>
 
-          <div className='flex flex-wrap items-center justify-center gap-2 pb-1 scrollbar-hide'>
-            <span className='text-[10px] font-black text-slate-400 uppercase tracking-widest mr-2'>Khu vực:</span>
+          <div className='scrollbar-hide flex flex-wrap items-center justify-center gap-2 pb-1'>
+            <span className='mr-2 text-[10px] font-black tracking-widest text-slate-400 uppercase'>Khu vực:</span>
             {areas.map((area: any) => (
               <Button
                 key={area}
                 variant='ghost'
                 size='sm'
                 className={cn(
-                  'h-7 px-4 text-[10px] font-extrabold transition-all rounded-lg border uppercase tracking-wider',
-                  activeArea === area 
-                    ? 'bg-orange-500 text-white shadow-md border-orange-500' 
-                    : 'bg-white text-slate-400 border-slate-100 hover:border-orange-200 shadow-sm'
+                  'h-7 rounded-lg border px-4 text-[10px] font-extrabold tracking-wider uppercase transition-all',
+                  activeArea === area
+                    ? 'border-orange-500 bg-orange-500 text-white shadow-md'
+                    : 'border-slate-100 bg-white text-slate-400 shadow-sm hover:border-orange-200'
                 )}
                 onClick={() => {
                   setActiveArea(area)
@@ -226,7 +224,7 @@ const Cashier = () => {
       <div className='flex flex-col gap-8 lg:flex-row'>
         {/* Left Side: Stats & Filters */}
         <div className='flex flex-shrink-0 flex-col gap-4 lg:w-64'>
-          <div className='flex flex-col gap-3 rounded-3xl bg-white/40 p-4 ring-1 ring-slate-100 shadow-sm'>
+          <div className='flex flex-col gap-3 rounded-3xl bg-white/40 p-4 shadow-sm ring-1 ring-slate-100'>
             <p className='px-2 text-xs font-black tracking-widest text-slate-400 uppercase'>Bộ lọc trạng thái</p>
             {filters.map((filter) => (
               <button
@@ -235,29 +233,38 @@ const Cashier = () => {
                   'flex items-center justify-between rounded-2xl px-4 py-3 transition-all duration-300',
                   activeFilter === filter.label
                     ? 'bg-white shadow-md ring-1 ring-slate-100'
-                    : 'hover:bg-white/60 text-slate-500'
+                    : 'text-slate-500 hover:bg-white/60'
                 )}
                 onClick={() => setActiveFilter(filter.label)}
               >
                 <div className='flex items-center gap-3'>
-                  <div className={cn('h-2.5 w-2.5 rounded-full ring-4 ring-offset-2', 
-                    activeFilter === filter.label ? 'bg-primary ring-primary/20' : 'bg-slate-300 ring-transparent'
-                  )} />
-                  <span className={cn('text-sm font-bold', activeFilter === filter.label && 'text-slate-900')}>{filter.label}</span>
+                  <div
+                    className={cn(
+                      'h-2.5 w-2.5 rounded-full ring-4 ring-offset-2',
+                      activeFilter === filter.label ? 'bg-primary ring-primary/20' : 'bg-slate-300 ring-transparent'
+                    )}
+                  />
+                  <span className={cn('text-sm font-bold', activeFilter === filter.label && 'text-slate-900')}>
+                    {filter.label}
+                  </span>
                 </div>
-                <span className={cn('rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-black', filter.color)}>{filter.count}</span>
+                <span className={cn('rounded-lg bg-slate-100 px-2.5 py-1 text-xs font-black', filter.color)}>
+                  {filter.count}
+                </span>
               </button>
             ))}
           </div>
 
-          <div className='rounded-3xl bg-gradient-to-br from-primary/10 to-orange-500/5 p-6 shadow-sm border border-primary/10'>
-             <div className='flex items-center gap-2 mb-3'>
-                <div className='h-8 w-8 rounded-xl bg-primary flex items-center justify-center text-white'>
-                   <Clock className='h-4 w-4' />
-                </div>
-                <span className='font-bold text-slate-800 text-sm'>Hoạt động vừa qua</span>
-             </div>
-             <p className='text-xs text-slate-500 leading-relaxed font-medium'>Toàn bộ bàn được cập nhật tự động mỗi khi có thay đổi từ bếp hoặc nhân viên.</p>
+          <div className='from-primary/10 border-primary/10 rounded-3xl border bg-gradient-to-br to-orange-500/5 p-6 shadow-sm'>
+            <div className='mb-3 flex items-center gap-2'>
+              <div className='bg-primary flex h-8 w-8 items-center justify-center rounded-xl text-white'>
+                <Clock className='h-4 w-4' />
+              </div>
+              <span className='text-sm font-bold text-slate-800'>Hoạt động vừa qua</span>
+            </div>
+            <p className='text-xs leading-relaxed font-medium text-slate-500'>
+              Toàn bộ bàn được cập nhật tự động mỗi khi có thay đổi từ bếp hoặc nhân viên.
+            </p>
           </div>
         </div>
 
@@ -272,8 +279,8 @@ const Cashier = () => {
               const itemCount = order?.orderDetails?.reduce((acc: number, d: any) => acc + d.quantity, 0) || 0
 
               return (
-                <div 
-                  key={table.id} 
+                <div
+                  key={table.id}
                   className='group animate-in fade-in slide-in-from-bottom-3 duration-500'
                   onClick={() => handleTableClick(table)}
                 >
@@ -281,34 +288,46 @@ const Cashier = () => {
                     className={cn(
                       'relative flex h-44 w-full cursor-pointer flex-col items-center justify-center rounded-[2rem] transition-all duration-500 hover:-translate-y-2',
                       isOccupied
-                        ? 'bg-primary text-white shadow-2xl shadow-primary/40 ring-4 ring-primary/20 active:scale-95'
+                        ? 'bg-primary shadow-primary/40 ring-primary/20 text-white shadow-2xl ring-4 active:scale-95'
                         : isReserved
                           ? 'border border-amber-200 bg-amber-50 text-amber-900 hover:border-amber-300 hover:shadow-xl hover:shadow-amber-100 active:scale-95'
                           : isUnavailable
                             ? 'border border-slate-300 bg-slate-100 text-slate-600 hover:border-slate-400 hover:shadow-xl hover:shadow-slate-100 active:scale-95'
-                            : 'border border-slate-200 bg-white hover:border-primary/50 hover:shadow-xl hover:shadow-primary/5 active:scale-95'
+                            : 'hover:border-primary/50 hover:shadow-primary/5 border border-slate-200 bg-white hover:shadow-xl active:scale-95'
                     )}
                   >
                     <div className='relative flex flex-col items-center'>
                       {/* Detailed Table Icon */}
-                      <div className='flex gap-5 mb-1'>
+                      <div className='mb-1 flex gap-5'>
                         <div
                           className={cn(
                             'h-2 w-7 rounded-t-full transition-all',
-                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                            isOccupied
+                              ? 'bg-white/40'
+                              : isReserved
+                                ? 'bg-amber-200'
+                                : isUnavailable
+                                  ? 'bg-slate-300'
+                                  : 'bg-slate-100'
                           )}
                         />
                         <div
                           className={cn(
                             'h-2 w-7 rounded-t-full transition-all',
-                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                            isOccupied
+                              ? 'bg-white/40'
+                              : isReserved
+                                ? 'bg-amber-200'
+                                : isUnavailable
+                                  ? 'bg-slate-300'
+                                  : 'bg-slate-100'
                           )}
                         />
                       </div>
 
                       <div
                         className={cn(
-                          'relative h-20 w-32 rounded-[1.5rem] border-2 shadow-inner flex items-center justify-center p-3 z-10 transition-all duration-500',
+                          'relative z-10 flex h-20 w-32 items-center justify-center rounded-[1.5rem] border-2 p-3 shadow-inner transition-all duration-500',
                           isOccupied
                             ? 'border-white/50 bg-white/15'
                             : isReserved
@@ -320,63 +339,82 @@ const Cashier = () => {
                       >
                         {isOccupied && order ? (
                           <div className='flex w-full flex-col gap-2'>
-                            <div className='flex justify-between items-start'>
-                                <span className='text-[10px] font-black uppercase opacity-80'>Tiền:</span>
-                                <div className='flex items-center gap-1 text-[10px] font-bold bg-white/20 rounded-lg px-2 py-0.5'>
-                                   <Clock className='h-3 w-3' />
-                                   {Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000)}p
-                                </div>
+                            <div className='flex items-start justify-between'>
+                              <span className='text-[10px] font-black uppercase opacity-80'>Tiền:</span>
+                              <div className='flex items-center gap-1 rounded-lg bg-white/20 px-2 py-0.5 text-[10px] font-bold'>
+                                <Clock className='h-3 w-3' />
+                                {Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000)}p
+                              </div>
                             </div>
-                            <span className='text-sm sm:text-lg font-black leading-none drop-shadow-sm'>{formatCurrency(order.finalPrice).replace('₫', '')}</span>
-                            <div className='flex items-center gap-3 pt-1 border-t border-white/20'>
+                            <span className='text-sm leading-none font-black drop-shadow-sm sm:text-lg'>
+                              {formatCurrency(order.finalPrice).replace('₫', '')}
+                            </span>
+                            <div className='flex items-center gap-3 border-t border-white/20 pt-1'>
                               <div className='flex items-center gap-1'>
                                 <UtensilsCrossed className='h-3 w-3' />
-                                <span className='text-xs font-bold leading-none'>{itemCount}</span>
+                                <span className='text-xs leading-none font-bold'>{itemCount}</span>
                               </div>
                               <div className='flex items-center gap-1 border-l border-white/20 pl-3'>
                                 <Users className='h-3 w-3' />
-                                <span className='text-xs font-bold leading-none'>{table.capacity}</span>
+                                <span className='text-xs leading-none font-bold'>{table.capacity}</span>
                               </div>
                             </div>
                           </div>
                         ) : (
-                          <div className='h-full w-full rounded-2xl border-2 border-dashed border-slate-200 flex items-center justify-center'>
-                             <span
-                               className={cn(
-                                 'text-[10px] font-black tracking-widest uppercase',
-                                 isOccupied
-                                   ? 'text-white/40'
-                                   : isReserved
-                                     ? 'text-amber-400'
-                                     : isUnavailable
-                                       ? 'text-slate-400'
-                                       : 'text-slate-300'
-                               )}
-                             >
-                               Phòng: {table.capacity}
-                             </span>
+                          <div className='flex h-full w-full items-center justify-center rounded-2xl border-2 border-dashed border-slate-200'>
+                            <span
+                              className={cn(
+                                'text-[10px] font-black tracking-widest uppercase',
+                                isOccupied
+                                  ? 'text-white/40'
+                                  : isReserved
+                                    ? 'text-amber-400'
+                                    : isUnavailable
+                                      ? 'text-slate-400'
+                                      : 'text-slate-300'
+                              )}
+                            >
+                              Phòng: {table.capacity}
+                            </span>
                           </div>
                         )}
                       </div>
 
-                      <div className='flex gap-5 mt-1'>
+                      <div className='mt-1 flex gap-5'>
                         <div
                           className={cn(
                             'h-2 w-7 rounded-b-full transition-all',
-                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                            isOccupied
+                              ? 'bg-white/40'
+                              : isReserved
+                                ? 'bg-amber-200'
+                                : isUnavailable
+                                  ? 'bg-slate-300'
+                                  : 'bg-slate-100'
                           )}
                         />
                         <div
                           className={cn(
                             'h-2 w-7 rounded-b-full transition-all',
-                            isOccupied ? 'bg-white/40' : isReserved ? 'bg-amber-200' : isUnavailable ? 'bg-slate-300' : 'bg-slate-100'
+                            isOccupied
+                              ? 'bg-white/40'
+                              : isReserved
+                                ? 'bg-amber-200'
+                                : isUnavailable
+                                  ? 'bg-slate-300'
+                                  : 'bg-slate-100'
                           )}
                         />
                       </div>
                     </div>
 
                     <div className='absolute bottom-4 flex flex-col items-center gap-1'>
-                       <span className={cn('text-sm font-black tracking-tight uppercase', isOccupied ? 'text-white' : 'text-slate-800')}>
+                      <span
+                        className={cn(
+                          'text-sm font-black tracking-tight uppercase',
+                          isOccupied ? 'text-white' : 'text-slate-800'
+                        )}
+                      >
                         {table.name}
                       </span>
                     </div>
@@ -389,34 +427,35 @@ const Cashier = () => {
       </div>
 
       {/* Modern Footer Navigation (Pagination) */}
-      <div className='bg-card/40 sticky bottom-4 z-10 flex flex-col items-center justify-between gap-6 rounded-[2.5rem] border border-white/40 px-8 py-5 backdrop-blur-xl shadow-2xl sm:flex-row'>
-        <div className='flex-1 hidden sm:block'>
-           <p className='text-xs font-black text-slate-400 uppercase tracking-widest'>
-             Hiển thị {Math.min(filteredTables.length, (currentPage - 1) * pageSize + 1)} - {Math.min(filteredTables.length, currentPage * pageSize)} trên {filteredTables.length} bàn
-           </p>
+      <div className='bg-card/40 sticky bottom-4 z-10 flex flex-col items-center justify-between gap-6 rounded-[2.5rem] border border-white/40 px-8 py-5 shadow-2xl backdrop-blur-xl sm:flex-row'>
+        <div className='hidden flex-1 sm:block'>
+          <p className='text-xs font-black tracking-widest text-slate-400 uppercase'>
+            Hiển thị {Math.min(filteredTables.length, (currentPage - 1) * pageSize + 1)} -{' '}
+            {Math.min(filteredTables.length, currentPage * pageSize)} trên {filteredTables.length} bàn
+          </p>
         </div>
 
         <div className='flex items-center gap-4'>
-          <Button 
-            variant='ghost' 
-            size='icon' 
-            className='h-12 w-12 rounded-2xl border border-slate-100 bg-white/50 shadow-soft' 
+          <Button
+            variant='ghost'
+            size='icon'
+            className='shadow-soft h-12 w-12 rounded-2xl border border-slate-100 bg-white/50'
             disabled={currentPage === 1}
-            onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+            onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
           >
             <ChevronLeft className='h-5 w-5 text-slate-700' />
           </Button>
-          <div className='flex h-12 min-w-[5rem] items-center justify-center rounded-2xl bg-white/80 px-4 text-sm font-black tracking-widest ring-1 ring-slate-100 shadow-sm'>
+          <div className='flex h-12 min-w-[5rem] items-center justify-center rounded-2xl bg-white/80 px-4 text-sm font-black tracking-widest shadow-sm ring-1 ring-slate-100'>
             <span className='text-primary'>{currentPage.toString().padStart(2, '0')}</span>
             <span className='mx-2 text-slate-300'>/</span>
             <span className='text-slate-500'>{totalPages.toString().padStart(2, '0')}</span>
           </div>
-          <Button 
-            variant='ghost' 
-            size='icon' 
-            className='h-12 w-12 rounded-2xl border border-slate-100 bg-white/50 shadow-soft'
+          <Button
+            variant='ghost'
+            size='icon'
+            className='shadow-soft h-12 w-12 rounded-2xl border border-slate-100 bg-white/50'
             disabled={currentPage === totalPages || totalPages === 0}
-            onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+            onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
           >
             <ChevronRight className='h-5 w-5 text-slate-700' />
           </Button>

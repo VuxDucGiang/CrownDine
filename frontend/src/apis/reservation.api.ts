@@ -55,7 +55,9 @@ const reservationApi = {
   },
 
   removeItemFromReservation(reservationId: number, data: OrderItemRemoveRequest) {
-    return http.delete<ApiResponse<ReservationCheckoutResponse>>(`${RESERVATION_URL}/${reservationId}/remove-item`, { data })
+    return http.delete<ApiResponse<ReservationCheckoutResponse>>(`${RESERVATION_URL}/${reservationId}/remove-item`, {
+      data
+    })
   },
 
   checkInReservation(id: number, staffId?: string) {

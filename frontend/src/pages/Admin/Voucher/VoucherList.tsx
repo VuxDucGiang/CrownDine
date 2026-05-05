@@ -117,12 +117,9 @@ export default function VoucherList() {
   const handleSaveVoucher = (data: VoucherFormData) => {
     const discountValue = parseFloat(data.discountValue)
     if (Number.isNaN(discountValue) || discountValue <= 0) return
-    const maxDiscountValue = data.maxDiscountValue.trim()
-      ? parseFloat(data.maxDiscountValue)
-      : undefined
+    const maxDiscountValue = data.maxDiscountValue.trim() ? parseFloat(data.maxDiscountValue) : undefined
     const minValue = data.minValue.trim() ? parseFloat(data.minValue) : undefined
-    if (maxDiscountValue !== undefined && (Number.isNaN(maxDiscountValue) || maxDiscountValue <= 0))
-      return
+    if (maxDiscountValue !== undefined && (Number.isNaN(maxDiscountValue) || maxDiscountValue <= 0)) return
     if (minValue !== undefined && (Number.isNaN(minValue) || minValue <= 0)) return
 
     const payload = {
@@ -180,13 +177,9 @@ export default function VoucherList() {
           </div>
         ) : (
           <>
-            <VoucherTable
-              vouchers={vouchers}
-              onEdit={handleEdit}
-              onAssign={handleAssign}
-            />
+            <VoucherTable vouchers={vouchers} onEdit={handleEdit} onAssign={handleAssign} />
             {totalPages > 1 && (
-              <div className='flex items-center justify-between border-t border-border pt-4'>
+              <div className='border-border flex items-center justify-between border-t pt-4'>
                 <p className='text-muted-foreground text-sm'>
                   Trang {page} / {totalPages} • Tổng {totalItems} voucher
                 </p>

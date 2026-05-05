@@ -25,7 +25,7 @@ export function CancelModal({ orderCode, onClose, onConfirm, isPending }: Cancel
 
   return (
     <div
-      className='fixed inset-0 z-[100] flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm'
+      className='bg-background/80 fixed inset-0 z-[100] flex items-center justify-center p-4 backdrop-blur-sm'
       onClick={onClose}
       onKeyDown={(e) => e.key === 'Escape' && onClose()}
       role='dialog'
@@ -39,8 +39,8 @@ export function CancelModal({ orderCode, onClose, onConfirm, isPending }: Cancel
         onClick={(e) => e.stopPropagation()}
       >
         <div className='border-border flex items-center justify-between border-b p-5'>
-          <h2 className='text-lg font-bold text-foreground flex items-center gap-2'>
-            <AlertTriangle className='h-5 w-5 text-destructive' /> Hủy đơn hàng
+          <h2 className='text-foreground flex items-center gap-2 text-lg font-bold'>
+            <AlertTriangle className='text-destructive h-5 w-5' /> Hủy đơn hàng
           </h2>
           <button
             type='button'
@@ -57,18 +57,18 @@ export function CancelModal({ orderCode, onClose, onConfirm, isPending }: Cancel
           </p>
 
           <div className='mt-6 space-y-4'>
-            <label className='text-sm font-medium text-foreground'>Lý do hủy đơn</label>
+            <label className='text-foreground text-sm font-medium'>Lý do hủy đơn</label>
             <div className='flex flex-wrap gap-2'>
               {PREDEFINED_REASONS.map((reason) => (
                 <button
                   key={reason}
-                  type="button"
+                  type='button'
                   onClick={() => {
                     setSelectedReason(reason)
                     setCustomReason('')
                   }}
                   className={cn(
-                    'rounded-full px-4 py-1.5 text-sm font-medium transition-colors border',
+                    'rounded-full border px-4 py-1.5 text-sm font-medium transition-colors',
                     selectedReason === reason
                       ? 'bg-destructive/10 text-destructive border-destructive/20'
                       : 'bg-background text-muted-foreground border-border hover:bg-muted'
@@ -78,10 +78,10 @@ export function CancelModal({ orderCode, onClose, onConfirm, isPending }: Cancel
                 </button>
               ))}
               <button
-                type="button"
+                type='button'
                 onClick={() => setSelectedReason('Khác')}
                 className={cn(
-                  'rounded-full px-4 py-1.5 text-sm font-medium transition-colors border',
+                  'rounded-full border px-4 py-1.5 text-sm font-medium transition-colors',
                   selectedReason === 'Khác'
                     ? 'bg-destructive/10 text-destructive border-destructive/20'
                     : 'bg-background text-muted-foreground border-border hover:bg-muted'
@@ -96,24 +96,22 @@ export function CancelModal({ orderCode, onClose, onConfirm, isPending }: Cancel
                 placeholder='Nhập lý do hủy đơn (bắt buộc)...'
                 value={customReason}
                 onChange={(e) => setCustomReason(e.target.value)}
-                className='mt-3 focus-visible:ring-destructive'
+                className='focus-visible:ring-destructive mt-3'
                 autoFocus
               />
             )}
           </div>
 
-          <p className='text-muted-foreground mt-4 text-sm'>
-            Thao tác này không thể hoàn tác.
-          </p>
+          <p className='text-muted-foreground mt-4 text-sm'>Thao tác này không thể hoàn tác.</p>
         </div>
 
-        <div className='border-border flex justify-end gap-2 border-t p-4 bg-muted/20'>
+        <div className='border-border bg-muted/20 flex justify-end gap-2 border-t p-4'>
           <Button variant='outline' onClick={onClose} disabled={isPending}>
             Đóng
           </Button>
-          <Button 
-            variant='destructive' 
-            onClick={handleConfirm} 
+          <Button
+            variant='destructive'
+            onClick={handleConfirm}
             disabled={isPending || !selectedReason || (selectedReason === 'Khác' && !customReason.trim())}
           >
             {isPending ? 'Đang xử lý...' : 'Xác nhận hủy'}

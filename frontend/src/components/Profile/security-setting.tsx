@@ -35,7 +35,7 @@ const SecuritySetting = () => {
       return () => clearTimeout(timer)
     }
   }, [countdown])
-  
+
   const tabs: SecurityTab[] = [
     {
       id: 'password',
@@ -104,16 +104,19 @@ const SecuritySetting = () => {
       toast.error('Vui lòng nhập mã OTP')
       return
     }
-    verifyEmailOtpMutation.mutate({
-      otp: emailForm.otp,
-      newEmail: emailForm.newEmail
-    }, {
-      onSuccess: () => {
-        setOtpVerified(true)
-        setOtpSent(false)
-        setEmailForm({ newEmail: '', otp: '' })
+    verifyEmailOtpMutation.mutate(
+      {
+        otp: emailForm.otp,
+        newEmail: emailForm.newEmail
+      },
+      {
+        onSuccess: () => {
+          setOtpVerified(true)
+          setOtpSent(false)
+          setEmailForm({ newEmail: '', otp: '' })
+        }
       }
-    })
+    )
   }
 
   const handlePasswordSubmit = async () => {
@@ -127,19 +130,22 @@ const SecuritySetting = () => {
       return
     }
 
-    changePasswordMutation.mutate({
-      oldPassword: passwordForm.currentPassword,
-      newPassword: passwordForm.newPassword,
-      confirmNewPassword: passwordForm.confirmPassword
-    }, {
-      onSuccess: () => {
-        setPasswordForm({
-          currentPassword: '',
-          newPassword: '',
-          confirmPassword: ''
-        })
+    changePasswordMutation.mutate(
+      {
+        oldPassword: passwordForm.currentPassword,
+        newPassword: passwordForm.newPassword,
+        confirmNewPassword: passwordForm.confirmPassword
+      },
+      {
+        onSuccess: () => {
+          setPasswordForm({
+            currentPassword: '',
+            newPassword: '',
+            confirmPassword: ''
+          })
+        }
       }
-    })
+    )
   }
 
   return (
@@ -350,8 +356,6 @@ const SecuritySetting = () => {
           )}
         </div>
       )}
-
-
     </div>
   )
 }

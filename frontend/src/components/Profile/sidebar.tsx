@@ -19,11 +19,7 @@ const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) =
   const authRoles = useAuthStore((state) => state.roles)
 
   const normalizedRoles = Array.from(
-    new Set(
-      [...authRoles, user.role]
-        .filter(Boolean)
-        .map((role) => role.toUpperCase().replace('ROLE_', ''))
-    )
+    new Set([...authRoles, user.role].filter(Boolean).map((role) => role.toUpperCase().replace('ROLE_', '')))
   )
 
   const getPrimaryRole = () => {
@@ -75,21 +71,15 @@ const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) =
       {/* Avatar Section */}
       <div className='mb-8 flex flex-col items-center'>
         <div
-          className='group border-primary bg-primary/10 relative mb-4 h-24 w-24 overflow-hidden rounded-full border-4 cursor-pointer'
+          className='group border-primary bg-primary/10 relative mb-4 h-24 w-24 cursor-pointer overflow-hidden rounded-full border-4'
           onClick={() => !uploadAvatarMutation.isPending && fileInputRef.current?.click()}
         >
-          <input
-            type="file"
-            ref={fileInputRef}
-            onChange={handleFileChange}
-            accept="image/*"
-            className="hidden"
-          />
+          <input type='file' ref={fileInputRef} onChange={handleFileChange} accept='image/*' className='hidden' />
           {user.avatar ? (
             <img
               src={user.avatar || '/placeholder.svg'}
               alt={`${user.firstName} ${user.lastName}`}
-              className='object-cover h-full w-full'
+              className='h-full w-full object-cover'
             />
           ) : (
             <div className='from-primary to-primary/70 flex h-full w-full items-center justify-center bg-gradient-to-br'>
@@ -98,11 +88,11 @@ const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) =
           )}
 
           {/* Hover Overlay */}
-          <div className='absolute inset-0 bg-black/50 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity'>
+          <div className='absolute inset-0 flex flex-col items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100'>
             {uploadAvatarMutation.isPending ? (
-              <Loader2 className="h-6 w-6 text-white animate-spin" />
+              <Loader2 className='h-6 w-6 animate-spin text-white' />
             ) : (
-              <Camera className="h-6 w-6 text-white" />
+              <Camera className='h-6 w-6 text-white' />
             )}
           </div>
         </div>
@@ -140,10 +130,11 @@ const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) =
             <button
               key={tab.id}
               onClick={() => onTabChange(tab.id)}
-              className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium transition-all duration-300 ${isActive
-                ? 'bg-primary text-white shadow-lg'
-                : 'text-foreground/70 hover:bg-card-foreground/5 hover:text-foreground'
-                }`}
+              className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium transition-all duration-300 ${
+                isActive
+                  ? 'bg-primary text-white shadow-lg'
+                  : 'text-foreground/70 hover:bg-card-foreground/5 hover:text-foreground'
+              }`}
             >
               <IconComponent className='h-5 w-5' />
               <span className='text-sm'>{tab.label}</span>

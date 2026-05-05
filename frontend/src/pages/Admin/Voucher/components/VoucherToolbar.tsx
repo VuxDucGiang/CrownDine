@@ -9,12 +9,7 @@ interface VoucherToolbarProps {
   onTypeFilterChange: (value: VoucherType | '') => void
 }
 
-export function VoucherToolbar({
-  searchTerm,
-  onSearchChange,
-  typeFilter,
-  onTypeFilterChange
-}: VoucherToolbarProps) {
+export function VoucherToolbar({ searchTerm, onSearchChange, typeFilter, onTypeFilterChange }: VoucherToolbarProps) {
   return (
     <div className='bg-card border-border flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4 shadow-sm'>
       <div className='relative max-w-sm flex-1'>

@@ -1,15 +1,15 @@
 /** Trạng thái chấm công (khớp backend EAttendanceStatus) */
 export type EAttendanceStatus =
-  | 'ON_TIME'       // Đúng giờ
-  | 'LATE_EARLY'    // Đi muộn / Về sớm
+  | 'ON_TIME' // Đúng giờ
+  | 'LATE_EARLY' // Đi muộn / Về sớm
   | 'MISSING_PUNCH' // Chấm công thiếu
-  | 'NOT_PUNCHED'   // Chưa chấm công
-  | 'ABSENT_OFF'    // Nghỉ làm
+  | 'NOT_PUNCHED' // Chưa chấm công
+  | 'ABSENT_OFF' // Nghỉ làm
 
 /** Hình thức chấm công (khớp backend EAttendanceType) */
 export type EAttendanceType =
-  | 'WORKING'                 // Đi làm
-  | 'LEAVE_WITH_PERMISSION'   // Nghỉ có phép
+  | 'WORKING' // Đi làm
+  | 'LEAVE_WITH_PERMISSION' // Nghỉ có phép
   | 'LEAVE_WITHOUT_PERMISSION' // Nghỉ không phép
 
 export interface ShiftResponse {
@@ -107,11 +107,11 @@ export const ATTENDANCE_STATUS_LABELS: Record<EAttendanceStatus, string> = {
 }
 
 export const ATTENDANCE_STATUS_COLORS: Record<EAttendanceStatus, string> = {
-  ON_TIME: '#3b82f6',        
-  LATE_EARLY: '#a855f7',    
+  ON_TIME: '#3b82f6',
+  LATE_EARLY: '#a855f7',
   MISSING_PUNCH: '#ef4444',
-  NOT_PUNCHED: '#f59e0b',   
-  ABSENT_OFF: '#9ca3af'     
+  NOT_PUNCHED: '#f59e0b',
+  ABSENT_OFF: '#9ca3af'
 }
 
 export const ATTENDANCE_TYPE_LABELS: Record<EAttendanceType, string> = {

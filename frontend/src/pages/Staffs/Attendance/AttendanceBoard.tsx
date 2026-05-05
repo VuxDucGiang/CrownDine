@@ -32,15 +32,13 @@ export default function AttendanceBoard() {
 
   const { data: scheduleData, isLoading: scheduleLoading } = useQuery({
     queryKey: ['attendances', 'schedule', weekStartStr, search],
-    queryFn: () =>
-      attendanceApi.getWeeklySchedule({ date: weekStartStr, search: search || undefined }),
+    queryFn: () => attendanceApi.getWeeklySchedule({ date: weekStartStr, search: search || undefined }),
     select: (r) => r.data?.data
   })
 
   const { data: summaryData, isLoading: summaryLoading } = useQuery({
     queryKey: ['attendances', 'summary', weekStartStr, search],
-    queryFn: () =>
-      attendanceApi.getAttendanceSummary({ date: weekStartStr, search: search || undefined }),
+    queryFn: () => attendanceApi.getAttendanceSummary({ date: weekStartStr, search: search || undefined }),
     select: (r) => r.data?.data
   })
 
@@ -62,13 +60,13 @@ export default function AttendanceBoard() {
   const isLoading = viewMode === 'shift' ? scheduleLoading : summaryLoading
 
   return (
-    <div className='space-y-6 animate-in fade-in duration-300'>
-      <h1 className='text-2xl font-bold text-foreground'>Bảng chấm công</h1>
+    <div className='animate-in fade-in space-y-6 duration-300'>
+      <h1 className='text-foreground text-2xl font-bold'>Bảng chấm công</h1>
 
       <div className='bg-card border-border flex flex-wrap items-center justify-between gap-4 rounded-xl border p-4 shadow-sm'>
         <div className='flex flex-wrap items-center gap-3'>
           <div className='relative max-w-xs'>
-            <Search className='text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2' />
+            <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
             <Input
               placeholder='Tìm kiếm nhân viên'
               value={search}
@@ -76,13 +74,10 @@ export default function AttendanceBoard() {
               className='pl-9'
             />
           </div>
-          <select
-            className='border-input bg-background h-9 rounded-md border px-3 text-sm'
-            value='week'
-          >
+          <select className='border-input bg-background h-9 rounded-md border px-3 text-sm' value='week'>
             <option value='week'>Theo tuần</option>
           </select>
-          <div className='flex items-center gap-1 rounded-md border border-border bg-muted/30 px-1'>
+          <div className='border-border bg-muted/30 flex items-center gap-1 rounded-md border px-1'>
             <button
               type='button'
               onClick={goPrevWeek}
@@ -91,9 +86,7 @@ export default function AttendanceBoard() {
             >
               <ChevronLeft className='h-5 w-5' />
             </button>
-            <span className='min-w-[160px] px-2 text-center text-sm font-medium'>
-              {periodLabel}
-            </span>
+            <span className='min-w-[160px] px-2 text-center text-sm font-medium'>{periodLabel}</span>
             <button
               type='button'
               onClick={goNextWeek}
@@ -103,19 +96,19 @@ export default function AttendanceBoard() {
               <ChevronRight className='h-5 w-5' />
             </button>
           </div>
-            <select
-              className='border-input bg-background h-9 rounded-md border px-3 text-sm'
-              value={viewMode}
-              onChange={(e) => setViewMode(e.target.value as ViewMode)}
-            >
-              <option value='shift'>Xem theo ca</option>
-              <option value='employee'>Xem theo nhân viên</option>
-            </select>
+          <select
+            className='border-input bg-background h-9 rounded-md border px-3 text-sm'
+            value={viewMode}
+            onChange={(e) => setViewMode(e.target.value as ViewMode)}
+          >
+            <option value='shift'>Xem theo ca</option>
+            <option value='employee'>Xem theo nhân viên</option>
+          </select>
         </div>
       </div>
 
       {isLoading ? (
-        <div className='flex items-center justify-center rounded-xl border border-border bg-card py-16'>
+        <div className='border-border bg-card flex items-center justify-center rounded-xl border py-16'>
           <p className='text-muted-foreground'>Đang tải...</p>
         </div>
       ) : viewMode === 'shift' && scheduleData ? (
@@ -126,7 +119,7 @@ export default function AttendanceBoard() {
       ) : summaryData ? (
         <SummaryByEmployeeTable data={summaryData} />
       ) : (
-        <div className='rounded-xl border border-border bg-card py-12 text-center text-muted-foreground'>
+        <div className='border-border bg-card text-muted-foreground rounded-xl border py-12 text-center'>
           Không có dữ liệu
         </div>
       )}
@@ -142,8 +135,6 @@ export default function AttendanceBoard() {
           onSaved={closeModal}
         />
       )}
-
-
     </div>
   )
 }

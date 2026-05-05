@@ -66,13 +66,14 @@ const MyVouchers = ({ vouchers, isLoading }: MyVouchersProps) => {
               <div className='flex-1 space-y-3'>
                 <h3 className='text-lg font-semibold'>{v.voucherName}</h3>
                 <p className='text-primary text-base font-semibold'>{getDiscountLabel(v)}</p>
-                {v.description && (
-                  <p className='text-foreground/70 text-sm'>{v.description}</p>
-                )}
-                <div className='flex flex-wrap items-center gap-4 text-sm text-foreground/60'>
+                {v.description && <p className='text-foreground/70 text-sm'>{v.description}</p>}
+                <div className='text-foreground/60 flex flex-wrap items-center gap-4 text-sm'>
                   <span className='flex items-center gap-1.5'>
                     <Hash className='h-4 w-4' />
-                    Còn {v.usageLimit != null ? `${Math.max(0, v.usageLimit - v.usageCount)}/${v.usageLimit} lượt` : 'không giới hạn'}
+                    Còn{' '}
+                    {v.usageLimit != null
+                      ? `${Math.max(0, v.usageLimit - v.usageCount)}/${v.usageLimit} lượt`
+                      : 'không giới hạn'}
                   </span>
                   <span className='flex items-center gap-1.5'>
                     <Calendar className='h-4 w-4' />
@@ -80,7 +81,7 @@ const MyVouchers = ({ vouchers, isLoading }: MyVouchersProps) => {
                   </span>
                 </div>
               </div>
-              <div className='border-border/50 flex shrink-0 flex-col items-start gap-2 border-t pt-4 sm:border-l sm:border-t-0 sm:pl-6 sm:pt-0'>
+              <div className='border-border/50 flex shrink-0 flex-col items-start gap-2 border-t pt-4 sm:border-t-0 sm:border-l sm:pt-0 sm:pl-6'>
                 <span className='text-foreground/60 text-xs font-medium'>Mã voucher</span>
                 <div className='flex items-center gap-2'>
                   <code className='bg-foreground/10 border-border inline-flex items-center gap-1.5 rounded-md border px-3 py-2 font-mono text-sm font-semibold'>

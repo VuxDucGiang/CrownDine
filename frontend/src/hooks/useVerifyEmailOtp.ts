@@ -6,13 +6,13 @@ import { useAuthStore } from '@/stores/useAuthStore'
 const useVerifyEmailOtp = () => {
   const queryClient = useQueryClient()
   const setUser = useAuthStore((state) => state.setUser)
-  
+
   return useMutation({
     mutationFn: (data: { otp: string; newEmail: string }) => userApi.verifyEmailOtp(data),
     onSuccess: async () => {
       // Invalidate query to refetch profile
       queryClient.invalidateQueries({ queryKey: ['profile'] })
-      
+
       // Fetch fresh profile data and update global auth store
       try {
         const res = await userApi.getProfile()

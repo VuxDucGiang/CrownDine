@@ -27,16 +27,13 @@ const attendanceApi = {
   },
 
   getHistory(userId: number, page = 0, size = 10) {
-    return http.get<ApiResponse<SpringPage<AttendanceHistoryItemResponse>>>(
-      `${ATTENDANCE_URL}/history/${userId}`,
-      { params: { page, size } }
-    )
+    return http.get<ApiResponse<SpringPage<AttendanceHistoryItemResponse>>>(`${ATTENDANCE_URL}/history/${userId}`, {
+      params: { page, size }
+    })
   },
 
   getEmployeeInfo(userId: number) {
-    return http.get<ApiResponse<EmployeeAttendanceInfoResponse>>(
-      `${ATTENDANCE_URL}/employee/${userId}/info`
-    )
+    return http.get<ApiResponse<EmployeeAttendanceInfoResponse>>(`${ATTENDANCE_URL}/employee/${userId}/info`)
   },
 
   saveRecord(body: AttendanceRecordRequest) {

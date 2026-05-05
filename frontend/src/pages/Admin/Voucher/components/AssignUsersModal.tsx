@@ -16,13 +16,7 @@ interface AssignUsersModalProps {
   isSubmitting?: boolean
 }
 
-export function AssignUsersModal({
-  isOpen,
-  onClose,
-  voucher,
-  onAssign,
-  isSubmitting = false
-}: AssignUsersModalProps) {
+export function AssignUsersModal({ isOpen, onClose, voucher, onAssign, isSubmitting = false }: AssignUsersModalProps) {
   const [selectedUserIds, setSelectedUserIds] = useState<number[]>([])
   const [searchTerm, setSearchTerm] = useState('')
   const [usageLimit, setUsageLimit] = useState('1')
@@ -36,17 +30,18 @@ export function AssignUsersModal({
 
   const customers = customersData?.data?.data || []
 
-  const filteredCustomers = customers.filter(c => 
-    c.phone?.includes(searchTerm) || 
-    c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || 
-    c.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    c.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredCustomers = customers.filter(
+    (c) =>
+      c.phone?.includes(searchTerm) ||
+      c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      c.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
   )
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     if (!voucher) return
-    
+
     const limit = parseInt(usageLimit, 10)
     if (Number.isNaN(limit) || limit < 1 || !expiredAt.trim()) {
       return
@@ -73,19 +68,17 @@ export function AssignUsersModal({
   }
 
   const toggleUser = (id: number) => {
-    setSelectedUserIds(prev => 
-      prev.includes(id) ? prev.filter(userId => userId !== id) : [...prev, id]
-    )
+    setSelectedUserIds((prev) => (prev.includes(id) ? prev.filter((userId) => userId !== id) : [...prev, id]))
   }
 
   const toggleAllVisible = () => {
-    const allVisibleIds = filteredCustomers.map(c => Number(c.id))
-    const isAllSelected = allVisibleIds.every(id => selectedUserIds.includes(id))
-    
+    const allVisibleIds = filteredCustomers.map((c) => Number(c.id))
+    const isAllSelected = allVisibleIds.every((id) => selectedUserIds.includes(id))
+
     if (isAllSelected) {
-      setSelectedUserIds(prev => prev.filter(id => !allVisibleIds.includes(id)))
+      setSelectedUserIds((prev) => prev.filter((id) => !allVisibleIds.includes(id)))
     } else {
-      setSelectedUserIds(prev => Array.from(new Set([...prev, ...allVisibleIds])))
+      setSelectedUserIds((prev) => Array.from(new Set([...prev, ...allVisibleIds])))
     }
   }
 
@@ -98,40 +91,48 @@ export function AssignUsersModal({
       <form onSubmit={handleSubmit} className='space-y-4'>
         <div className='space-y-2'>
           <Label>Chọn khách hàng</Label>
-          <Input 
-            placeholder='Tìm theo tên hoặc số điện thoại...' 
+          <Input
+            placeholder='Tìm theo tên hoặc số điện thoại...'
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className='mb-2'
           />
-          
-          <div className='border rounded-md max-h-[200px] overflow-y-auto p-2'>
+
+          <div className='max-h-[200px] overflow-y-auto rounded-md border p-2'>
             {isLoading ? (
-              <div className='text-center py-4 text-sm text-muted-foreground'>Đang tải danh sách khách hàng...</div>
+              <div className='text-muted-foreground py-4 text-center text-sm'>Đang tải danh sách khách hàng...</div>
             ) : filteredCustomers.length === 0 ? (
-              <div className='text-center py-4 text-sm text-muted-foreground'>Không tìm thấy khách hàng.</div>
+              <div className='text-muted-foreground py-4 text-center text-sm'>Không tìm thấy khách hàng.</div>
             ) : (
               <div className='space-y-1'>
-                <div className='flex items-center space-x-2 p-2 hover:bg-accent rounded-sm'>
-                  <input 
-                    type='checkbox' 
-                    checked={filteredCustomers.length > 0 && filteredCustomers.every(c => selectedUserIds.includes(Number(c.id)))}
+                <div className='hover:bg-accent flex items-center space-x-2 rounded-sm p-2'>
+                  <input
+                    type='checkbox'
+                    checked={
+                      filteredCustomers.length > 0 &&
+                      filteredCustomers.every((c) => selectedUserIds.includes(Number(c.id)))
+                    }
                     onChange={toggleAllVisible}
                     className='h-4 w-4 rounded border-gray-300'
                   />
                   <span className='text-sm font-medium'>Chọn tất cả</span>
                 </div>
                 {filteredCustomers.map((customer) => (
-                  <label key={customer.id} className='flex items-center space-x-2 p-2 hover:bg-accent rounded-sm cursor-pointer'>
-                    <input 
-                      type='checkbox' 
+                  <label
+                    key={customer.id}
+                    className='hover:bg-accent flex cursor-pointer items-center space-x-2 rounded-sm p-2'
+                  >
+                    <input
+                      type='checkbox'
                       checked={selectedUserIds.includes(Number(customer.id))}
                       onChange={() => toggleUser(Number(customer.id))}
                       className='h-4 w-4 rounded border-gray-300'
                     />
                     <div className='flex flex-col'>
-                      <span className='text-sm font-medium'>{customer.firstName} {customer.lastName}</span>
-                      <span className='text-xs text-muted-foreground'>{customer.phone}</span>
+                      <span className='text-sm font-medium'>
+                        {customer.firstName} {customer.lastName}
+                      </span>
+                      <span className='text-muted-foreground text-xs'>{customer.phone}</span>
                     </div>
                   </label>
                 ))}
@@ -139,9 +140,7 @@ export function AssignUsersModal({
             )}
           </div>
           {selectedUserIds.length > 0 && (
-            <div className='text-xs text-muted-foreground text-right'>
-              Đã chọn: {selectedUserIds.length} khách hàng
-            </div>
+            <div className='text-muted-foreground text-right text-xs'>Đã chọn: {selectedUserIds.length} khách hàng</div>
           )}
         </div>
 

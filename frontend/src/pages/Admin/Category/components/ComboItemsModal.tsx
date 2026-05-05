@@ -15,12 +15,7 @@ export function ComboItemsModal({ isOpen, onClose, combo, onEdit }: ComboItemsMo
   const items = combo.items || []
 
   return (
-    <Modal
-      isOpen={isOpen}
-      onClose={onClose}
-      title={`Chi tiết Combo: ${combo.name}`}
-      maxWidth='max-w-2xl'
-    >
+    <Modal isOpen={isOpen} onClose={onClose} title={`Chi tiết Combo: ${combo.name}`} maxWidth='max-w-2xl'>
       <div className='space-y-4'>
         <div className='bg-muted/30 flex items-center justify-between rounded-lg p-3'>
           <div className='space-y-1'>
@@ -59,19 +54,19 @@ export function ComboItemsModal({ isOpen, onClose, combo, onEdit }: ComboItemsMo
             </tbody>
           </table>
         </div>
-        
+
         <div className='flex items-center justify-between pt-2'>
-           <p className='text-muted-foreground text-xs'>Nhấn nút Sửa để thay đổi thành phần combo.</p>
-           <button
-             onClick={() => {
-               onClose()
-               onEdit(combo)
-             }}
-             className='bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors'
-           >
-             <Pencil className='h-4 w-4' />
-             Chỉnh sửa ngay
-           </button>
+          <p className='text-muted-foreground text-xs'>Nhấn nút Sửa để thay đổi thành phần combo.</p>
+          <button
+            onClick={() => {
+              onClose()
+              onEdit(combo)
+            }}
+            className='bg-primary text-primary-foreground hover:bg-primary/90 flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium transition-colors'
+          >
+            <Pencil className='h-4 w-4' />
+            Chỉnh sửa ngay
+          </button>
         </div>
       </div>
     </Modal>

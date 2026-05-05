@@ -23,7 +23,11 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
   const [foundCustomer, setFoundCustomer] = useState<any>(null)
   const [customerVouchers, setCustomerVouchers] = useState<any[]>([])
 
-  const { data: checkoutData, isFetching: isCheckoutFetching, refetch: refetchCheckout } = useQuery({
+  const {
+    data: checkoutData,
+    isFetching: isCheckoutFetching,
+    refetch: refetchCheckout
+  } = useQuery({
     queryKey: ['order-checkout', order?.id],
     queryFn: async () => {
       if (!order?.id) throw new Error('Không tìm thấy đơn hàng')
@@ -94,7 +98,6 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
     applyVoucherMutation.mutate(voucherCode.trim())
   }
 
-
   const paymentMutation = useMutation({
     mutationFn: (paymentMethod: 'CASH' | 'PAYOS') => {
       if (!order) throw new Error('Không tìm thấy thông tin đơn hàng.')
@@ -136,7 +139,7 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
   const totalAmount = checkoutData?.totalAmount || 0
   const voucherDiscount = checkoutData?.voucherDiscount || 0
   const depositAdjusted = checkoutData?.orderDepositPaidAmount || 0
-  
+
   const computedFinalAmount = Math.max(0, totalAmount - voucherDiscount - depositAdjusted)
 
   return (
@@ -147,7 +150,7 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
         </p>
         <div className='bg-muted/50 mb-2 rounded-md p-4'>
           {isCheckoutFetching ? (
-            <p className='text-sm text-muted-foreground'>Đang tải thông tin checkout...</p>
+            <p className='text-muted-foreground text-sm'>Đang tải thông tin checkout...</p>
           ) : (
             <div className='space-y-2 text-sm'>
               <div className='flex items-center justify-between'>
@@ -164,7 +167,9 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
               </div>
               <div className='border-border mt-2 flex items-center justify-between border-t pt-2'>
                 <span className='text-base font-black'>KHÁCH CẦN TRẢ</span>
-                <span className='text-primary text-xl font-black transition-all'>{formatCurrency(computedFinalAmount)}</span>
+                <span className='text-primary text-xl font-black transition-all'>
+                  {formatCurrency(computedFinalAmount)}
+                </span>
               </div>
             </div>
           )}

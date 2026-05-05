@@ -31,13 +31,21 @@ const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
   const prevWeek = () => setCurrentDate((prev) => subWeeks(prev, 1))
 
   // Filter logic for ScheduleTable
-  const filteredStaffs = staffs ? (selectedStaffSearchIds.length > 0 ? staffs.filter(s => selectedStaffSearchIds.some(id => String(id) === String(s.id))) : staffs) : []
-  const filteredSchedules = schedules ? (selectedStaffSearchIds.length > 0 ? schedules.filter(s => selectedStaffSearchIds.some(id => String(id) === String(s.user.id))) : schedules) : []
+  const filteredStaffs = staffs
+    ? selectedStaffSearchIds.length > 0
+      ? staffs.filter((s) => selectedStaffSearchIds.some((id) => String(id) === String(s.id)))
+      : staffs
+    : []
+  const filteredSchedules = schedules
+    ? selectedStaffSearchIds.length > 0
+      ? schedules.filter((s) => selectedStaffSearchIds.some((id) => String(id) === String(s.user.id)))
+      : schedules
+    : []
 
   return (
     <div className='bg-muted/10 h-full min-h-[calc(100vh-64px)] p-6'>
       <div className='mx-auto max-w-[1600px]'>
-        <div className='border-border rounded-t-xl border border-b-0 bg-card text-card-foreground px-4 pt-2 shadow-sm'>
+        <div className='border-border bg-card text-card-foreground rounded-t-xl border border-b-0 px-4 pt-2 shadow-sm'>
           <ScheduleHeader
             isAdmin={isAdmin}
             currentDate={currentDate}
@@ -59,9 +67,7 @@ const WorkSchedule = ({ isAdmin = false }: WorkScheduleProps) => {
           />
         </div>
       </div>
-      {isCreateShiftOpen && (
-        <CreateShiftModal onClose={() => setIsCreateShiftOpen(false)} />
-      )}
+      {isCreateShiftOpen && <CreateShiftModal onClose={() => setIsCreateShiftOpen(false)} />}
     </div>
   )
 }

@@ -13,18 +13,18 @@ export const RejectedRoute = () => {
 
 export const AdminRoute = () => {
   const { isAuthenticated, roles } = useAuthStore()
-  
+
   if (!isAuthenticated) return <Navigate to='/login' replace />
   if (!roles.includes('ADMIN')) return <Navigate to='/' replace />
-  
+
   return <Outlet />
 }
 
 export const StaffRoute = () => {
   const { isAuthenticated, roles } = useAuthStore()
-  
+
   if (!isAuthenticated) return <Navigate to='/login' replace />
   if (!roles.includes('STAFF')) return <Navigate to='/' replace />
-  
+
   return <Outlet />
 }

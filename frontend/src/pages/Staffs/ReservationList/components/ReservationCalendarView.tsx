@@ -30,8 +30,8 @@ const STATUS_CONFIG: Record<string, { label: string; color: string }> = {
   CANCELLED: { label: 'Đã hủy', color: 'bg-red-500' }
 }
 
-const ReservationCalendarView = ({ 
-  onOpenCreateModal, 
+const ReservationCalendarView = ({
+  onOpenCreateModal,
   onSelectReservation,
   statusFilter,
   activeFloor,
@@ -52,12 +52,12 @@ const ReservationCalendarView = ({
   // Group tables by Floor & Area filter
   const groupedTables = useMemo(() => {
     const groups: Record<string, Table[]> = {}
-    
+
     // 1. Filter tables by Floor & Area
     const filteredTables = tablesData.filter((t: Table) => {
-       if (activeFloor && activeFloor !== 'Tất cả' && t.floorName !== activeFloor) return false
-       if (activeArea && activeArea !== 'Tất cả' && t.areaName !== activeArea) return false
-       return true
+      if (activeFloor && activeFloor !== 'Tất cả' && t.floorName !== activeFloor) return false
+      if (activeArea && activeArea !== 'Tất cả' && t.areaName !== activeArea) return false
+      return true
     })
 
     filteredTables.forEach((t: Table) => {
@@ -65,7 +65,7 @@ const ReservationCalendarView = ({
       if (!groups[floor]) groups[floor] = []
       groups[floor].push(t)
     })
-    
+
     return groups
   }, [tablesData, activeFloor, activeArea])
 
@@ -77,19 +77,20 @@ const ReservationCalendarView = ({
 
   const filteredReservations = useMemo(() => {
     let result = reservations
-    
+
     // 1. Status Filter
     if (statusFilter) {
-      result = result.filter(r => r.status === statusFilter)
+      result = result.filter((r) => r.status === statusFilter)
     }
 
     // 2. Search Term
     if (searchTerm) {
       const lowerSearch = searchTerm.toLowerCase()
-      result = result.filter((r: StaffReservationResponse) => 
-        r.customerName.toLowerCase().includes(lowerSearch) || 
-        r.phone?.includes(searchTerm) || 
-        r.code?.includes(lowerSearch)
+      result = result.filter(
+        (r: StaffReservationResponse) =>
+          r.customerName.toLowerCase().includes(lowerSearch) ||
+          r.phone?.includes(searchTerm) ||
+          r.code?.includes(lowerSearch)
       )
     }
 
@@ -108,97 +109,106 @@ const ReservationCalendarView = ({
     if (!startTime || !endTime) return COLUMN_WIDTH * 1.5 // Default 1.5h
     const [sh, sm] = startTime.split(':').map(Number)
     const [eh, em] = endTime.split(':').map(Number)
-    const totalMinutes = (eh * 60 + em) - (sh * 60 + sm)
+    const totalMinutes = eh * 60 + em - (sh * 60 + sm)
     return (totalMinutes / 60) * COLUMN_WIDTH
   }
 
   const currentTimeOffset = useMemo(() => {
-     const now = new Date()
-     if (!isSameDay(now, selectedDate)) return null
-     const h = now.getHours()
-     const m = now.getMinutes()
-     if (h < 8 || h > 22) return null
-     return ((h - 8) * 60 + m) / 60 * COLUMN_WIDTH
+    const now = new Date()
+    if (!isSameDay(now, selectedDate)) return null
+    const h = now.getHours()
+    const m = now.getMinutes()
+    if (h < 8 || h > 22) return null
+    return (((h - 8) * 60 + m) / 60) * COLUMN_WIDTH
   }, [selectedDate])
 
   if (isTablesLoading) return <div className='p-10 text-center'>Đang tải sơ đồ bàn...</div>
 
   return (
-    <div className='flex flex-col h-full bg-white text-slate-800 overflow-hidden'>
+    <div className='flex h-full flex-col overflow-hidden bg-white text-slate-800'>
       {/* 1. Sub-Header Toolbar */}
-      <div className='flex items-center justify-between p-3 bg-slate-50 border-b border-slate-200'>
+      <div className='flex items-center justify-between border-b border-slate-200 bg-slate-50 p-3'>
         <div className='flex items-center gap-4'>
-           <div className='flex bg-white rounded-lg border border-slate-200 p-0.5 shadow-sm'>
-              <button className='px-4 py-1.5 text-[10px] font-black uppercase bg-primary text-white rounded-md'>Ngày</button>
-              <button className='px-4 py-1.5 text-[10px] font-black uppercase text-slate-400 hover:text-slate-800 transition-colors'>Tuần</button>
-              <button className='px-4 py-1.5 text-[10px] font-black uppercase text-slate-400 hover:text-slate-800 transition-colors'>Tháng</button>
-           </div>
-           
-           <div className='flex items-center bg-white rounded-lg border border-slate-200 shadow-sm overflow-hidden'>
-              <button 
-                onClick={() => setSelectedDate(prev => subDays(prev, 1))}
-                className='p-2 hover:bg-slate-50 text-slate-400 transition-colors border-r border-slate-100'
-              >
-                <ChevronLeft size={16} />
-              </button>
-              <button 
-                onClick={() => setSelectedDate(new Date())}
-                className='px-3 py-1 bg-white text-[9px] uppercase font-black text-slate-400 hover:text-primary transition-colors border-r border-slate-100'
-              >
-                Hôm nay
-              </button>
-              <div className='px-4 font-bold text-xs min-w-[120px] text-center text-slate-600'>
-                {format(selectedDate, 'dd/MM/yyyy')}
-              </div>
-              <button 
-                onClick={() => setSelectedDate(prev => addDays(prev, 1))}
-                className='p-2 hover:bg-slate-50 text-slate-400 transition-colors border-l border-slate-100'
-              >
-                <ChevronRight size={16} />
-              </button>
-           </div>
+          <div className='flex rounded-lg border border-slate-200 bg-white p-0.5 shadow-sm'>
+            <button className='bg-primary rounded-md px-4 py-1.5 text-[10px] font-black text-white uppercase'>
+              Ngày
+            </button>
+            <button className='px-4 py-1.5 text-[10px] font-black text-slate-400 uppercase transition-colors hover:text-slate-800'>
+              Tuần
+            </button>
+            <button className='px-4 py-1.5 text-[10px] font-black text-slate-400 uppercase transition-colors hover:text-slate-800'>
+              Tháng
+            </button>
+          </div>
+
+          <div className='flex items-center overflow-hidden rounded-lg border border-slate-200 bg-white shadow-sm'>
+            <button
+              onClick={() => setSelectedDate((prev) => subDays(prev, 1))}
+              className='border-r border-slate-100 p-2 text-slate-400 transition-colors hover:bg-slate-50'
+            >
+              <ChevronLeft size={16} />
+            </button>
+            <button
+              onClick={() => setSelectedDate(new Date())}
+              className='hover:text-primary border-r border-slate-100 bg-white px-3 py-1 text-[9px] font-black text-slate-400 uppercase transition-colors'
+            >
+              Hôm nay
+            </button>
+            <div className='min-w-[120px] px-4 text-center text-xs font-bold text-slate-600'>
+              {format(selectedDate, 'dd/MM/yyyy')}
+            </div>
+            <button
+              onClick={() => setSelectedDate((prev) => addDays(prev, 1))}
+              className='border-l border-slate-100 p-2 text-slate-400 transition-colors hover:bg-slate-50'
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
         </div>
 
         <div className='flex items-center gap-2'>
           <div className='relative'>
-             <Input 
-                className='pl-8 w-[240px] h-9 text-xs border-slate-200 focus:border-primary shadow-sm bg-white' 
-                placeholder='Lọc theo khách hàng...'
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-             />
-             <Search className='absolute left-2.5 top-2 text-slate-300' size={14} />
+            <Input
+              className='focus:border-primary h-9 w-[240px] border-slate-200 bg-white pl-8 text-xs shadow-sm'
+              placeholder='Lọc theo khách hàng...'
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+            <Search className='absolute top-2 left-2.5 text-slate-300' size={14} />
           </div>
-          <Button onClick={onOpenCreateModal} className='h-9 gap-2 bg-primary hover:bg-primary/90 shadow-md transition-all active:scale-95 font-bold text-xs px-4 rounded-lg'>
-             <PlusCircle size={14} /> ĐẶT BÀN (F1)
+          <Button
+            onClick={onOpenCreateModal}
+            className='bg-primary hover:bg-primary/90 h-9 gap-2 rounded-lg px-4 text-xs font-bold shadow-md transition-all active:scale-95'
+          >
+            <PlusCircle size={14} /> ĐẶT BÀN (F1)
           </Button>
         </div>
       </div>
 
       {/* 2. Legend / Filters */}
-      <div className='flex flex-wrap items-center gap-6 px-6 py-2.5 bg-white border-b border-slate-200 text-[10px] font-black uppercase text-slate-400 tracking-wider shadow-sm z-20'>
-         {Object.entries(STATUS_CONFIG).map(([key, config]) => (
-            <div key={key} className='flex items-center gap-2'>
-               <div className={clsx('w-3 h-3 rounded-sm', config.color)}></div>
-               <span>{config.label}</span>
-            </div>
-         ))}
+      <div className='z-20 flex flex-wrap items-center gap-6 border-b border-slate-200 bg-white px-6 py-2.5 text-[10px] font-black tracking-wider text-slate-400 uppercase shadow-sm'>
+        {Object.entries(STATUS_CONFIG).map(([key, config]) => (
+          <div key={key} className='flex items-center gap-2'>
+            <div className={clsx('h-3 w-3 rounded-sm', config.color)}></div>
+            <span>{config.label}</span>
+          </div>
+        ))}
       </div>
 
       {/* 3. Main Timeline Grid */}
-      <div className='flex-1 overflow-auto bg-slate-50 relative'>
+      <div className='relative flex-1 overflow-auto bg-slate-50'>
         <div className='inline-flex min-w-full flex-col'>
           {/* Timeline Header (Sticky) */}
-          <div className='flex sticky top-0 z-30 bg-slate-50 border-b border-slate-200'>
-            <div className='w-48 flex-shrink-0 bg-slate-100/50 p-3 text-[10px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 flex items-center justify-center'>
-               Phòng / Bàn
+          <div className='sticky top-0 z-30 flex border-b border-slate-200 bg-slate-50'>
+            <div className='flex w-48 flex-shrink-0 items-center justify-center border-r border-slate-200 bg-slate-100/50 p-3 text-[10px] font-black tracking-widest text-slate-400 uppercase'>
+              Phòng / Bàn
             </div>
             <div className='flex'>
-              {HOURS.map(hour => (
-                <div 
-                  key={hour} 
-                  style={{ width: `${COLUMN_WIDTH}px` }} 
-                  className='flex-shrink-0 p-3 text-center border-r border-slate-200/50 text-[10px] font-black text-slate-400'
+              {HOURS.map((hour) => (
+                <div
+                  key={hour}
+                  style={{ width: `${COLUMN_WIDTH}px` }}
+                  className='flex-shrink-0 border-r border-slate-200/50 p-3 text-center text-[10px] font-black text-slate-400'
                 >
                   {hour}:00
                 </div>
@@ -209,86 +219,93 @@ const ReservationCalendarView = ({
           {/* Floor Groupings & Table Rows */}
           {Object.entries(groupedTables).map(([floor, tables]) => (
             <div key={floor}>
-               {/* Floor Header */}
-               <div className='flex bg-slate-100/50 border-b border-slate-200'>
-                  <div className='w-48 bg-slate-200/30 p-2 pl-4 text-[9px] font-black text-slate-400 uppercase tracking-widest border-r border-slate-200 flex items-center'>
-                     {floor}
-                  </div>
-                  <div className='flex-1 h-8'></div>
-               </div>
+              {/* Floor Header */}
+              <div className='flex border-b border-slate-200 bg-slate-100/50'>
+                <div className='flex w-48 items-center border-r border-slate-200 bg-slate-200/30 p-2 pl-4 text-[9px] font-black tracking-widest text-slate-400 uppercase'>
+                  {floor}
+                </div>
+                <div className='h-8 flex-1'></div>
+              </div>
 
-               {/* Table Rows under this floor */}
-               {tables?.map((table: Table) => {
-                  const tableReservations = (filteredReservations || []).filter((r: StaffReservationResponse) => r.tableName === table.name)
-                  
-                  return (
-                    <div key={table.id} className='flex border-b border-slate-200 group hover:bg-white transition-colors h-13'>
-                       {/* Left Table Label */}
-                       <div className='w-48 flex-shrink-0 bg-white p-3 font-semibold text-sm border-r border-slate-200 flex items-center gap-2 shadow-sm'>
-                          <div className='w-2 h-2 rounded-full bg-slate-200 group-hover:bg-primary transition-colors'></div>
-                          {table.name} 
-                          <span className='text-[10px] text-slate-400 font-normal ml-auto'>({table.capacity} ghế)</span>
-                       </div>
+              {/* Table Rows under this floor */}
+              {tables?.map((table: Table) => {
+                const tableReservations = (filteredReservations || []).filter(
+                  (r: StaffReservationResponse) => r.tableName === table.name
+                )
 
-                       {/* Horizontal Track with Reservation Blocks */}
-                       <div className='flex relative bg-slate-50/30 group-hover:bg-white/10 transition-colors'>
-                          {HOURS.map(hour => (
-                             <div 
-                                key={hour} 
-                                style={{ width: `${COLUMN_WIDTH}px` }} 
-                                className='flex-shrink-0 border-r border-slate-200/50 h-full cursor-cell hover:bg-primary/5 transition-all'
-                                onClick={() => onSlotClick?.({
-                                  tableId: Number(table.id),
-                                  startTime: `${hour.toString().padStart(2, '0')}:00`,
-                                  date: dateStr
-                                })}
-                             ></div>
-                          ))}
-
-                          {(tableReservations || []).map((res: StaffReservationResponse) => {
-                             const offset = getTimeOffset(res.startTime)
-                             const width = getDurationWidth(res.startTime, res.endTime)
-                             const config = STATUS_CONFIG[res.status] || STATUS_CONFIG.CONFIRMED
-
-                             return (
-                               <div 
-                                 key={res.id}
-                                 onClick={() => onSelectReservation(res)}
-                                 style={{ 
-                                    left: `${offset}px`,
-                                    width: `${width - 4}px`,
-                                    top: '8px'
-                                 }}
-                                 className={clsx(
-                                   'absolute h-10 rounded-lg shadow-sm border border-white/20 p-2 text-[10px] sm:text-xs overflow-hidden cursor-pointer transition-all hover:scale-[1.02] hover:shadow-lg active:scale-95 group/block z-10',
-                                   config.color,
-                                   'text-white'
-                                 )}
-                               >
-                                  <div className='font-bold truncate drop-shadow-sm flex items-center gap-1'>
-                                     {res.customerName}
-                                  </div>
-                                  <div className='flex items-center gap-1 opacity-90 truncate font-medium'>
-                                      👤 {res.guestNumber} • {res.startTime.substring(0, 5)}
-                                  </div>
-                               </div>
-                             )
-                          })}
-                       </div>
+                return (
+                  <div
+                    key={table.id}
+                    className='group flex h-13 border-b border-slate-200 transition-colors hover:bg-white'
+                  >
+                    {/* Left Table Label */}
+                    <div className='flex w-48 flex-shrink-0 items-center gap-2 border-r border-slate-200 bg-white p-3 text-sm font-semibold shadow-sm'>
+                      <div className='group-hover:bg-primary h-2 w-2 rounded-full bg-slate-200 transition-colors'></div>
+                      {table.name}
+                      <span className='ml-auto text-[10px] font-normal text-slate-400'>({table.capacity} ghế)</span>
                     </div>
-                  )
-               })}
+
+                    {/* Horizontal Track with Reservation Blocks */}
+                    <div className='relative flex bg-slate-50/30 transition-colors group-hover:bg-white/10'>
+                      {HOURS.map((hour) => (
+                        <div
+                          key={hour}
+                          style={{ width: `${COLUMN_WIDTH}px` }}
+                          className='hover:bg-primary/5 h-full flex-shrink-0 cursor-cell border-r border-slate-200/50 transition-all'
+                          onClick={() =>
+                            onSlotClick?.({
+                              tableId: Number(table.id),
+                              startTime: `${hour.toString().padStart(2, '0')}:00`,
+                              date: dateStr
+                            })
+                          }
+                        ></div>
+                      ))}
+
+                      {(tableReservations || []).map((res: StaffReservationResponse) => {
+                        const offset = getTimeOffset(res.startTime)
+                        const width = getDurationWidth(res.startTime, res.endTime)
+                        const config = STATUS_CONFIG[res.status] || STATUS_CONFIG.CONFIRMED
+
+                        return (
+                          <div
+                            key={res.id}
+                            onClick={() => onSelectReservation(res)}
+                            style={{
+                              left: `${offset}px`,
+                              width: `${width - 4}px`,
+                              top: '8px'
+                            }}
+                            className={clsx(
+                              'group/block absolute z-10 h-10 cursor-pointer overflow-hidden rounded-lg border border-white/20 p-2 text-[10px] shadow-sm transition-all hover:scale-[1.02] hover:shadow-lg active:scale-95 sm:text-xs',
+                              config.color,
+                              'text-white'
+                            )}
+                          >
+                            <div className='flex items-center gap-1 truncate font-bold drop-shadow-sm'>
+                              {res.customerName}
+                            </div>
+                            <div className='flex items-center gap-1 truncate font-medium opacity-90'>
+                              👤 {res.guestNumber} • {res.startTime.substring(0, 5)}
+                            </div>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                )
+              })}
             </div>
           ))}
 
           {/* Current Time Indicator Line */}
           {currentTimeOffset !== null && (
-             <div 
-                className='absolute top-0 bottom-0 w-0.5 bg-red-500 z-40 pointer-events-none' 
-                style={{ left: `${currentTimeOffset + 192}px` }} // +192px for the offset of the left sidebar (w-48 = 192px)
-             >
-                <div className='w-3 h-3 bg-red-500 rounded-full absolute -top-1.5 -left-1.25 shadow-md'></div>
-             </div>
+            <div
+              className='pointer-events-none absolute top-0 bottom-0 z-40 w-0.5 bg-red-500'
+              style={{ left: `${currentTimeOffset + 192}px` }} // +192px for the offset of the left sidebar (w-48 = 192px)
+            >
+              <div className='absolute -top-1.5 -left-1.25 h-3 w-3 rounded-full bg-red-500 shadow-md'></div>
+            </div>
           )}
         </div>
       </div>

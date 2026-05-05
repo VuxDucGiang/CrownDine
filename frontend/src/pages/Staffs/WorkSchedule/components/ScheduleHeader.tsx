@@ -68,7 +68,7 @@ export function ScheduleHeader({
       <h1 className='text-xl font-bold'>Lịch làm việc</h1>
       <div className='flex flex-1 items-center justify-end gap-3'>
         <div className='relative w-64' ref={dropdownRef}>
-          <div className='border-input ring-offset-background flex min-h-10 w-full cursor-pointer items-center justify-between rounded-md border bg-card px-3 py-1.5 text-sm'>
+          <div className='border-input ring-offset-background bg-card flex min-h-10 w-full cursor-pointer items-center justify-between rounded-md border px-3 py-1.5 text-sm'>
             <div
               className='flex flex-1 flex-wrap items-center gap-2 overflow-hidden'
               onClick={() => setIsDropdownOpen(true)}
@@ -146,7 +146,7 @@ export function ScheduleHeader({
           )}
         </div>
 
-        <div className='border-border hover:bg-muted/50 flex h-10 items-center gap-1 rounded-md border bg-card px-1 transition-colors'>
+        <div className='border-border hover:bg-muted/50 bg-card flex h-10 items-center gap-1 rounded-md border px-1 transition-colors'>
           <Button variant='ghost' size='icon' onClick={onPrevWeek} className='hover:bg-muted h-8 w-8 rounded-sm p-0'>
             <ChevronLeft className='h-4 w-4' />
           </Button>
@@ -157,7 +157,6 @@ export function ScheduleHeader({
             <ChevronRight className='h-4 w-4' />
           </Button>
         </div>
-
 
         <Button variant='outline' className='flex items-center gap-2'>
           <User className='h-4 w-4' />

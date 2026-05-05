@@ -119,11 +119,7 @@ export default function Menu() {
         </div>
 
         <div className='lg:col-span-9'>
-          <SortMenuFilter
-            search={searchInput}
-            onSearchChange={handleSearchChange}
-            sortBy={sortBy}
-          />
+          <SortMenuFilter search={searchInput} onSearchChange={handleSearchChange} sortBy={sortBy} />
 
           {menuLoading ? (
             <div className='py-16 text-center'>

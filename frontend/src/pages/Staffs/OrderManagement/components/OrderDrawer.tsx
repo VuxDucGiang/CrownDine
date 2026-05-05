@@ -31,14 +31,14 @@ interface CartItem {
   status?: string // PENDING, COOKING, etc for existing details
 }
 
-export default function OrderDrawer({ 
-  isOpen, 
-  onClose, 
-  order, 
-  reservationId, 
+export default function OrderDrawer({
+  isOpen,
+  onClose,
+  order,
+  reservationId,
   preSelectedTableId,
-  onPaymentClick, 
-  onCancelClick 
+  onPaymentClick,
+  onCancelClick
 }: OrderDrawerProps) {
   const [cart, setCart] = useState<CartItem[]>([])
   const [selectedTableId, setSelectedTableId] = useState<string>('')
@@ -266,7 +266,10 @@ export default function OrderDrawer({
                   {new Date(order.createdAt).toLocaleString('vi-VN')} &middot; Trạng thái:{' '}
                   <span className='text-primary font-semibold'>{order.status}</span>
                   {order.status === 'CANCELLED' && order.cancelReason && (
-                    <> &middot; Lý do hủy: <span className='text-destructive font-semibold'>{order.cancelReason}</span></>
+                    <>
+                      {' '}
+                      &middot; Lý do hủy: <span className='text-destructive font-semibold'>{order.cancelReason}</span>
+                    </>
                   )}
                 </p>
               )}
@@ -340,22 +343,26 @@ export default function OrderDrawer({
                         <div className='flex-1'>
                           <h4 className='leading-tight font-semibold'>{c.data.name}</h4>
                           <div className='mt-2'>
-                             <input 
-                                type='text' 
-                                placeholder='Ghi chú cho món...'
-                                className={cn(
-                                   'w-full text-[10px] border rounded-md px-2 py-1 outline-none transition-all',
-                                   c.existingDetailId ? 'bg-slate-50 border-slate-100 text-slate-400 cursor-not-allowed' : 'bg-white border-slate-200 focus:border-primary/40'
-                                )}
-                                value={c.note || ''}
-                                onChange={(e) => handleUpdateItemNote(c.cartId, e.target.value)}
-                                disabled={!!c.existingDetailId}
-                             />
+                            <input
+                              type='text'
+                              placeholder='Ghi chú cho món...'
+                              className={cn(
+                                'w-full rounded-md border px-2 py-1 text-[10px] transition-all outline-none',
+                                c.existingDetailId
+                                  ? 'cursor-not-allowed border-slate-100 bg-slate-50 text-slate-400'
+                                  : 'focus:border-primary/40 border-slate-200 bg-white'
+                              )}
+                              value={c.note || ''}
+                              onChange={(e) => handleUpdateItemNote(c.cartId, e.target.value)}
+                              disabled={!!c.existingDetailId}
+                            />
                           </div>
                           <div className='text-muted-foreground mt-2 flex items-center gap-4 text-xs font-medium'>
                             <div className='flex flex-col leading-tight'>
                               {hasDiscount && (
-                                <span className='text-[10px] text-slate-400 line-through'>{originalPrice.toLocaleString()}đ</span>
+                                <span className='text-[10px] text-slate-400 line-through'>
+                                  {originalPrice.toLocaleString()}đ
+                                </span>
                               )}
                               <span className='text-primary text-xs font-bold'>{price.toLocaleString()}đ</span>
                             </div>
@@ -367,12 +374,12 @@ export default function OrderDrawer({
                               >
                                 -
                               </button>
-                              <input 
-                                 type='number' 
-                                 min={1}
-                                 className='w-8 text-[11px] font-black text-center bg-transparent outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none m-0'
-                                 value={c.quantity}
-                                 onChange={(e) => handleQuantityManual(c.cartId, parseInt(e.target.value) || 1)}
+                              <input
+                                type='number'
+                                min={1}
+                                className='m-0 w-8 [appearance:textfield] bg-transparent text-center text-[11px] font-black outline-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none'
+                                value={c.quantity}
+                                onChange={(e) => handleQuantityManual(c.cartId, parseInt(e.target.value) || 1)}
                               />
                               <button
                                 onClick={() => handleQuantityChange(c.cartId, 1)}
@@ -410,7 +417,7 @@ export default function OrderDrawer({
             {/* Footer Summary & Actions */}
             <div className='border-border bg-card/50 flex flex-col gap-2 border-t p-4'>
               {order && discountPrice > 0 && (
-                <div className='flex items-center justify-between text-sm text-muted-foreground'>
+                <div className='text-muted-foreground flex items-center justify-between text-sm'>
                   <span>Tổng tiền món:</span>
                   <span>{totalPrice.toLocaleString()} VND</span>
                 </div>
@@ -430,17 +437,13 @@ export default function OrderDrawer({
                   <Button
                     onClick={handlePayment}
                     disabled={isSaving || order.status === 'CANCELLED' || order.status === 'COMPLETED'}
-                    className='h-11 flex-1 xl:flex-none bg-orange-500 hover:bg-orange-600'
+                    className='h-11 flex-1 bg-orange-500 hover:bg-orange-600 xl:flex-none'
                   >
                     Thanh toán
                   </Button>
                 )}
                 {!order && (
-                  <Button
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className='h-11 flex-1 xl:flex-none'
-                  >
+                  <Button onClick={handleSave} disabled={isSaving} className='h-11 flex-1 xl:flex-none'>
                     {isSaving ? 'Đang lưu...' : 'Tạo đơn'}
                   </Button>
                 )}
@@ -451,18 +454,20 @@ export default function OrderDrawer({
                     variant='secondary'
                     className={cn(
                       'border-border h-11 flex-1 border shadow-sm xl:flex-none',
-                      !hasNewItems ? 'opacity-40 grayscale cursor-not-allowed' : 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20'
+                      !hasNewItems
+                        ? 'cursor-not-allowed opacity-40 grayscale'
+                        : 'bg-primary/10 text-primary border-primary/20 hover:bg-primary/20'
                     )}
                   >
                     {isSaving ? 'Đang gửi...' : 'Thông báo bếp'}
                   </Button>
                 )}
                 {order && (
-                  <Button 
-                    variant='destructive' 
+                  <Button
+                    variant='destructive'
                     onClick={() => {
                       if (onCancelClick) onCancelClick(order)
-                    }} 
+                    }}
                     className='h-11 flex-1 xl:flex-none'
                     disabled={order.status === 'CANCELLED' || order.status === 'COMPLETED'}
                   >

@@ -41,15 +41,18 @@ const voucherApi = {
     return http.post<ApiResponse<Voucher>>(VOUCHER_URL, data)
   },
 
-  updateVoucher(id: number, data: {
-    name: string
-    code: string
-    type: 'PERCENTAGE' | 'FIXED_AMOUNT'
-    discountValue: number
-    maxDiscountValue?: number | null
-    minValue?: number | null
-    description?: string | null
-  }) {
+  updateVoucher(
+    id: number,
+    data: {
+      name: string
+      code: string
+      type: 'PERCENTAGE' | 'FIXED_AMOUNT'
+      discountValue: number
+      maxDiscountValue?: number | null
+      minValue?: number | null
+      description?: string | null
+    }
+  ) {
     return http.patch<ApiResponse<Voucher>>(`${VOUCHER_URL}/${id}`, data)
   },
 
