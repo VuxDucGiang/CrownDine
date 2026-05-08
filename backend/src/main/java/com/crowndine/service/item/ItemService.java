@@ -12,6 +12,7 @@ public interface ItemService {
     ItemResponse getItemById(Long id);
 
     ItemResponse getItemByName(String name);
+    ItemResponse getItemBySlug(String slug);
 
     ItemResponse createItem(ItemRequest itemRequest);
 

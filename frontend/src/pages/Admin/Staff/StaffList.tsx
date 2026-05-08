@@ -21,10 +21,10 @@ export default function StaffList() {
   const { mutate: toggleStatus } = useToggleStaffStatus()
 
   const [confirmModal, setConfirmModal] = useState<{
-    isOpen: boolean;
-    title: string;
-    message: string;
-    onConfirm: () => void;
+    isOpen: boolean
+    title: string
+    message: string
+    onConfirm: () => void
   }>({
     isOpen: false,
     title: '',
@@ -36,7 +36,8 @@ export default function StaffList() {
     setConfirmModal({
       isOpen: true,
       title: 'Xóa nhân viên',
-      message: 'Bạn có chắc chắn muốn xóa nhân viên này? Hành động này không thể hoàn tác nếu nhân viên chưa có dữ liệu ràng buộc.',
+      message:
+        'Bạn có chắc chắn muốn xóa nhân viên này? Hành động này không thể hoàn tác nếu nhân viên chưa có dữ liệu ràng buộc.',
       onConfirm: () => {
         deleteStaff(id)
         setConfirmModal((prev) => ({ ...prev, isOpen: false }))
@@ -112,13 +113,22 @@ export default function StaffList() {
       <StaffModal isOpen={isAddModalOpen} onClose={() => setIsAddModalOpen(false)} />
 
       {/* Confirm Action Modal */}
-      <Modal isOpen={confirmModal.isOpen} onClose={() => setConfirmModal(prev => ({...prev, isOpen: false}))} title={confirmModal.title} maxWidth='max-w-sm'>
+      <Modal
+        isOpen={confirmModal.isOpen}
+        onClose={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}
+        title={confirmModal.title}
+        maxWidth='max-w-sm'
+      >
         <div className='flex flex-col gap-6'>
-          <p className='text-sm text-muted-foreground'>{confirmModal.message}</p>
+          <p className='text-muted-foreground text-sm'>{confirmModal.message}</p>
           <div className='flex justify-end gap-3'>
-            <Button variant='outline' onClick={() => setConfirmModal(prev => ({...prev, isOpen: false}))}>Hủy</Button>
-            <Button 
-              variant={confirmModal.title.includes('Xóa') || confirmModal.title.includes('Khóa') ? 'destructive' : 'default'} 
+            <Button variant='outline' onClick={() => setConfirmModal((prev) => ({ ...prev, isOpen: false }))}>
+              Hủy
+            </Button>
+            <Button
+              variant={
+                confirmModal.title.includes('Xóa') || confirmModal.title.includes('Khóa') ? 'destructive' : 'default'
+              }
               onClick={confirmModal.onConfirm}
             >
               Đồng ý

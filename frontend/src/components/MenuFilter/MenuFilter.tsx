@@ -64,7 +64,7 @@ const MenuFilter = ({
           <ArrowUpDown size={20} className='text-primary' /> Sắp xếp
         </h3>
         <select
-          className='bg-input border-border focus:border-primary cursor-pointer w-full rounded-lg border px-3 py-2 text-sm outline-none transition-all focus:ring-1 focus:ring-primary'
+          className='bg-input border-border focus:border-primary focus:ring-primary w-full cursor-pointer rounded-lg border px-3 py-2 text-sm transition-all outline-none focus:ring-1'
           value={sortBy}
           onChange={(e) => onSortChange(e.target.value)}
         >
@@ -105,12 +105,7 @@ const MenuFilter = ({
                     </svg>
                   )}
                 </div>
-                <input
-                  type='checkbox'
-                  className='hidden'
-                  checked={isSelected}
-                  onChange={() => onSelectCategory(cat)}
-                />
+                <input type='checkbox' className='hidden' checked={isSelected} onChange={() => onSelectCategory(cat)} />
                 <span
                   className={`${isSelected ? 'text-primary font-bold' : 'text-foreground group-hover:text-primary'} transition-colors`}
                 >
@@ -129,13 +124,13 @@ const MenuFilter = ({
           {/* Custom Track */}
           <div className='absolute top-2 left-0 h-1.5 w-full rounded-full bg-gray-200'></div>
           <div
-            className='absolute top-2 h-1.5 rounded-full bg-primary'
+            className='bg-primary absolute top-2 h-1.5 rounded-full'
             style={{
               left: `${(priceRange[0] / maxPrice) * 100}%`,
               width: `${((priceRange[1] - priceRange[0]) / maxPrice) * 100}%`
             }}
           ></div>
-          
+
           {/* Min Input */}
           <input
             type='range'
@@ -144,7 +139,7 @@ const MenuFilter = ({
             step={25000}
             value={priceRange[0]}
             onChange={handleMinChange}
-            className='pointer-events-none absolute top-1.5 left-0 h-2 w-full appearance-none bg-transparent outline-none ring-0 focus:ring-0 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md'
+            className='[&::-webkit-slider-thumb]:bg-primary pointer-events-none absolute top-1.5 left-0 h-2 w-full appearance-none bg-transparent ring-0 outline-none focus:ring-0 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md'
           />
           {/* Max Input */}
           <input
@@ -154,19 +149,19 @@ const MenuFilter = ({
             step={25000}
             value={priceRange[1]}
             onChange={handleMaxChange}
-            className='pointer-events-none absolute top-1.5 left-0 h-2 w-full appearance-none bg-transparent outline-none ring-0 focus:ring-0 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-primary [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md'
-           style={{ zIndex: priceRange[1] > maxPrice * 0.9 ? 5 : 4 }}
+            className='[&::-webkit-slider-thumb]:bg-primary pointer-events-none absolute top-1.5 left-0 h-2 w-full appearance-none bg-transparent ring-0 outline-none focus:ring-0 [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-white [&::-webkit-slider-thumb]:shadow-md'
+            style={{ zIndex: priceRange[1] > maxPrice * 0.9 ? 5 : 4 }}
           />
         </div>
 
-        <div className='mt-6 flex items-center justify-between text-[10px] sm:text-xs text-gray-500'>
-           <div className='bg-primary/10 rounded px-2 py-1 font-bold text-primary shadow-sm'>
-              {formatCurrency(priceRange[0])}
-           </div>
-           <span className='font-bold opacity-30'>-</span>
-           <div className='bg-primary/10 rounded px-2 py-1 font-bold text-primary shadow-sm'>
-              {formatCurrency(priceRange[1])}
-           </div>
+        <div className='mt-6 flex items-center justify-between text-[10px] text-gray-500 sm:text-xs'>
+          <div className='bg-primary/10 text-primary rounded px-2 py-1 font-bold shadow-sm'>
+            {formatCurrency(priceRange[0])}
+          </div>
+          <span className='font-bold opacity-30'>-</span>
+          <div className='bg-primary/10 text-primary rounded px-2 py-1 font-bold shadow-sm'>
+            {formatCurrency(priceRange[1])}
+          </div>
         </div>
       </div>
     </div>

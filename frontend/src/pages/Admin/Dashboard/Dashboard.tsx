@@ -47,7 +47,7 @@ const TimeRangeDropdown = ({
     <div className='relative'>
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className='flex items-center gap-1.5 rounded border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-600 dark:text-blue-500 transition-all hover:bg-blue-500/20'
+        className='flex items-center gap-1.5 rounded border border-blue-500/20 bg-blue-500/10 px-3 py-1.5 text-xs font-bold text-blue-600 transition-all hover:bg-blue-500/20 dark:text-blue-500'
       >
         {selected}
         {isOpen ? (
@@ -60,7 +60,7 @@ const TimeRangeDropdown = ({
       {isOpen && (
         <>
           <div className='fixed inset-0 z-40' onClick={() => setIsOpen(false)} />
-          <div className='border-border animate-in fade-in zoom-in absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border bg-card text-card-foreground shadow-2xl duration-200'>
+          <div className='border-border animate-in fade-in zoom-in bg-card text-card-foreground absolute right-0 z-50 mt-2 w-48 overflow-hidden rounded-xl border shadow-2xl duration-200'>
             <div className='py-1'>
               {options.map((range) => (
                 <button
@@ -69,10 +69,14 @@ const TimeRangeDropdown = ({
                     onSelect(range)
                     setIsOpen(false)
                   }}
-                  className='border-border/50 flex w-full items-center justify-between border-b px-4 py-2.5 text-left text-sm font-bold transition-colors last:border-b-0 hover:bg-muted'
+                  className='border-border/50 hover:bg-muted flex w-full items-center justify-between border-b px-4 py-2.5 text-left text-sm font-bold transition-colors last:border-b-0'
                 >
-                  <span className={range === selected ? 'text-blue-600 dark:text-blue-500' : 'text-foreground'}>{range}</span>
-                  {range === selected && <Check size={16} className='text-blue-600 dark:text-blue-500' strokeWidth={3} />}
+                  <span className={range === selected ? 'text-blue-600 dark:text-blue-500' : 'text-foreground'}>
+                    {range}
+                  </span>
+                  {range === selected && (
+                    <Check size={16} className='text-blue-600 dark:text-blue-500' strokeWidth={3} />
+                  )}
                 </button>
               ))}
             </div>
@@ -251,7 +255,10 @@ export default function Dashboard() {
               <CardTitle className='text-foreground text-sm font-semibold tracking-wider uppercase'>
                 Doanh số {revenueTimeRange.toLowerCase()}
               </CardTitle>
-              <Badge variant='outline' className='border-blue-500/30 bg-blue-500/10 font-bold text-blue-600 dark:text-blue-500'>
+              <Badge
+                variant='outline'
+                className='border-blue-500/30 bg-blue-500/10 font-bold text-blue-600 dark:text-blue-500'
+              >
                 {(revenueData?.rangeTotalAmount || 0).toLocaleString('vi-VN')}
               </Badge>
             </div>
@@ -296,7 +303,10 @@ export default function Dashboard() {
               <CardTitle className='text-foreground text-sm font-semibold tracking-wider uppercase'>
                 Số lượng khách {customerTimeRange.toLowerCase()}
               </CardTitle>
-              <Badge variant='outline' className='border-blue-500/30 bg-blue-500/10 font-bold text-blue-600 dark:text-blue-500'>
+              <Badge
+                variant='outline'
+                className='border-blue-500/30 bg-blue-500/10 font-bold text-blue-600 dark:text-blue-500'
+              >
                 {(customerData?.rangeTotalCustomers || 0).toLocaleString('vi-VN')}
               </Badge>
             </div>
@@ -440,7 +450,7 @@ export default function Dashboard() {
 
         {/* Recent Activities */}
         <Card className='flex h-[600px] flex-col border-none shadow-sm'>
-          <CardHeader className='sticky top-0 z-10 border-b bg-card py-4'>
+          <CardHeader className='bg-card sticky top-0 z-10 border-b py-4'>
             <CardTitle className='text-foreground text-sm font-bold tracking-wider uppercase'>
               Các hoạt động gần đây
             </CardTitle>
@@ -464,7 +474,7 @@ export default function Dashboard() {
                       }`}
                     >
                       {activity.type === 'delete' ? (
-                         <X size={16} />
+                        <X size={16} />
                       ) : activity.type === 'import' ? (
                         <History size={16} />
                       ) : (
@@ -477,7 +487,8 @@ export default function Dashboard() {
                         <span className='text-foreground font-medium'>{activity.action}</span>{' '}
                         {Number(activity.value) > 0 && (
                           <>
-                            với giá trị <span className='font-bold'>{Number(activity.value).toLocaleString('vi-VN')} đ</span>
+                            với giá trị{' '}
+                            <span className='font-bold'>{Number(activity.value).toLocaleString('vi-VN')} đ</span>
                           </>
                         )}
                       </p>
@@ -487,8 +498,8 @@ export default function Dashboard() {
                 ))
               )}
             </div>
-            <div className='sticky bottom-0 flex justify-center border-t bg-card p-4'>
-              <button 
+            <div className='bg-card sticky bottom-0 flex justify-center border-t p-4'>
+              <button
                 onClick={() => setIsActivityModalOpen(true)}
                 className='flex items-center gap-1 text-[11px] font-bold text-blue-600 uppercase hover:underline'
               >
@@ -510,17 +521,20 @@ export default function Dashboard() {
       {isActivityModalOpen && (
         <div className='fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6'>
           <div className='fixed inset-0 bg-black/50 backdrop-blur-sm' onClick={() => setIsActivityModalOpen(false)} />
-          <div className='bg-background w-full max-w-4xl overflow-hidden rounded-2xl shadow-2xl relative flex flex-col max-h-[85vh]'>
+          <div className='bg-background relative flex max-h-[85vh] w-full max-w-4xl flex-col overflow-hidden rounded-2xl shadow-2xl'>
             <div className='border-border flex items-center justify-between border-b px-6 py-4'>
               <h2 className='text-lg font-bold tracking-tight'>Chi tiết hoạt động gần đây</h2>
-              <button onClick={() => setIsActivityModalOpen(false)} className='text-muted-foreground hover:text-foreground rounded-full p-2 transition-colors'>
+              <button
+                onClick={() => setIsActivityModalOpen(false)}
+                className='text-muted-foreground hover:text-foreground rounded-full p-2 transition-colors'
+              >
                 <X size={20} />
               </button>
             </div>
-            
+
             <div className='flex-1 overflow-auto p-0'>
               <table className='w-full text-left text-sm whitespace-nowrap'>
-                <thead className='bg-muted/50 text-muted-foreground sticky top-0 border-b border-border text-xs font-semibold uppercase'>
+                <thead className='bg-muted/50 text-muted-foreground border-border sticky top-0 border-b text-xs font-semibold uppercase'>
                   <tr>
                     <th className='px-6 py-4'>Thời gian</th>
                     <th className='px-6 py-4'>Nhân viên</th>
@@ -529,7 +543,7 @@ export default function Dashboard() {
                     <th className='px-6 py-4'>Lý do</th>
                   </tr>
                 </thead>
-                <tbody className='divide-border divide-y bg-card text-card-foreground'>
+                <tbody className='divide-border bg-card text-card-foreground divide-y'>
                   {summaryResults?.recentActivities?.length ? (
                     summaryResults.recentActivities.map((activity: any) => (
                       <tr key={activity.id} className='hover:bg-muted/30 transition-colors'>
@@ -539,8 +553,16 @@ export default function Dashboard() {
                         </td>
                         <td className='text-foreground px-6 py-4'>
                           <div className='flex items-center gap-2'>
-                            <div className={`flex h-6 w-6 items-center justify-center rounded-full shrink-0 ${activity.type === 'delete' ? 'bg-red-500/10 text-red-500' : activity.type === 'import' ? 'bg-green-500/10 text-green-500' : 'bg-blue-500/10 text-blue-500'}`}>
-                              {activity.type === 'delete' ? <X size={12} /> : activity.type === 'import' ? <History size={12} /> : <CircleDollarSign size={12} />}
+                            <div
+                              className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full ${activity.type === 'delete' ? 'bg-red-500/10 text-red-500' : activity.type === 'import' ? 'bg-green-500/10 text-green-500' : 'bg-blue-500/10 text-blue-500'}`}
+                            >
+                              {activity.type === 'delete' ? (
+                                <X size={12} />
+                              ) : activity.type === 'import' ? (
+                                <History size={12} />
+                              ) : (
+                                <CircleDollarSign size={12} />
+                              )}
                             </div>
                             <span className='font-medium'>{activity.action}</span>
                           </div>
@@ -548,7 +570,7 @@ export default function Dashboard() {
                         <td className='text-foreground px-6 py-4 text-right font-bold'>
                           {Number(activity.value) > 0 ? Number(activity.value).toLocaleString('vi-VN') : '-'}
                         </td>
-                        <td className='px-6 py-4 min-w-[200px] whitespace-normal text-xs'>
+                        <td className='min-w-[200px] px-6 py-4 text-xs whitespace-normal'>
                           {activity.reason ? (
                             <span className='text-destructive font-semibold'>{activity.reason}</span>
                           ) : (

@@ -39,8 +39,7 @@ const Step1DateTime = ({
           <label className='flex items-center gap-2 text-sm font-bold'>
             <Users size={16} /> Số lượng khách
           </label>
-          <div className='flex w-fit items-center gap-4 rounded-lg border p-1 bg-white border-zinc-200
-                dark:bg-zinc-950 dark:border-zinc-800 transition-colors duration-300'>
+          <div className='flex w-fit items-center gap-4 rounded-lg border border-zinc-200 bg-white p-1 transition-colors duration-300 dark:border-zinc-800 dark:bg-zinc-950'>
             <button
               onClick={() => setGuests(Math.max(1, guests - 1))}
               disabled={guests <= 1}
@@ -105,13 +104,14 @@ const Step1DateTime = ({
       <div className='flex items-start gap-3 rounded-lg border border-blue-200 bg-blue-50 p-4'>
         <Clock className='shrink-0 text-blue-500' />
         <div>
-          <p className='text-sm font-bold text-blue-700'>Khung giờ dự kiến: {startTime} - {plannedEndTime}</p>
+          <p className='text-sm font-bold text-blue-700'>
+            Khung giờ dự kiến: {startTime} - {plannedEndTime}
+          </p>
           <p className='mt-1 text-xs text-blue-600'>
             Giờ kết thúc tối đa đến <strong>22:00</strong> (giờ đóng cửa nhà hàng), mặc định giữ bàn tối đa 4 tiếng.
           </p>
         </div>
       </div>
-
     </div>
   )
 }

@@ -59,7 +59,7 @@ const StaffHeader = () => {
         <Link to='/' className='flex items-center gap-2 transition-opacity hover:opacity-80'>
           <Logo />
           <span className='text-foreground hidden text-xl font-bold tracking-tight sm:inline'>
-            CrownDine <span className='text-orange-500 text-sm font-light'>Staff</span>
+            CrownDine <span className='text-sm font-light text-orange-500'>Staff</span>
           </span>
         </Link>
 

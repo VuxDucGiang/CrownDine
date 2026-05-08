@@ -1,0 +1,159 @@
+spring:
+  config:
+    activate:
+      on-profile: perf
+  autoconfigure:
+    exclude:
+      - org.springframework.ai.model.google.genai.autoconfigure.chat.GoogleGenAiChatAutoConfiguration
+      - org.springframework.ai.model.chat.client.autoconfigure.ChatClientAutoConfiguration
+      - org.springframework.boot.autoconfigure.mail.MailSenderAutoConfiguration
+
+
+  datasource:
+    url: jdbc:mysql://${DATABASE_HOST:localhost}:${DATABASE_PORT:3306}/${DATABASE_NAME:crowndine_perf}
+    username: ${DATABASE_USERNAME:root}
+    password: ${DATABASE_PASSWORD:123456}
+    hikari:
+      minimum-idle: 5
+      maximum-pool-size: 30
+      max-lifetime: 300000
+      idle-timeout: 60000
+      validation-timeout: 5000
+
+  ai:
+    google:
+      genai:
+        api-key: ${GEMINI_API_KEY:nothing}
+        chat:
+          options:
+            model: gemini-2.5-flash
+            temperature: 0.7
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:/dev/db/migration
+
+  jpa:
+    show-sql: false
+    hibernate:
+      ddl-auto: validate
+
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      timeout: 3000ms
+      connect-timeout: 3000ms
+
+  rabbitmq:
+    host: ${RABBITMQ_HOST:localhost}
+    port: ${RABBITMQ_PORT:5672}
+    username: ${RABBITMQ_USERNAME:guest}
+    password: ${RABBITMQ_PASSWORD:guest}
+    virtual-host: ${RABBITMQ_VHOST:/}
+    publisher-confirm-type: correlated
+    publisher-returns: true
+    template:
+      mandatory: true
+      retry:
+        enabled: true
+        initial-interval: 1000ms
+        max-attempts: 3
+    listener:
+      simple:
+        acknowledge-mode: manual
+        prefetch: 1
+        concurrency: 2
+        max-concurrency: 5
+        retry:
+          enabled: false
+          max-attempts: 3
+
+  mail:
+    from: ${MAIL_USERNAME:perf@crowndine.local}
+    host: ${MAIL_HOST:localhost}
+    port: ${MAIL_PORT:2525}
+    username: ${MAIL_USERNAME:perf}
+    password: ${MAIL_PASSWORD:perf}
+
+jwt:
+  access-key: ${JWT_ACCESS_KEY:OwOw+8t/PROzQ2jr+ecXe3MGrp5RDjwEN4sj56pd4uo=}
+  refresh-key: ${JWT_REFRESH_KEY:mvBb/s/xhkDlzsYQbMcutG8W9AB2Noqb8GWJapqs66Y=}
+  reset-password-key: ${JWT_RESET_PASSWORD_KEY:pKj6Yk3A2tR9mNv5QeL1sWx8BzUd4Hf0JcVa7Pn2XmQ=}
+  access-key-expiration: ${JWT_ACCESS_KEY_EXPIRATION:900000}
+  refresh-key-expiration: ${JWT_REFRESH_KEY_EXPIRATION:604800000}
+  reset-password-key-expiration: ${JWT_RESET_PASSWORD_KEY_EXPIRATION:600000}
+
+cloudinary:
+  cloud_name: ${CLOUDINARY_CLOUD_NAME:test-cloud}
+  api_key: ${CLOUDINARY_API_KEY:test-key}
+  api_secret: ${CLOUDINARY_API_SECRET:test-secret}
+
+payos:
+  client-id: ${PAYOS_CLIENT_ID:test-client-id}
+  api-key: ${PAYOS_API_KEY:test-api-key}
+  checksum-key: ${PAYOS_CHECKSUM_KEY:test-checksum-key}
+  return-url: ${PAYOS_RETURN_URL:http://localhost:5173/thanh-toan/thanh-cong}
+  cancel-url: ${PAYOS_CANCEL_URL:http://localhost:5173/thanh-toan/that-bai}
+
+google:
+  client-id: ${GOOGLE_CLIENT_ID:test-google-client-id}
+
+openrouter:
+  api:
+    key: ${OPENROUTER_API_KEY:test-openrouter-key}
+
+gemini:
+  api:
+    keys: ${GEMINI_API_KEYS:dummy-api-key}
+    url: https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-001:generateContent
+  model: models/gemini-2.0-flash-001
+
+app:
+  ai:
+    enabled: false
+  mail:
+    enabled: false
+  frontend-url: ${FRONTEND_BASE_URL:http://localhost:5173}
+  cors:
+    allowed-origins: ${FRONTEND_BASE_URL:http://localhost:5173}
+    allowed-origin-patterns: ${FRONTEND_BASE_URL:http://localhost:5173}
+  websocket:
+    allowed-origin-patterns: ${FRONTEND_BASE_URL:http://localhost:5173}
+  rabbitmq:
+    exchange: ${RABBITMQ_EXCHANGE:crowndine.events}
+    queue:
+      order-paid: ${RABBITMQ_QUEUE_ORDER_PAID:crowndine.order.paid}
+      reservation-confirmed-app: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_APP:crowndine.reservation.confirmed.inapp-notification}
+      reservation-confirmed-app-retry: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_APP_RETRY:crowndine.reservation.confirmed.inapp-notification.retry}
+      reservation-confirmed-app-dlq: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_APP_DLQ:crowndine.reservation.confirmed.inapp-notification.dlq}
+      reservation-confirmed-email: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_EMAIL:crowndine.reservation.confirmed.email-notification}
+      reservation-confirmed-email-retry: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_EMAIL_RETRY:crowndine.reservation.confirmed.email-notification.retry}
+      reservation-confirmed-email-dlq: ${RABBITMQ_QUEUE_RESERVATION_CONFIRMED_EMAIL_DLQ:crowndine.reservation.confirmed.email-notification.dlq}
+    routing-key:
+      order-paid: ${RABBITMQ_ROUTING_KEY_ORDER_PAID:order.paid}
+      reservation-confirmed-app: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_APP:reservation.confirmed.inapp-notification}
+      reservation-confirmed-app-retry: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_APP_RETRY:reservation.confirmed.inapp-notification.retry}
+      reservation-confirmed-app-dlq: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_APP_DLQ:reservation.confirmed.inapp-notification.dlq}
+      reservation-confirmed-email: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_EMAIL:reservation.confirmed.email-notification}
+      reservation-confirmed-email-retry: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_EMAIL_RETRY:reservation.confirmed.email-notification.retry}
+      reservation-confirmed-email-dlq: ${RABBITMQ_ROUTING_KEY_RESERVATION_CONFIRMED_EMAIL_DLQ:reservation.confirmed.email-notification.dlq}
+    retry:
+      reservation-confirmed-app:
+        max-attempts: ${RABBITMQ_RETRY_APP_MAX_ATTEMPTS:3}
+        ttl-ms: ${RABBITMQ_RETRY_APP_TTL_MS:30000}
+      reservation-confirmed-email:
+        max-attempts: ${RABBITMQ_RETRY_EMAIL_MAX_ATTEMPTS:3}
+        ttl-ms: ${RABBITMQ_RETRY_EMAIL_TTL_MS:30000}
+    test:
+      force-fail-reservation-confirmed-app: ${RABBITMQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED_APP:false}
+      force-fail-reservation-confirmed-email: ${RABBITMQ_TEST_FORCE_FAIL_RESERVATION_CONFIRMED_EMAIL:false}
+
+logging:
+  level:
+    root: INFO
+    org.hibernate.SQL: WARN
+    org.hibernate.orm.jdbc.bind: WARN
+    org.springframework.security: WARN

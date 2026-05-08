@@ -27,7 +27,7 @@ export const ComboForm = ({ initialData, onSubmit, onCancel }: ComboFormProps) =
     description: initialData?.description || '',
     price: initialData?.price || 0,
     imageUrl: initialData?.imageUrl || '',
-    items: initialData?.items?.map(item => ({ itemId: item.itemId, quantity: item.quantity })) || []
+    items: initialData?.items?.map((item) => ({ itemId: item.itemId, quantity: item.quantity })) || []
   })
 
   // Fetch all items to populate selection
@@ -131,9 +131,13 @@ export const ComboForm = ({ initialData, onSubmit, onCancel }: ComboFormProps) =
                     value={item.itemId}
                     onChange={(e) => handleItemChange(index, 'itemId', Number(e.target.value))}
                   >
-                    <option value={0} disabled>Chọn món ăn...</option>
+                    <option value={0} disabled>
+                      Chọn món ăn...
+                    </option>
                     {allItems.map((opt) => (
-                      <option key={opt.id} value={opt.id}>{opt.name} - {opt.price.toLocaleString('en-US')}đ</option>
+                      <option key={opt.id} value={opt.id}>
+                        {opt.name} - {opt.price.toLocaleString('en-US')}đ
+                      </option>
                     ))}
                   </select>
                 </div>
@@ -159,9 +163,7 @@ export const ComboForm = ({ initialData, onSubmit, onCancel }: ComboFormProps) =
             ))}
             {formData.items.length === 0 && (
               <div className='flex h-32 flex-col items-center justify-center rounded-lg border border-dashed'>
-                <p className='text-muted-foreground text-sm italic'>
-                  Chưa có món ăn nào trong combo này.
-                </p>
+                <p className='text-muted-foreground text-sm italic'>Chưa có món ăn nào trong combo này.</p>
                 <Button type='button' variant='link' size='sm' onClick={handleAddItem}>
                   Nhấn để thêm món ngay
                 </Button>

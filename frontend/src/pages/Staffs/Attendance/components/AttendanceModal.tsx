@@ -21,13 +21,7 @@ interface AttendanceModalProps {
 
 type TabId = 'form' | 'history'
 
-export function AttendanceModal({
-  userId,
-  defaultShiftId,
-  defaultWorkDate,
-  onClose,
-  onSaved
-}: AttendanceModalProps) {
+export function AttendanceModal({ userId, defaultShiftId, defaultWorkDate, onClose, onSaved }: AttendanceModalProps) {
   const [activeTab, setActiveTab] = useState<TabId>('form')
   const queryClient = useQueryClient()
 
@@ -64,8 +58,7 @@ export function AttendanceModal({
   })
 
   const saveMutation = useMutation({
-    mutationFn: (payload: Parameters<typeof attendanceApi.saveRecord>[0]) =>
-      attendanceApi.saveRecord(payload),
+    mutationFn: (payload: Parameters<typeof attendanceApi.saveRecord>[0]) => attendanceApi.saveRecord(payload),
     onSuccess: () => {
       toast.success('Lưu chấm công thành công')
       queryClient.invalidateQueries({ queryKey: ['attendances'] })
@@ -130,7 +123,7 @@ export function AttendanceModal({
 
   return (
     <div
-      className='fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm'
+      className='bg-background/80 fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm'
       onClick={onClose}
       onKeyDown={(e) => e.key === 'Escape' && onClose()}
       role='dialog'
@@ -144,7 +137,7 @@ export function AttendanceModal({
         onClick={(e) => e.stopPropagation()}
       >
         <div className='border-border flex items-center justify-between border-b p-6'>
-          <h2 className='text-xl font-bold text-foreground'>Chấm công</h2>
+          <h2 className='text-foreground text-xl font-bold'>Chấm công</h2>
           <button
             type='button'
             onClick={onClose}
@@ -155,7 +148,7 @@ export function AttendanceModal({
         </div>
 
         {employeeInfo && (
-          <div className='border-border flex flex-wrap items-center gap-4 border-b bg-muted/20 px-6 py-3'>
+          <div className='border-border bg-muted/20 flex flex-wrap items-center gap-4 border-b px-6 py-3'>
             <span className='text-muted-foreground flex items-center gap-2 text-sm'>
               <User className='h-4 w-4' />
               Nhân viên: {employeeInfo.fullName}
@@ -174,7 +167,7 @@ export function AttendanceModal({
             className={cn(
               'px-6 py-3 text-sm font-medium transition-colors',
               activeTab === 'form'
-                ? 'text-foreground border-b-2 border-primary'
+                ? 'text-foreground border-primary border-b-2'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
@@ -186,7 +179,7 @@ export function AttendanceModal({
             className={cn(
               'px-6 py-3 text-sm font-medium transition-colors',
               activeTab === 'history'
-                ? 'text-foreground border-b-2 border-primary'
+                ? 'text-foreground border-primary border-b-2'
                 : 'text-muted-foreground hover:text-foreground'
             )}
           >
@@ -201,14 +194,14 @@ export function AttendanceModal({
                 <Label className='mb-1.5 block'>Thời gian</Label>
                 <div
                   className={cn(
-                    'border-input bg-muted/30 h-9 w-full rounded-md border px-3 text-sm flex items-center select-none',
+                    'border-input bg-muted/30 flex h-9 w-full items-center rounded-md border px-3 text-sm select-none',
                     isFutureDate ? 'border-destructive' : ''
                   )}
                 >
                   {workDate}
                 </div>
                 {isFutureDate && (
-                  <div className='mt-1.5 flex items-center gap-1.5 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive'>
+                  <div className='bg-destructive/10 text-destructive mt-1.5 flex items-center gap-1.5 rounded-md px-3 py-2 text-sm'>
                     <AlertCircle className='h-4 w-4 shrink-0' />
                     <span>Không thể chấm công cho ngày trong tương lai</span>
                   </div>
@@ -216,7 +209,7 @@ export function AttendanceModal({
               </div>
               <div>
                 <Label className='mb-1.5 block'>Ca làm việc</Label>
-                <div className='border-input bg-muted/30 h-9 w-full rounded-md border px-3 text-sm flex items-center select-none'>
+                <div className='border-input bg-muted/30 flex h-9 w-full items-center rounded-md border px-3 text-sm select-none'>
                   {(() => {
                     const shift = shifts.find((s: ShiftResponse) => s.id === shiftId)
                     return shift
@@ -228,7 +221,7 @@ export function AttendanceModal({
               <div>
                 <Label className='mb-1.5 block'>Ghi chú</Label>
                 <textarea
-                  className='border-input bg-background placeholder:text-muted-foreground w-full rounded-md border px-3 py-2 text-sm min-h-[80px]'
+                  className='border-input bg-background placeholder:text-muted-foreground min-h-[80px] w-full rounded-md border px-3 py-2 text-sm'
                   placeholder='Nhập ghi chú...'
                   value={note}
                   onChange={(e) => setNote(e.target.value)}
@@ -267,7 +260,7 @@ export function AttendanceModal({
                         type='checkbox'
                         checked={hasPunchIn}
                         onChange={(e) => setHasPunchIn(e.target.checked)}
-                        className='rounded border-primary text-primary'
+                        className='border-primary text-primary rounded'
                       />
                       <span className='text-sm'>Vào</span>
                     </label>
@@ -284,7 +277,7 @@ export function AttendanceModal({
                         type='checkbox'
                         checked={hasPunchOut}
                         onChange={(e) => setHasPunchOut(e.target.checked)}
-                        className='rounded border-primary text-primary'
+                        className='border-primary text-primary rounded'
                       />
                       <span className='text-sm'>Ra</span>
                     </label>
@@ -301,10 +294,10 @@ export function AttendanceModal({
           )}
 
           {activeTab === 'history' && (
-            <div className='overflow-x-auto rounded-md border border-border'>
+            <div className='border-border overflow-x-auto rounded-md border'>
               <table className='w-full text-sm'>
                 <thead>
-                  <tr className='border-b border-border bg-muted/30'>
+                  <tr className='border-border bg-muted/30 border-b'>
                     <th className='px-4 py-2 text-left font-medium'>Thời gian</th>
                     <th className='px-4 py-2 text-left font-medium'>Trạng thái</th>
                     <th className='px-4 py-2 text-left font-medium'>Nội dung</th>
@@ -313,26 +306,22 @@ export function AttendanceModal({
                 <tbody>
                   {historyLoading ? (
                     <tr>
-                      <td colSpan={3} className='py-8 text-center text-muted-foreground'>
+                      <td colSpan={3} className='text-muted-foreground py-8 text-center'>
                         Đang tải...
                       </td>
                     </tr>
                   ) : historyList.length === 0 ? (
                     <tr>
-                      <td colSpan={3} className='py-8 text-center text-muted-foreground'>
+                      <td colSpan={3} className='text-muted-foreground py-8 text-center'>
                         Không có kết quả phù hợp
                       </td>
                     </tr>
                   ) : (
                     historyList.map((item) => (
-                      <tr key={item.id} className='border-b border-border'>
+                      <tr key={item.id} className='border-border border-b'>
                         <td className='px-4 py-2'>{item.time}</td>
-                        <td className='px-4 py-2'>
-                          {ATTENDANCE_STATUS_LABELS[item.status]}
-                        </td>
-                        <td className='px-4 py-2 text-muted-foreground'>
-                          {item.content ?? '-'}
-                        </td>
+                        <td className='px-4 py-2'>{ATTENDANCE_STATUS_LABELS[item.status]}</td>
+                        <td className='text-muted-foreground px-4 py-2'>{item.content ?? '-'}</td>
                       </tr>
                     ))
                   )}
@@ -349,10 +338,7 @@ export function AttendanceModal({
           <Button variant='outline' onClick={onClose}>
             Bỏ qua
           </Button>
-          <Button
-            onClick={handleSave}
-            disabled={saveMutation.isPending || !shiftId || isFutureDate}
-          >
+          <Button onClick={handleSave} disabled={saveMutation.isPending || !shiftId || isFutureDate}>
             Lưu
           </Button>
         </div>

@@ -10,4 +10,5 @@ import java.util.Optional;
 @Repository
 public interface ItemRepository extends JpaRepository<Item, Long>, JpaSpecificationExecutor<Item> {
     Optional<Item> findByName(String name);
+    Optional<Item> findBySlug(String slug);
 }

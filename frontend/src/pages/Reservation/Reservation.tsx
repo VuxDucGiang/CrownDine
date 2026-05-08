@@ -21,6 +21,7 @@ import { setPaymentResultToSession } from '@/utils/paymentResultStorage'
 import { Modal } from '@/components/ui/modal'
 import { toast } from 'sonner'
 import { useSearchParams } from 'react-router-dom'
+import { isAxiosErrorConfict } from '@/utils/utils'
 
 // --- 3. MAIN COMPONENT ---
 export default function Reservation() {
@@ -104,9 +105,9 @@ export default function Reservation() {
 
       const stepParam = searchParams.get('step')
       const tableNameParam = searchParams.get('tableName')
-      
+
       if (tableNameParam && stepParam && !reservationId) {
-        isAutoBookingRef.current = true 
+        isAutoBookingRef.current = true
         try {
           // Lấy danh sách bàn khả dụng
           const tablesRes = await layoutApi.getAvailableTables({
@@ -114,16 +115,17 @@ export default function Reservation() {
             startTime,
             guestNumber: guests
           })
-          
+
           if (tablesRes.data.data) {
             const tables = tablesRes.data.data
             // Tìm bàn khớp tên (vd: "Bàn 01" khớp "01" hoặc "Bàn 01")
-            const matchedTable = tables.find(t => 
-              t.name.toLowerCase() === tableNameParam.toLowerCase() || 
-              `Bàn ${t.name}`.toLowerCase() === tableNameParam.toLowerCase() ||
-              t.name.toLowerCase() === tableNameParam.replace(/bàn\s+/i, '').toLowerCase()
+            const matchedTable = tables.find(
+              (t) =>
+                t.name.toLowerCase() === tableNameParam.toLowerCase() ||
+                `Bàn ${t.name}`.toLowerCase() === tableNameParam.toLowerCase() ||
+                t.name.toLowerCase() === tableNameParam.replace(/bàn\s+/i, '').toLowerCase()
             )
-            
+
             if (matchedTable) {
               const tableObj: Table = {
                 id: matchedTable.id.toString(),
@@ -135,7 +137,7 @@ export default function Reservation() {
                 floorName: matchedTable.floorName
               }
               setSelectedTable(tableObj)
-              
+
               // Tạo pre-reservation
               setIsCreatingReservation(true)
               const createRes = await reservationApi.createReservation({
@@ -145,7 +147,7 @@ export default function Reservation() {
                 tableId: matchedTable.id,
                 note: 'Tự động đặt qua trợ lý CrownDine AI'
               })
-              
+
               if (createRes.data.data) {
                 setReservationId(createRes.data.data.reservationId)
                 setReservationCode(createRes.data.data.reservationCode)
@@ -155,13 +157,18 @@ export default function Reservation() {
                 setCurrentStep(parseInt(stepParam)) // Chuyển thẳng tới bước 3 hoặc 4
               }
             } else {
-              console.warn("AI AutoBook - Không tìm thấy bàn khả dụng:", tableNameParam)
-              toast.error(`Rất tiếc, bàn do AI chọn (${tableNameParam}) hiện đã được đặt hoặc không khả dụng. Vui lòng tự chọn bàn khác nhé!`)
+              console.warn('AI AutoBook - Không tìm thấy bàn khả dụng:', tableNameParam)
+              toast.error(
+                `Rất tiếc, bàn do AI chọn (${tableNameParam}) hiện đã được đặt hoặc không khả dụng. Vui lòng tự chọn bàn khác nhé!`
+              )
               setCurrentStep(2) // Đưa người dùng về màn hình tự chọn bàn
             }
           }
         } catch (error) {
-          console.error("Lỗi khi tự động đặt bàn qua AI:", error)
+          console.error('Lỗi khi tự động đặt bàn qua AI:', error)
+          if (isAxiosErrorConfict(error)) {
+            toast.error('Bàn đã được đặt trong khung giờ này. Vui lòng chọn bàn khác.')
+          }
           setCurrentStep(2) // Lỗi thì đưa về chọn bàn thủ công
         } finally {
           setIsCreatingReservation(false)
@@ -351,7 +358,11 @@ export default function Reservation() {
       }
     } catch (error) {
       console.error('Failed to finalize table selection:', error)
-      toast.error('Không thể giữ chỗ bàn. Vui lòng thử lại.')
+      if (isAxiosErrorConfict(error)) {
+        toast.error('Bàn đã được đặt trong khung giờ này. Vui lòng chọn bàn khác.')
+      } else {
+        toast.error('Không thể giữ chỗ bàn. Vui lòng thử lại.')
+      }
     } finally {
       setIsCreatingReservation(false)
     }
@@ -459,14 +470,14 @@ export default function Reservation() {
       return
     }
 
-      paymentMutation.mutate({
-        paymentRequest: {
-          reservationCode,
-          method: 'PAYOS'
-        },
-        voucherCode: voucherPreview?.code,
-        orderId: checkoutSummary?.orderId ?? undefined
-      })
+    paymentMutation.mutate({
+      paymentRequest: {
+        reservationCode,
+        method: 'PAYOS'
+      },
+      voucherCode: voucherPreview?.code,
+      orderId: checkoutSummary?.orderId ?? undefined
+    })
   }
 
   const handleCancel = () => {
@@ -562,7 +573,7 @@ export default function Reservation() {
         {currentStep < 4 && (
           <div className='mt-8 flex justify-between border-t pt-6'>
             <button
-              type="button"
+              type='button'
               onClick={() => setCurrentStep((c) => c - 1)}
               disabled={currentStep === 1}
               className='flex items-center gap-2 font-bold text-gray-500 transition-all hover:text-black disabled:opacity-0'
@@ -571,7 +582,7 @@ export default function Reservation() {
             </button>
 
             <button
-              type="button"
+              type='button'
               onClick={handleNext}
               disabled={isCreatingReservation}
               className='bg-foreground text-primary flex items-center gap-2 rounded-lg px-8 py-3 font-bold transition-all hover:shadow-lg disabled:cursor-wait disabled:opacity-50'
@@ -591,7 +602,7 @@ export default function Reservation() {
         {currentStep === 4 && (
           <div className='mt-8 flex justify-between border-t pt-6'>
             <button
-              type="button"
+              type='button'
               onClick={() => setCurrentStep(3)}
               disabled={isProcessing}
               className='flex items-center gap-2 font-bold text-gray-500 transition-all hover:text-black disabled:opacity-50'
@@ -603,54 +614,52 @@ export default function Reservation() {
         )}
       </div>
 
-      <Modal 
-        isOpen={isCancelModalOpen} 
-        onClose={() => setIsCancelModalOpen(false)} 
-        title="Xác nhận hủy đặt bàn"
-      >
-        <div className="text-gray-700">
+      <Modal isOpen={isCancelModalOpen} onClose={() => setIsCancelModalOpen(false)} title='Xác nhận hủy đặt bàn'>
+        <div className='text-gray-700'>
           <p>Bạn có chắc muốn hủy quá trình đặt bàn này không?</p>
-          <p className="text-sm mt-2 text-red-600 font-medium">Lưu ý: Bàn đang giữ sẽ được giải phóng ngay lập tức.</p>
+          <p className='mt-2 text-sm font-medium text-red-600'>Lưu ý: Bàn đang giữ sẽ được giải phóng ngay lập tức.</p>
         </div>
-        <div className="mt-8 flex justify-end gap-3">
-          <button 
-            type="button" 
-            onClick={() => setIsCancelModalOpen(false)} 
-            className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium border border-gray-200"
+        <div className='mt-8 flex justify-end gap-3'>
+          <button
+            type='button'
+            onClick={() => setIsCancelModalOpen(false)}
+            className='rounded-lg border border-gray-200 bg-gray-100 px-5 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-200'
           >
             Quay lại
           </button>
-          <button 
-            type="button" 
-            onClick={confirmCancel} 
-            className="px-5 py-2.5 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium"
+          <button
+            type='button'
+            onClick={confirmCancel}
+            className='rounded-lg bg-red-600 px-5 py-2.5 font-medium text-white transition-colors hover:bg-red-700'
           >
             Hủy đặt bàn
           </button>
         </div>
       </Modal>
 
-      <Modal 
-        isOpen={isCapacityWarningOpen} 
-        onClose={() => setIsCapacityWarningOpen(false)} 
-        title="Sức chứa bàn không đủ"
+      <Modal
+        isOpen={isCapacityWarningOpen}
+        onClose={() => setIsCapacityWarningOpen(false)}
+        title='Sức chứa bàn không đủ'
       >
-        <div className="text-gray-700">
-          <p>Sức chứa bàn đã chọn ({selectedTable?.capacity || 0}) nhỏ hơn số khách ({guests}).</p>
-          <p className="mt-2 text-sm text-gray-600">Bạn có chắc chắn muốn tiếp tục chọn bàn này không?</p>
+        <div className='text-gray-700'>
+          <p>
+            Sức chứa bàn đã chọn ({selectedTable?.capacity || 0}) nhỏ hơn số khách ({guests}).
+          </p>
+          <p className='mt-2 text-sm text-gray-600'>Bạn có chắc chắn muốn tiếp tục chọn bàn này không?</p>
         </div>
-        <div className="mt-8 flex justify-end gap-3">
-          <button 
-            type="button" 
-            onClick={() => setIsCapacityWarningOpen(false)} 
-            className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 transition-colors font-medium border border-gray-200"
+        <div className='mt-8 flex justify-end gap-3'>
+          <button
+            type='button'
+            onClick={() => setIsCapacityWarningOpen(false)}
+            className='rounded-lg border border-gray-200 bg-gray-100 px-5 py-2.5 font-medium text-gray-700 transition-colors hover:bg-gray-200'
           >
             Chọn lại bàn
           </button>
-          <button 
-            type="button" 
-            onClick={proceedToStep3} 
-            className="px-5 py-2.5 bg-[#4caf50] text-write rounded-lg hover:bg-[#388e3c] transition-colors font-medium text-white"
+          <button
+            type='button'
+            onClick={proceedToStep3}
+            className='text-write rounded-lg bg-[#4caf50] px-5 py-2.5 font-medium text-white transition-colors hover:bg-[#388e3c]'
           >
             Vẫn tiếp tục
           </button>

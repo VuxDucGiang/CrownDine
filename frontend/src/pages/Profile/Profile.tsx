@@ -84,9 +84,7 @@ const Profile = () => {
 
             {activeTab === 'reward-points' && <RewardPointsTab user={user} onUpdateUser={setUser} />}
 
-            {activeTab === 'vouchers' && (
-              <MyVouchers vouchers={vouchers} isLoading={isVouchersLoading} />
-            )}
+            {activeTab === 'vouchers' && <MyVouchers vouchers={vouchers} isLoading={isVouchersLoading} />}
 
             {activeTab === 'security' && <SecuritySettings />}
           </div>

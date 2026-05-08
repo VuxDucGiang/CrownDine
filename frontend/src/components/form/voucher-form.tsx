@@ -26,9 +26,7 @@ export function VoucherForm({ initialData, onSubmit, onCancel }: VoucherFormProp
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     const discountValue = parseFloat(formData.discountValue)
-    const maxDiscountValue = formData.maxDiscountValue.trim()
-      ? parseFloat(formData.maxDiscountValue)
-      : undefined
+    const maxDiscountValue = formData.maxDiscountValue.trim() ? parseFloat(formData.maxDiscountValue) : undefined
     const minValue = formData.minValue.trim() ? parseFloat(formData.minValue) : undefined
     if (Number.isNaN(discountValue) || discountValue <= 0) return
     if (maxDiscountValue !== undefined && (Number.isNaN(maxDiscountValue) || maxDiscountValue <= 0)) return

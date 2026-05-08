@@ -84,6 +84,7 @@ public class PreFilter extends OncePerRequestFilter {
         }
 
         if (StringUtils.isNotEmpty(username) && SecurityContextHolder.getContext().getAuthentication() == null) {
+            log.info("Hello");
             UserDetails userDetails = customUserDetailsService.loadUserByUsername(username);
 
             if (jwtService.isTokenValid(token, ETokenType.ACCESS_TOKEN, userDetails)) {

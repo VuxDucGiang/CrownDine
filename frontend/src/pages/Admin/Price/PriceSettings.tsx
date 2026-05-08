@@ -32,7 +32,7 @@ export default function PriceSettings() {
         return res.data.data.data // Access the array inside PageResponse
       }
       const res = await itemApi.getItems()
-      // If getItems also returns PageResponse, adjust accordingly. 
+      // If getItems also returns PageResponse, adjust accordingly.
       // Based on item.api.ts line 18, it returns Item[] directly after res.data.data
       return Array.isArray(res.data.data) ? res.data.data : (res.data.data as any).data
     }
@@ -73,8 +73,7 @@ export default function PriceSettings() {
   }
 
   const filteredItems = items.filter(
-    (item) =>
-      item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.id.toString().includes(searchTerm)
+    (item) => item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.id.toString().includes(searchTerm)
   )
 
   return (
@@ -82,12 +81,12 @@ export default function PriceSettings() {
       {/* Sidebar Filters */}
       <aside className='w-64 shrink-0 space-y-6'>
         <div className='bg-card border-border rounded-xl border p-4 shadow-sm'>
-          <h3 className='mb-3 text-[11px] font-bold uppercase tracking-wider text-muted-foreground'>Tìm kiếm</h3>
+          <h3 className='text-muted-foreground mb-3 text-[11px] font-bold tracking-wider uppercase'>Tìm kiếm</h3>
           <div className='relative'>
-            <Search className='text-muted-foreground absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2' />
+            <Search className='text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2' />
             <Input
               placeholder='Theo mã, tên hàng (F3)'
-              className='pl-9 text-xs border-gray-200 focus:border-blue-400 focus:ring-blue-100 transition-all placeholder:text-gray-400'
+              className='border-gray-200 pl-9 text-xs transition-all placeholder:text-gray-400 focus:border-blue-400 focus:ring-blue-100'
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
@@ -95,45 +94,47 @@ export default function PriceSettings() {
         </div>
 
         <div className='bg-card border-border overflow-hidden rounded-xl border shadow-sm'>
-          <div className='flex items-center justify-between border-b bg-muted/30 p-4'>
-            <h3 className='text-sm font-bold uppercase tracking-wider text-[#003A8C]'>Nhóm hàng</h3>
-            <ChevronDown className='h-4 w-4 text-muted-foreground' />
+          <div className='bg-muted/30 flex items-center justify-between border-b p-4'>
+            <h3 className='text-sm font-bold tracking-wider text-[#003A8C] uppercase'>Nhóm hàng</h3>
+            <ChevronDown className='text-muted-foreground h-4 w-4' />
           </div>
           <div className='p-2'>
             <nav className='space-y-0.5'>
               <button
                 onClick={() => setSelectedCategoryId(null)}
                 className={`flex w-full items-center justify-between rounded-lg px-4 py-2 text-left text-xs font-bold transition-all ${
-                  selectedCategoryId === null
-                    ? 'bg-blue-50 text-blue-600 shadow-sm'
-                    : 'text-gray-600 hover:bg-gray-50'
+                  selectedCategoryId === null ? 'bg-blue-50 text-blue-600 shadow-sm' : 'text-gray-600 hover:bg-gray-50'
                 }`}
               >
                 <span>Tất cả</span>
-                <span className={`rounded-full px-2 py-0.5 text-[10px] ${
-                  selectedCategoryId === null ? 'bg-blue-100' : 'bg-gray-100'
-                }`}>
+                <span
+                  className={`rounded-full px-2 py-0.5 text-[10px] ${
+                    selectedCategoryId === null ? 'bg-blue-100' : 'bg-gray-100'
+                  }`}
+                >
                   {items.length}
                 </span>
               </button>
-              <div className='my-2 h-px bg-border/50'></div>
+              <div className='bg-border/50 my-2 h-px'></div>
               {categories.map((category) => {
-                const itemCount = items.filter(i => i.categoryId === category.id).length
+                const itemCount = items.filter((i) => i.categoryId === category.id).length
                 return (
                   <button
                     key={category.id}
                     onClick={() => setSelectedCategoryId(category.id)}
                     className={`flex w-full items-center justify-between rounded-lg px-4 py-2 text-left text-xs font-medium transition-all ${
                       selectedCategoryId === category.id
-                        ? 'bg-blue-50 text-blue-600 shadow-sm border-l-2 border-blue-600 rounded-l-none'
+                        ? 'rounded-l-none border-l-2 border-blue-600 bg-blue-50 text-blue-600 shadow-sm'
                         : 'text-gray-600 hover:bg-gray-50 hover:pl-5'
                     }`}
                   >
                     <span>{category.name}</span>
                     {itemCount > 0 && (
-                      <span className={`rounded-full px-2 py-0.5 text-[10px] ${
-                        selectedCategoryId === category.id ? 'bg-blue-100' : 'bg-gray-50'
-                      }`}>
+                      <span
+                        className={`rounded-full px-2 py-0.5 text-[10px] ${
+                          selectedCategoryId === category.id ? 'bg-blue-100' : 'bg-gray-50'
+                        }`}
+                      >
                         {itemCount}
                       </span>
                     )}
@@ -153,15 +154,14 @@ export default function PriceSettings() {
               ? `Bảng giá: ${categories.find((c) => c.id === selectedCategoryId)?.name}`
               : 'Bảng giá chung'}
           </h1>
-          <div className='flex items-center gap-2'>
-          </div>
+          <div className='flex items-center gap-2'></div>
         </div>
 
         {/* Data Table */}
         <div className='bg-card border-border overflow-hidden rounded-xl border shadow-sm'>
           <div className='overflow-x-auto'>
             <table className='w-full text-left text-sm'>
-              <thead className='bg-[#E6F4FF] border-border border-b font-semibold text-[#003A8C]'>
+              <thead className='border-border border-b bg-[#E6F4FF] font-semibold text-[#003A8C]'>
                 <tr>
                   <th className='px-6 py-4'>Mã món</th>
                   <th className='px-6 py-4'>Tên món</th>
@@ -173,7 +173,7 @@ export default function PriceSettings() {
                 {isLoadingItems ? (
                   <tr>
                     <td colSpan={4} className='py-12 text-center'>
-                      <div className='border-primary h-6 w-6 inline-block animate-spin rounded-full border-2 border-t-transparent'></div>
+                      <div className='border-primary inline-block h-6 w-6 animate-spin rounded-full border-2 border-t-transparent'></div>
                     </td>
                   </tr>
                 ) : filteredItems.length > 0 ? (
@@ -192,7 +192,7 @@ export default function PriceSettings() {
                             onKeyDown={(e) => {
                               if (e.key === 'Enter') {
                                 handlePriceUpdate(item, (e.target as HTMLInputElement).value)
-                                  ; (e.target as HTMLInputElement).blur()
+                                ;(e.target as HTMLInputElement).blur()
                               }
                             }}
                           />
@@ -231,8 +231,8 @@ export default function PriceSettings() {
       </main>
 
       {/* Support Floating Button */}
-      <div className='fixed bottom-6 right-6 flex flex-col items-end gap-3'>
-        <button className='bg-[#1890FF] flex items-center gap-2 rounded-full px-4 py-2 text-white shadow-lg transition-transform hover:scale-105'>
+      <div className='fixed right-6 bottom-6 flex flex-col items-end gap-3'>
+        <button className='flex items-center gap-2 rounded-full bg-[#1890FF] px-4 py-2 text-white shadow-lg transition-transform hover:scale-105'>
           <FileText className='h-4 w-4' />
           Trợ giúp
         </button>

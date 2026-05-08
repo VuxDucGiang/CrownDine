@@ -46,15 +46,17 @@ const Story = () => {
                 món ăn kể chuyện và gắn kết mọi người.
               </p>
               <p>
-                Dưới sự hướng dẫn của Bếp trưởng Trần Văn Đức, bếp của chúng tôi biến những nguyên liệu theo mùa
-                tốt nhất thành những trải nghiệm ăn uống đáng nhớ. Mỗi món ăn đều là một sự kiện của truyền thống, đổi
-                mới và đam mê.
+                Dưới sự hướng dẫn của Bếp trưởng Trần Văn Đức, bếp của chúng tôi biến những nguyên liệu theo mùa tốt
+                nhất thành những trải nghiệm ăn uống đáng nhớ. Mỗi món ăn đều là một sự kiện của truyền thống, đổi mới
+                và đam mê.
               </p>
             </div>
 
             <div className='mb-8 rounded-lg border border-slate-200 bg-slate-50 p-4 text-sm'>
               <p className='text-foreground font-semibold'>Địa chỉ: 123 Gourmet Street, Da Nang</p>
-              <p className='text-foreground/70 mt-1'>Giờ mở cửa: {openTime} - {closeTime} (hằng ngày)</p>
+              <p className='text-foreground/70 mt-1'>
+                Giờ mở cửa: {openTime} - {closeTime} (hằng ngày)
+              </p>
             </div>
 
             {/* Stats */}

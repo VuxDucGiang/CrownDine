@@ -5,4 +5,3 @@ export const PAYMENT_RESULT_QUERY_PARAM_KEYS = {
   status: 'status',
   orderCode: 'orderCode'
 } as const
-

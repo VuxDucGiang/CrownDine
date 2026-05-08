@@ -14,6 +14,7 @@ public interface ComboService {
     ComboResponse getComboById(Long id);
 
     ComboResponse getComboByName(String name);
+    ComboResponse getComboBySlug(String slug);
 
     ComboResponse createCombo(ComboRequest comboRequest);
 

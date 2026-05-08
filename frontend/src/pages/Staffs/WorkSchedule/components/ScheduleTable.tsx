@@ -120,9 +120,9 @@ export function ScheduleTable({ isAdmin = false, currentDate, schedules, staffs,
   const employees = Array.from(employeesMap.values())
 
   return (
-    <div className='border-border overflow-hidden rounded-b-xl border bg-card text-card-foreground'>
+    <div className='border-border bg-card text-card-foreground overflow-hidden rounded-b-xl border'>
       <table className='w-full text-sm'>
-        <thead className='border-border border-b bg-muted/30'>
+        <thead className='border-border bg-muted/30 border-b'>
           <tr>
             <th className='border-border min-w-[200px] border-r p-4 text-left font-bold'>Nhân viên</th>
             {days.map((d, i) => (
@@ -171,7 +171,7 @@ export function ScheduleTable({ isAdmin = false, currentDate, schedules, staffs,
           ) : (
             employees.map((emp) => (
               <tr key={emp.id} className='hover:bg-muted/50 transition-colors'>
-                <td className='border-border border-r bg-card p-4 align-top'>
+                <td className='border-border bg-card border-r p-4 align-top'>
                   <div className='text-foreground mb-1 text-base font-bold'>{emp.name}</div>
                   <div className='text-muted-foreground text-xs'>{emp.id}</div>
                 </td>
@@ -202,8 +202,8 @@ export function ScheduleTable({ isAdmin = false, currentDate, schedules, staffs,
       {/* Render Add Schedule Modal Overlay */}
       {isModalOpen && selectedDateForModal && selectedStaffId && (
         <div className='fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm'>
-          <div className='animate-in fade-in zoom-in-95 relative w-full max-w-md overflow-hidden rounded-xl bg-card text-card-foreground shadow-xl duration-200'>
-            <div className='bg-muted/30 flex items-center justify-between border-b px-6 py-4 border-border'>
+          <div className='animate-in fade-in zoom-in-95 bg-card text-card-foreground relative w-full max-w-md overflow-hidden rounded-xl shadow-xl duration-200'>
+            <div className='bg-muted/30 border-border flex items-center justify-between border-b px-6 py-4'>
               <h2 className='text-lg font-bold'>Thêm phân ca làm việc</h2>
             </div>
             <div className='max-h-[80vh] overflow-y-auto'>
@@ -221,15 +221,15 @@ export function ScheduleTable({ isAdmin = false, currentDate, schedules, staffs,
       {/* Render Delete Confirmation Modal */}
       {deleteTarget && (
         <div className='fixed inset-0 z-[60] flex items-center justify-center bg-black/50 backdrop-blur-sm'>
-          <div className='animate-in fade-in zoom-in-95 relative w-full max-w-sm overflow-hidden rounded-xl bg-card p-6 text-card-foreground shadow-xl duration-200 border border-border'>
+          <div className='animate-in fade-in zoom-in-95 bg-card text-card-foreground border-border relative w-full max-w-sm overflow-hidden rounded-xl border p-6 shadow-xl duration-200'>
             <div className='mb-4 flex items-center gap-3 text-red-600 dark:text-red-400'>
               <div className='flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/30'>
                 <Trash2 className='h-5 w-5' />
               </div>
-              <h2 className='text-lg font-bold text-foreground'>Xóa ca làm việc</h2>
+              <h2 className='text-foreground text-lg font-bold'>Xóa ca làm việc</h2>
             </div>
 
-            <p className='mb-6 text-sm text-foreground/80'>
+            <p className='text-foreground/80 mb-6 text-sm'>
               {deleteTarget.repeatGroupId
                 ? 'Đây là ca làm việc lặp lại. Bạn muốn xóa nguyên chuỗi lặp này hay chỉ xóa riêng ngày hôm nay?'
                 : 'Bạn có chắc chắn muốn xóa ca làm việc này không? Hành động này không thể hoàn tác.'}
@@ -239,20 +239,20 @@ export function ScheduleTable({ isAdmin = false, currentDate, schedules, staffs,
               {deleteTarget.repeatGroupId && (
                 <button
                   onClick={() => confirmDelete(true)}
-                  className='w-full rounded-md bg-destructive px-4 py-2 text-sm font-medium text-destructive-foreground transition-colors hover:bg-destructive/90'
+                  className='bg-destructive text-destructive-foreground hover:bg-destructive/90 w-full rounded-md px-4 py-2 text-sm font-medium transition-colors'
                 >
                   Xóa tất cả các ca lặp lại
                 </button>
               )}
               <button
                 onClick={() => confirmDelete(false)}
-                className='w-full rounded-md border border-destructive/20 bg-destructive/10 px-4 py-2 text-sm font-medium text-destructive transition-colors hover:bg-destructive/20'
+                className='border-destructive/20 bg-destructive/10 text-destructive hover:bg-destructive/20 w-full rounded-md border px-4 py-2 text-sm font-medium transition-colors'
               >
                 {deleteTarget.repeatGroupId ? 'Chỉ xóa ca hôm nay' : 'Đồng ý xóa'}
               </button>
               <button
                 onClick={() => setDeleteTarget(null)}
-                className='mt-2 w-full rounded-md px-4 py-2 text-sm font-medium text-foreground transition-colors hover:bg-muted'
+                className='text-foreground hover:bg-muted mt-2 w-full rounded-md px-4 py-2 text-sm font-medium transition-colors'
               >
                 Hủy bỏ
               </button>

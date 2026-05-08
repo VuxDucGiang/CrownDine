@@ -105,9 +105,7 @@ export default function CategoryList() {
     queryFn: () => comboApi.getCombos()
   })
 
-  const combos = (combosData?.data.data || []).filter((c) =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const combos = (combosData?.data.data || []).filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
   const deleteComboMutation = useMutation({
     mutationFn: (id: number) => comboApi.deleteCombo(id),
@@ -129,8 +127,7 @@ export default function CategoryList() {
 
   // Update Combo Mutation
   const updateComboMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: ComboFormData }) =>
-      comboApi.updateCombo(id, data),
+    mutationFn: ({ id, data }: { id: number; data: ComboFormData }) => comboApi.updateCombo(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['combos'] })
       toast.success('Cập nhật combo thành công')
@@ -327,11 +324,11 @@ export default function CategoryList() {
               <div className='border-primary h-8 w-8 animate-spin rounded-full border-4 border-t-transparent'></div>
             </div>
           ) : (
-            <ComboTable 
-                combos={combos} 
-                onRowClick={handleComboRowClick}
-                onEdit={handleEditCombo} 
-                onDelete={handleDeleteCombo} 
+            <ComboTable
+              combos={combos}
+              onRowClick={handleComboRowClick}
+              onEdit={handleEditCombo}
+              onDelete={handleDeleteCombo}
             />
           )}
         </div>
@@ -371,13 +368,17 @@ export default function CategoryList() {
       >
         <MenuItemForm
           key={editingItem ? editingItem.id : 'new-item'}
-          initialData={editingItem ? {
-            name: editingItem.name,
-            description: editingItem.description,
-            image: editingItem.imageUrl,
-            price: editingItem.price,
-            status: editingItem.status
-          } : null}
+          initialData={
+            editingItem
+              ? {
+                  name: editingItem.name,
+                  description: editingItem.description,
+                  image: editingItem.imageUrl,
+                  price: editingItem.price,
+                  status: editingItem.status
+                }
+              : null
+          }
           onSubmit={handleSaveItem}
           onCancel={() => setIsItemFormOpen(false)}
         />

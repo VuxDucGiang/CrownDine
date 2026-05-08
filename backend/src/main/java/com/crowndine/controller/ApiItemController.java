@@ -53,6 +53,17 @@ public class ApiItemController {
 
     }
 
+    @GetMapping("/slug/{slug}")
+    public ApiResponse getItemBySlug(@PathVariable String slug) {
+        log.info("Get item request with slug: {}", slug);
+        ItemResponse item = itemService.getItemBySlug(slug);
+        return ApiResponse.builder()
+                .status(HttpStatus.OK.value())
+                .message("Lấy thông tin item thành công")
+                .data(item)
+                .build();
+    }
+
     @PostMapping
     public ApiResponse createItem(@Valid @RequestBody ItemRequest request) {
         log.info("Create item request: {}", request.getName());

@@ -7,9 +7,13 @@ function StaffLayout() {
 
   return (
     <div className='flex min-h-screen flex-col'>
-      <main className='bg-muted/20 min-h-0 flex-1 flex flex-col'>
+      <main className='bg-muted/20 flex min-h-0 flex-1 flex-col'>
         <StaffHeader />
-        <div className={isReservationListPage ? 'flex-1 flex flex-col' : 'container mx-auto px-4 py-8 flex-1 flex flex-col'}>
+        <div
+          className={
+            isReservationListPage ? 'flex flex-1 flex-col' : 'container mx-auto flex flex-1 flex-col px-4 py-8'
+          }
+        >
           <Outlet />
         </div>
       </main>

@@ -10,8 +10,7 @@ const userApi = {
     })
   },
   getProfile() {
-    return http.get<ApiResponse<User>>('users/profile', {
-    }).then(res => {
+    return http.get<ApiResponse<User>>('users/profile', {}).then((res) => {
       if (res.data?.data && (res.data.data as any).avatarUrl) {
         res.data.data.avatar = (res.data.data as any).avatarUrl
       }

@@ -1,7 +1,7 @@
 package com.crowndine.service.impl.reservation;
 
 import com.crowndine.common.enums.EReservationStatus;
-import com.crowndine.exception.InvalidDataException;
+import com.crowndine.exception.ReservationConflictException;
 import com.crowndine.model.Reservation;
 import com.crowndine.repository.ReservationRepository;
 import com.crowndine.service.reservation.ReservationAvailabilityService;
@@ -67,7 +67,7 @@ public class ReservationAvailabilityServiceImpl implements ReservationAvailabili
         for (Reservation reservation : blockingReservations) {
             if (isBlockingReservationForTable(reservation, tableId, excludedReservationId, requestedStartDateTime)) {
                 log.info("Table id {} is blocked by reservation id {}", tableId, reservation.getId());
-                throw new InvalidDataException("Bàn đã được đặt trong khung giờ này");
+                throw new ReservationConflictException("reservation.slot_conflict");
             }
         }
     }

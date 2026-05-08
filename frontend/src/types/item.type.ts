@@ -4,6 +4,7 @@ export type ItemStatus = 'AVAILABLE' | 'SOLD_OUT' | 'STOPPED'
 
 export interface Item {
   id: number
+  slug?: string
   categoryId: number
   description: string
   imageUrl: string
@@ -23,12 +24,13 @@ export interface Item {
 /** Dữ liệu dùng chung để hiển thị card (Item hoặc Combo) */
 export type MenuCardItem = Pick<
   Item,
-  'id' | 'name' | 'description' | 'imageUrl' | 'price' | 'priceAfterDiscount' | 'status'
-> & { averageRating?: number; feedbackCount?: number; tags?: string[] }
+  'id' | 'slug' | 'name' | 'description' | 'imageUrl' | 'price' | 'priceAfterDiscount' | 'status'
+> & { averageRating?: number; feedbackCount?: number; soldCount?: number; tags?: string[] }
 
 export function comboToCardItem(c: Combo): MenuCardItem {
   return {
     id: c.id,
+    slug: c.slug,
     name: c.name,
     description: c.description ?? '',
     imageUrl: c.imageUrl ?? '',
@@ -36,6 +38,7 @@ export function comboToCardItem(c: Combo): MenuCardItem {
     priceAfterDiscount: c.priceAfterDiscount != null ? Number(c.priceAfterDiscount) : null,
     status: c.status,
     averageRating: c.averageRating,
-    feedbackCount: c.feedbackCount
+    feedbackCount: c.feedbackCount,
+    soldCount: c.soldCount
   }
 }

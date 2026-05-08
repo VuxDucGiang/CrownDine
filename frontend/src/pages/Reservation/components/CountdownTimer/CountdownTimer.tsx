@@ -19,9 +19,9 @@ const CountdownTimer = ({ expiratedAt, onExpire }: Props) => {
       const now = new Date().getTime()
       const expiry = new Date(expiratedAt).getTime()
       const diff = Math.max(0, Math.floor((expiry - now) / 1000))
-      
+
       setSeconds(diff)
-      
+
       if (diff <= 0) {
         onExpire()
       }

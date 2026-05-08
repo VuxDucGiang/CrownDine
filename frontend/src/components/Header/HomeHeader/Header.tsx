@@ -155,7 +155,7 @@ const Header = () => {
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className='border-border w-96 bg-card opacity-100 shadow-lg' align='end'>
+                <DropdownMenuContent className='border-border bg-card w-96 opacity-100 shadow-lg' align='end'>
                   <DropdownMenuLabel className='flex items-center justify-between'>
                     <span>Thông báo</span>
                     <span className='text-muted-foreground text-xs font-normal'>
@@ -210,10 +210,10 @@ const Header = () => {
                     )}
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className='border-border w-80 bg-card opacity-100 shadow-lg' align='end'>
+                <DropdownMenuContent className='border-border bg-card w-80 opacity-100 shadow-lg' align='end'>
                   <DropdownMenuLabel className='flex items-center justify-between'>
                     <span>Món ăn yêu thích</span>
-                    <span className='text-muted-foreground text-xs font-normal'>{(favorites?.length ?? 0)} món</span>
+                    <span className='text-muted-foreground text-xs font-normal'>{favorites?.length ?? 0} món</span>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <div className='max-h-87.5 overflow-y-auto'>
@@ -227,11 +227,11 @@ const Header = () => {
                         const item = fav.item || fav.combo
                         if (!item) return null
                         const isCombo = !!fav.combo
-                        const link = isCombo ? `/menu/combo/${item.id}` : `/menu/item/${item.id}`
+                        const link = item.slug ? `/menu/${isCombo ? 'combo' : 'item'}/${item.slug}` : '/menu'
 
                         return (
                           <div key={fav.id} className='hover:bg-accent/5 flex items-center gap-3 p-3 transition-colors'>
-                            <Link to={link} className='h-12 w-12 shrink-0 overflow-hidden rounded-md bg-muted'>
+                            <Link to={link} className='bg-muted h-12 w-12 shrink-0 overflow-hidden rounded-md'>
                               <img src={item.imageUrl || ''} alt={item.name} className='h-full w-full object-cover' />
                             </Link>
                             <div className='flex min-w-0 flex-1 flex-col'>
@@ -248,7 +248,7 @@ const Header = () => {
                             <Button
                               variant='ghost'
                               size='icon'
-                              className='h-8 w-8 text-muted-foreground hover:text-destructive'
+                              className='text-muted-foreground hover:text-destructive h-8 w-8'
                               onClick={(e) => {
                                 e.preventDefault()
                                 e.stopPropagation()
@@ -301,7 +301,7 @@ const Header = () => {
                   </Avatar>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className='border-border w-56 bg-card opacity-100 shadow-md' align='end' forceMount>
+              <DropdownMenuContent className='border-border bg-card w-56 opacity-100 shadow-md' align='end' forceMount>
                 <DropdownMenuLabel className='font-normal'>
                   <div className='flex flex-col space-y-1'>
                     <p className='text-sm leading-none font-medium'>
@@ -318,7 +318,10 @@ const Header = () => {
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem className='cursor-pointer text-destructive focus:text-destructive' onClick={handleLogout}>
+                <DropdownMenuItem
+                  className='text-destructive focus:text-destructive cursor-pointer'
+                  onClick={handleLogout}
+                >
                   <LogOut className='mr-2 h-4 w-4' />
                   <span>Đăng xuất</span>
                 </DropdownMenuItem>

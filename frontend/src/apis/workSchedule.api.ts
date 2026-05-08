@@ -12,7 +12,7 @@ const workScheduleApi = {
   createWorkSchedule(data: CreateWorkScheduleRequest) {
     return http.post<SimpleMessageResponse>('/work-schedules/create', data)
   },
-  deleteWorkSchedule(id: string, params?: { deletePattern?: boolean, workDate?: string }) {
+  deleteWorkSchedule(id: string, params?: { deletePattern?: boolean; workDate?: string }) {
     return http.delete<SimpleMessageResponse>(`/work-schedules/${id}`, { params })
   }
 }

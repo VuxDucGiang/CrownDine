@@ -35,10 +35,10 @@ export default function ChatWidget() {
     // Clean up multiple spaces BUT preserve line breaks
     // Replace multiple spaces (but not newlines) with single space
     displayContent = displayContent.replace(/[ \t]{2,}/g, ' ')
-    
+
     // Clean up multiple consecutive line breaks (max 2)
     displayContent = displayContent.replace(/\n{3,}/g, '\n\n')
-    
+
     // Trim string ends but keep internal formatting/indentation intact
     displayContent = displayContent.trim()
 
@@ -52,14 +52,14 @@ export default function ChatWidget() {
         return (
           <a
             key={index}
-        href={part}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="text-blue-600 hover:text-blue-800 underline font-medium"
+            href={part}
+            target='_blank'
+            rel='noopener noreferrer'
+            className='font-medium text-blue-600 underline hover:text-blue-800'
           >
-          {part}
+            {part}
           </a>
-      )
+        )
       }
       // Return as string fragment - whitespace-pre-wrap will handle line breaks
       return <span key={index}>{part}</span>
@@ -104,9 +104,12 @@ export default function ChatWidget() {
   // Poll for new messages when conversation is active
   useEffect(() => {
     if (currentConversation && isOpen && !isMinimized) {
-      const interval = setInterval(() => {
-        loadConversation(currentConversation.id)
-      }, isWaitingForResponse ? 1000 : 2000) // Poll faster when waiting for response
+      const interval = setInterval(
+        () => {
+          loadConversation(currentConversation.id)
+        },
+        isWaitingForResponse ? 1000 : 2000
+      ) // Poll faster when waiting for response
       return () => clearInterval(interval)
     }
   }, [currentConversation, isOpen, isMinimized, isWaitingForResponse])
@@ -149,8 +152,7 @@ export default function ChatWidget() {
         // Check if we got a new assistant response (created in last 10 seconds)
         const now = Date.now()
         const newAssistantMessages = updatedConversation.messages.filter(
-          msg => msg.role === 'assistant' &&
-            (now - new Date(msg.createdAt).getTime()) < 10000
+          (msg) => msg.role === 'assistant' && now - new Date(msg.createdAt).getTime() < 10000
         )
 
         // If we were waiting and now have assistant message, stop aggressive polling
@@ -159,16 +161,13 @@ export default function ChatWidget() {
         }
 
         // Auto-navigate if assistant message contains a reservation link OR confirmation message
-        newAssistantMessages.forEach(msg => {
+        newAssistantMessages.forEach((msg) => {
           // Improved regex to match reservation links even with spaces in tableName
           const reservationLinkRegex = /\/?reservation\?step=\d+.*?guests=\d+/gi
           let matches = msg.content.match(reservationLinkRegex)
 
-
-
-
           if (matches && matches.length > 0) {
-            matches.forEach(link => {
+            matches.forEach((link) => {
               // Clean up the link (remove leading/trailing whitespace and punctuation)
               let cleanLink = link.trim().replace(/^\/?/, '/') // Ensure starts with /
               cleanLink = cleanLink.replace(/[.,!?;:]$/, '').trim()
@@ -178,7 +177,7 @@ export default function ChatWidget() {
                 // Check if we've already processed this link
                 if (!processedLinks.has(cleanLink)) {
                   console.log(' Auto-navigating to reservation page:', cleanLink)
-                  setProcessedLinks(prev => new Set([...prev, cleanLink]))
+                  setProcessedLinks((prev) => new Set([...prev, cleanLink]))
 
                   // Show toast notification
                   const stepNumber = cleanLink.includes('step=4') ? '4 (Thanh toán)' : '3 (Đặt món)'
@@ -277,8 +276,7 @@ export default function ChatWidget() {
             if (updatedConv) {
               const now = Date.now()
               const hasNewAssistant = updatedConv.messages.some(
-                msg => msg.role === 'assistant' &&
-                  (now - new Date(msg.createdAt).getTime()) < 10000
+                (msg) => msg.role === 'assistant' && now - new Date(msg.createdAt).getTime() < 10000
               )
               if (hasNewAssistant) {
                 setIsWaitingForResponse(false)
@@ -334,203 +332,252 @@ export default function ChatWidget() {
 
   if (!isOpen) {
     return (
-      <div className="fixed bottom-6 right-6 z-50 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="group h-16 w-16 rounded-full shadow-xl hover:shadow-2xl transition-all duration-300 hover:scale-110 flex items-center justify-center relative overflow-hidden border-0 cursor-pointer"
-    style={{ background: 'linear-gradient(135deg, #ff6b35 0%, #e85520 50%, #c43e0e 100%)' }}
-    onClick={handleToggle}
-    title="Chat với CrownDine"
-    >
-    <div className="absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-    <UtensilsCrossed className="h-7 w-7 text-white relative z-10 group-hover:scale-110 transition-transform duration-200" />
-    <span className="absolute -top-1 -right-1 h-4 w-4 rounded-full bg-green-400 ring-2 ring-white animate-pulse" />
+      <div className='animate-in fade-in slide-in-from-bottom-4 fixed right-6 bottom-6 z-50 duration-500'>
+        <div
+          className='group relative flex h-16 w-16 cursor-pointer items-center justify-center overflow-hidden rounded-full border-0 shadow-xl transition-all duration-300 hover:scale-110 hover:shadow-2xl'
+          style={{ background: 'linear-gradient(135deg, #ff6b35 0%, #e85520 50%, #c43e0e 100%)' }}
+          onClick={handleToggle}
+          title='Chat với CrownDine'
+        >
+          <div className='absolute inset-0 bg-gradient-to-br from-white/20 to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100' />
+          <UtensilsCrossed className='relative z-10 h-7 w-7 text-white transition-transform duration-200 group-hover:scale-110' />
+          <span className='absolute -top-1 -right-1 h-4 w-4 animate-pulse rounded-full bg-green-400 ring-2 ring-white' />
+        </div>
       </div>
-      </div>
-  )
+    )
   }
 
   return (
     <div
-      className={`fixed bottom-6 right-6 z-50 transition-all duration-500 ease-out ${
-      isMinimized ? 'h-[72px]' : 'h-[640px]'
-    } w-[400px] md:w-[440px] animate-in fade-in slide-in-from-bottom-4`}
->
-  <div className="relative flex h-full flex-col rounded-2xl overflow-hidden" style={{ background: '#fff', boxShadow: '0 20px 60px rgba(0,0,0,0.18)', border: '1px solid #f0ede8' }}>
-    {/* Header */}
-    <div className="relative flex items-center justify-between px-5 py-4 flex-shrink-0 z-10" style={{ background: 'linear-gradient(135deg, #ff6b35 0%, #e85520 60%, #c43e0e 100%)' }}>
-  {/* Decorative pattern */}
-  <div className="absolute inset-0 opacity-10" style={{ backgroundImage: 'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)', backgroundSize: '30px 30px' }} />
-  <div className="flex items-center gap-3 relative z-10">
-  <div className="relative flex h-11 w-11 items-center justify-center rounded-full bg-white/25 ring-2 ring-white/40 shadow-lg">
-  <UtensilsCrossed className="h-5 w-5 text-white" />
-  <span className="absolute bottom-0 right-0 h-3 w-3 rounded-full bg-green-400 ring-2 ring-white shadow-sm" />
-    </div>
-    <div className="flex flex-col">
-  <h3 className="text-[15px] font-bold text-white tracking-tight">CrownDine AI</h3>
-  <div className="flex items-center gap-1.5">
-  <span className="h-1.5 w-1.5 rounded-full bg-green-300 animate-pulse" />
-  <span className="text-[11px] font-medium text-orange-50/90">Trợ lý đặt bàn thông minh</span>
-  </div>
-  </div>
-  </div>
-  <div className="flex items-center gap-1 relative z-10">
-  <Button
-    variant="ghost"
-  size="icon"
-  onClick={() => setIsMinimized(!isMinimized)}
-  className="h-8 w-8 rounded-full text-white/90 hover:bg-white/20 hover:text-white transition-all duration-200"
-  >
-  <Minimize2 className="h-4 w-4" />
-    </Button>
-    <Button
-  variant="ghost"
-  size="icon"
-  onClick={() => {
-    setIsOpen(false)
-    setIsMinimized(false)
-  }}
-  className="h-8 w-8 rounded-full text-white/90 hover:bg-white/20 hover:text-white transition-all duration-200"
-  >
-  <X className="h-4 w-4" />
-    </Button>
-    </div>
-    </div>
-
-  {!isMinimized && (
-    <>
-      {/* Messages */}
-    <div
-    ref={messagesContainerRef}
-    className="flex-1 px-4 py-5 overflow-y-auto overflow-x-hidden scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent"
-    style={{ minHeight: 0, background: 'linear-gradient(180deg, #fdf8f4 0%, #ffffff 50%, #fdf8f4 100%)' }}
-  >
-    <div className="mx-auto flex min-h-full max-w-full flex-col space-y-3.5">
-      {/* Welcome message when no messages */}
-    {currentConversation && currentConversation.messages.filter((m) => m.role !== 'system').length === 0 && (
-      <div className="flex justify-start animate-in fade-in slide-in-from-bottom-2 duration-300">
-      <div className="rounded-2xl rounded-tl-sm bg-white px-5 py-4 max-w-[88%]" style={{ boxShadow: '0 2px 12px rgba(255,107,53,0.1)', border: '1px solid rgba(255,107,53,0.15)' }}>
-      <div className="flex items-center gap-2 mb-2">
-      <Sparkles className="h-4 w-4" style={{ color: '#ff6b35' }} />
-      <p className="text-[14px] leading-relaxed font-semibold" style={{ color: '#2d1f14' }}>
-        Xin chào! Mình là trợ lý AI của CrownDine
-    </p>
-    </div>
-    <p className="text-[13px] leading-relaxed mt-2" style={{ color: '#5c4033' }}>
-      Mình có thể giúp bạn đặt bàn, gợi ý món ăn và hỗ trợ thanh toán cọc.
-    </p>
-    <p className="text-[12px] mt-3 pt-3" style={{ color: '#9e7b6b', borderTop: '1px solid rgba(255,107,53,0.12)' }}>
-      🍽️ Bạn có thể hỏi về đặt bàn, menu, hoặc dịch vụ nhà hàng!
-    </p>
-    </div>
-    </div>
-    )}
-
-    {currentConversation ? (
-        currentConversation.messages
-          .filter((msg) => msg.role !== 'system')
-          .map((msg, index) => (
-            <div
-              key={msg.id}
-      className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-1 duration-200`}
-      style={{ animationDelay: `${index * 50}ms` }}
+      className={`fixed right-6 bottom-6 z-50 transition-all duration-500 ease-out ${
+        isMinimized ? 'h-[72px]' : 'h-[640px]'
+      } animate-in fade-in slide-in-from-bottom-4 w-[400px] md:w-[440px]`}
     >
       <div
-        className={`max-w-[85%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed transition-all duration-200 ${
-        msg.role === 'user'
-          ? 'rounded-br-sm text-white'
-          : 'rounded-bl-sm bg-white'
-      }`}
-      style={msg.role === 'user' ? {
-        background: 'linear-gradient(135deg, #ff6b35, #c43e0e)',
-        boxShadow: '0 4px 14px rgba(255,107,53,0.35)'
-      } : {
-        boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
-        border: '1px solid rgba(255,107,53,0.12)',
-        color: '#2d1f14'
-      }}
-    >
-      <p className="whitespace-pre-wrap break-words font-normal">{renderMessageContent(msg.content)}</p>
-    <p
-      className="mt-2 text-[11px] font-medium"
-      style={{ color: msg.role === 'user' ? 'rgba(255,240,230,0.75)' : '#b09080' }}
-    >
-      {new Date(msg.createdAt).toLocaleTimeString('vi-VN', {
-        hour: '2-digit',
-        minute: '2-digit'
-      })}
-      </p>
-      </div>
-      </div>
-    ))
-    ) : (
-      <div className="flex h-full items-center justify-center">
-      <div className="text-center text-slate-500">
-      <div className="mx-auto mb-3 h-12 w-12 rounded-full bg-slate-100 flex items-center justify-center animate-pulse">
-      <MessageSquare className="h-6 w-6 text-slate-400" />
+        className='relative flex h-full flex-col overflow-hidden rounded-2xl'
+        style={{ background: '#fff', boxShadow: '0 20px 60px rgba(0,0,0,0.18)', border: '1px solid #f0ede8' }}
+      >
+        {/* Header */}
+        <div
+          className='relative z-10 flex flex-shrink-0 items-center justify-between px-5 py-4'
+          style={{ background: 'linear-gradient(135deg, #ff6b35 0%, #e85520 60%, #c43e0e 100%)' }}
+        >
+          {/* Decorative pattern */}
+          <div
+            className='absolute inset-0 opacity-10'
+            style={{
+              backgroundImage:
+                'radial-gradient(circle at 20% 50%, white 1px, transparent 1px), radial-gradient(circle at 80% 20%, white 1px, transparent 1px)',
+              backgroundSize: '30px 30px'
+            }}
+          />
+          <div className='relative z-10 flex items-center gap-3'>
+            <div className='relative flex h-11 w-11 items-center justify-center rounded-full bg-white/25 shadow-lg ring-2 ring-white/40'>
+              <UtensilsCrossed className='h-5 w-5 text-white' />
+              <span className='absolute right-0 bottom-0 h-3 w-3 rounded-full bg-green-400 shadow-sm ring-2 ring-white' />
+            </div>
+            <div className='flex flex-col'>
+              <h3 className='text-[15px] font-bold tracking-tight text-white'>CrownDine AI</h3>
+              <div className='flex items-center gap-1.5'>
+                <span className='h-1.5 w-1.5 animate-pulse rounded-full bg-green-300' />
+                <span className='text-[11px] font-medium text-orange-50/90'>Trợ lý đặt bàn thông minh</span>
+              </div>
+            </div>
+          </div>
+          <div className='relative z-10 flex items-center gap-1'>
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={() => setIsMinimized(!isMinimized)}
+              className='h-8 w-8 rounded-full text-white/90 transition-all duration-200 hover:bg-white/20 hover:text-white'
+            >
+              <Minimize2 className='h-4 w-4' />
+            </Button>
+            <Button
+              variant='ghost'
+              size='icon'
+              onClick={() => {
+                setIsOpen(false)
+                setIsMinimized(false)
+              }}
+              className='h-8 w-8 rounded-full text-white/90 transition-all duration-200 hover:bg-white/20 hover:text-white'
+            >
+              <X className='h-4 w-4' />
+            </Button>
+          </div>
         </div>
-        <p className="text-sm font-medium">Đang tải cuộc trò chuyện...</p>
-    </div>
-    </div>
-    )}
 
-    {(isLoading || isWaitingForResponse) && (
-      <div className="flex justify-start animate-in fade-in duration-200">
-      <div className="flex items-center gap-2.5 rounded-2xl rounded-bl-sm px-4 py-3 bg-white" style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.07)', border: '1px solid rgba(255,107,53,0.12)' }}>
-      <div className="flex space-x-1.5">
-      <div className="h-2 w-2 animate-bounce rounded-full" style={{ backgroundColor: '#ff6b35' }} />
-      <div
-        className="h-2 w-2 animate-bounce rounded-full"
-        style={{ backgroundColor: '#ff6b35', animationDelay: '0.15s' }}
-      />
-      <div
-        className="h-2 w-2 animate-bounce rounded-full"
-        style={{ backgroundColor: '#ff6b35', animationDelay: '0.3s' }}
-      />
+        {!isMinimized && (
+          <>
+            {/* Messages */}
+            <div
+              ref={messagesContainerRef}
+              className='scrollbar-thin scrollbar-thumb-orange-200 scrollbar-track-transparent flex-1 overflow-x-hidden overflow-y-auto px-4 py-5'
+              style={{ minHeight: 0, background: 'linear-gradient(180deg, #fdf8f4 0%, #ffffff 50%, #fdf8f4 100%)' }}
+            >
+              <div className='mx-auto flex min-h-full max-w-full flex-col space-y-3.5'>
+                {/* Welcome message when no messages */}
+                {currentConversation &&
+                  currentConversation.messages.filter((m) => m.role !== 'system').length === 0 && (
+                    <div className='animate-in fade-in slide-in-from-bottom-2 flex justify-start duration-300'>
+                      <div
+                        className='max-w-[88%] rounded-2xl rounded-tl-sm bg-white px-5 py-4'
+                        style={{
+                          boxShadow: '0 2px 12px rgba(255,107,53,0.1)',
+                          border: '1px solid rgba(255,107,53,0.15)'
+                        }}
+                      >
+                        <div className='mb-2 flex items-center gap-2'>
+                          <Sparkles className='h-4 w-4' style={{ color: '#ff6b35' }} />
+                          <p className='text-[14px] leading-relaxed font-semibold' style={{ color: '#2d1f14' }}>
+                            Xin chào! Mình là trợ lý AI của CrownDine
+                          </p>
+                        </div>
+                        <p className='mt-2 text-[13px] leading-relaxed' style={{ color: '#5c4033' }}>
+                          Mình có thể giúp bạn đặt bàn, gợi ý món ăn và hỗ trợ thanh toán cọc.
+                        </p>
+                        <p
+                          className='mt-3 pt-3 text-[12px]'
+                          style={{ color: '#9e7b6b', borderTop: '1px solid rgba(255,107,53,0.12)' }}
+                        >
+                          🍽️ Bạn có thể hỏi về đặt bàn, menu, hoặc dịch vụ nhà hàng!
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                {currentConversation ? (
+                  currentConversation.messages
+                    .filter((msg) => msg.role !== 'system')
+                    .map((msg, index) => (
+                      <div
+                        key={msg.id}
+                        className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-in fade-in slide-in-from-bottom-1 duration-200`}
+                        style={{ animationDelay: `${index * 50}ms` }}
+                      >
+                        <div
+                          className={`max-w-[85%] rounded-2xl px-4 py-3 text-[14px] leading-relaxed transition-all duration-200 ${
+                            msg.role === 'user' ? 'rounded-br-sm text-white' : 'rounded-bl-sm bg-white'
+                          }`}
+                          style={
+                            msg.role === 'user'
+                              ? {
+                                  background: 'linear-gradient(135deg, #ff6b35, #c43e0e)',
+                                  boxShadow: '0 4px 14px rgba(255,107,53,0.35)'
+                                }
+                              : {
+                                  boxShadow: '0 2px 8px rgba(0,0,0,0.07)',
+                                  border: '1px solid rgba(255,107,53,0.12)',
+                                  color: '#2d1f14'
+                                }
+                          }
+                        >
+                          <p className='font-normal break-words whitespace-pre-wrap'>
+                            {renderMessageContent(msg.content)}
+                          </p>
+                          <p
+                            className='mt-2 text-[11px] font-medium'
+                            style={{ color: msg.role === 'user' ? 'rgba(255,240,230,0.75)' : '#b09080' }}
+                          >
+                            {new Date(msg.createdAt).toLocaleTimeString('vi-VN', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    ))
+                ) : (
+                  <div className='flex h-full items-center justify-center'>
+                    <div className='text-center text-slate-500'>
+                      <div className='mx-auto mb-3 flex h-12 w-12 animate-pulse items-center justify-center rounded-full bg-slate-100'>
+                        <MessageSquare className='h-6 w-6 text-slate-400' />
+                      </div>
+                      <p className='text-sm font-medium'>Đang tải cuộc trò chuyện...</p>
+                    </div>
+                  </div>
+                )}
+
+                {(isLoading || isWaitingForResponse) && (
+                  <div className='animate-in fade-in flex justify-start duration-200'>
+                    <div
+                      className='flex items-center gap-2.5 rounded-2xl rounded-bl-sm bg-white px-4 py-3'
+                      style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.07)', border: '1px solid rgba(255,107,53,0.12)' }}
+                    >
+                      <div className='flex space-x-1.5'>
+                        <div className='h-2 w-2 animate-bounce rounded-full' style={{ backgroundColor: '#ff6b35' }} />
+                        <div
+                          className='h-2 w-2 animate-bounce rounded-full'
+                          style={{ backgroundColor: '#ff6b35', animationDelay: '0.15s' }}
+                        />
+                        <div
+                          className='h-2 w-2 animate-bounce rounded-full'
+                          style={{ backgroundColor: '#ff6b35', animationDelay: '0.3s' }}
+                        />
+                      </div>
+                      <span className='text-[12px] font-medium' style={{ color: '#9e7b6b' }}>
+                        Đang soạn trả lời...
+                      </span>
+                    </div>
+                  </div>
+                )}
+
+                <div ref={messagesEndRef} />
+              </div>
+            </div>
+
+            {/* Input Area */}
+            <div
+              className='px-4 py-4'
+              style={{
+                borderTop: '1px solid rgba(255,107,53,0.15)',
+                background: 'rgba(253,248,244,0.95)',
+                backdropFilter: 'blur(8px)'
+              }}
+            >
+              <div className='flex items-end gap-3'>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder='Nhập câu hỏi của bạn...'
+                  className='max-h-[120px] min-h-[56px] flex-1 resize-none rounded-2xl px-4 py-3.5 text-[14px] leading-relaxed transition-all duration-200 outline-none disabled:cursor-not-allowed disabled:opacity-50'
+                  style={{
+                    border: '1.5px solid rgba(255,107,53,0.25)',
+                    background: 'white',
+                    color: '#2d1f14'
+                  }}
+                  onFocus={(e) => {
+                    e.currentTarget.style.borderColor = '#ff6b35'
+                    e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255,107,53,0.12)'
+                  }}
+                  onBlur={(e) => {
+                    e.currentTarget.style.borderColor = 'rgba(255,107,53,0.25)'
+                    e.currentTarget.style.boxShadow = 'none'
+                  }}
+                  rows={2}
+                  disabled={isLoading || !currentConversation}
+                />
+                <Button
+                  onClick={sendMessage}
+                  disabled={!message.trim() || isLoading || !currentConversation}
+                  className='flex h-[56px] min-w-[56px] items-center justify-center rounded-2xl border-0 px-5 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100'
+                  style={{
+                    background: 'linear-gradient(135deg, #ff6b35, #c43e0e)',
+                    boxShadow: '0 4px 14px rgba(255,107,53,0.4)'
+                  }}
+                  size='icon'
+                >
+                  <Send className='h-4.5 w-4.5' />
+                </Button>
+              </div>
+              <p className='mt-2.5 text-center text-[10px] font-medium' style={{ color: '#b09080' }}>
+                🍽️ Chatbot sẽ tự động chuyển bạn đến trang đặt món hoặc thanh toán
+              </p>
+            </div>
+          </>
+        )}
       </div>
-      <span className="text-[12px] font-medium" style={{ color: '#9e7b6b' }}>Đang soạn trả lời...</span>
     </div>
-    </div>
-    )}
-
-    <div ref={messagesEndRef} />
-  </div>
-  </div>
-
-    {/* Input Area */}
-    <div className="px-4 py-4" style={{ borderTop: '1px solid rgba(255,107,53,0.15)', background: 'rgba(253,248,244,0.95)', backdropFilter: 'blur(8px)' }}>
-    <div className="flex items-end gap-3">
-    <textarea
-      value={message}
-    onChange={(e) => setMessage(e.target.value)}
-    onKeyPress={handleKeyPress}
-    placeholder="Nhập câu hỏi của bạn..."
-    className="flex-1 min-h-[56px] max-h-[120px] resize-none rounded-2xl px-4 py-3.5 text-[14px] leading-relaxed outline-none transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
-    style={{
-      border: '1.5px solid rgba(255,107,53,0.25)',
-      background: 'white',
-      color: '#2d1f14'
-    }}
-    onFocus={(e) => { e.currentTarget.style.borderColor = '#ff6b35'; e.currentTarget.style.boxShadow = '0 0 0 3px rgba(255,107,53,0.12)' }}
-    onBlur={(e) => { e.currentTarget.style.borderColor = 'rgba(255,107,53,0.25)'; e.currentTarget.style.boxShadow = 'none' }}
-    rows={2}
-    disabled={isLoading || !currentConversation}
-    />
-    <Button
-    onClick={sendMessage}
-    disabled={!message.trim() || isLoading || !currentConversation}
-    className="flex h-[56px] min-w-[56px] items-center justify-center rounded-2xl px-5 text-sm font-semibold text-white transition-all duration-200 hover:scale-105 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40 disabled:hover:scale-100 border-0"
-    style={{ background: 'linear-gradient(135deg, #ff6b35, #c43e0e)', boxShadow: '0 4px 14px rgba(255,107,53,0.4)' }}
-    size="icon"
-    >
-    <Send className="h-4.5 w-4.5" />
-      </Button>
-      </div>
-      <p className="mt-2.5 text-[10px] text-center font-medium" style={{ color: '#b09080' }}>
-      🍽️ Chatbot sẽ tự động chuyển bạn đến trang đặt món hoặc thanh toán
-  </p>
-  </div>
-  </>
-  )}
-  </div>
-  </div>
-)
+  )
 }

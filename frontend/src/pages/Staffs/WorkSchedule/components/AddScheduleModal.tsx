@@ -112,10 +112,11 @@ export function AddScheduleModal({ isOpen, onClose, selectedDate, staffId }: Pro
                 key={day.val}
                 type='button'
                 onClick={() => toggleDay(day.val)}
-                className={`h-10 w-10 rounded-lg border font-medium transition-all ${selectedDays.includes(day.val)
-                  ? 'border-orange-500 bg-orange-500 text-white'
-                  : 'bg-border-white text-black hover:border-orange-500'
-                  }`}
+                className={`h-10 w-10 rounded-lg border font-medium transition-all ${
+                  selectedDays.includes(day.val)
+                    ? 'border-orange-500 bg-orange-500 text-white'
+                    : 'bg-border-white text-black hover:border-orange-500'
+                }`}
               >
                 {day.label}
               </Button>
@@ -124,7 +125,7 @@ export function AddScheduleModal({ isOpen, onClose, selectedDate, staffId }: Pro
           {/* Input chọn ngày kết thúc */}
           <div>
             <label className='mb-1 block text-sm font-medium'>
-              Kết thúc <span className="text-gray-500 font-normal">(Mặc định 2 tháng nếu để trống)</span>
+              Kết thúc <span className='font-normal text-gray-500'>(Mặc định 2 tháng nếu để trống)</span>
             </label>
             <input type='date' className='w-full rounded-lg border p-2' onChange={(e) => setEndDate(e.target.value)} />
           </div>

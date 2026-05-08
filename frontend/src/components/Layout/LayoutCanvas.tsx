@@ -57,7 +57,7 @@ export default function LayoutCanvas({
   const minX = 0
   const minY = 0
   const VBWidth = 1200
-  const VBHeight = 1000 // Fixed height for standard layout 
+  const VBHeight = 1000 // Fixed height for standard layout
 
   const currentViewBoxStr = `${minX} ${minY} ${VBWidth} ${VBHeight}`
   const viewBoxStr = freezeViewBox ?? currentViewBoxStr
@@ -77,30 +77,26 @@ export default function LayoutCanvas({
   const clone = () => structuredClone(layout)
 
   const getTable = (l: FloorLayoutResponse, a: number, t: number) =>
-    l.areas.find(x => x.areaId === a)!.tables.find(x => x.id === t)!
+    l.areas.find((x) => x.areaId === a)!.tables.find((x) => x.id === t)!
 
-  const onMoveStart = (
-    e: React.PointerEvent,
-    areaId: number,
-    table: TableLayout
-  ) => {
+  const onMoveStart = (e: React.PointerEvent, areaId: number, table: TableLayout) => {
     // If we're in edit mode (Admin), always allow selecting/moving everything
     if (editable) {
-       setSelectedId(table.id)
-       onSelectTable?.(table)
-       setFreezeViewBox(currentViewBoxStr)
-       const pt = getSvgPoint(e)
-       dragRef.current = {
-         type: 'move',
-         areaId,
-         tableId: table.id,
-         startX: pt.x,
-         startY: pt.y,
-         ox: table.x,
-         oy: table.y
-       }
-       ;(e.target as Element).setPointerCapture(e.pointerId)
-       return;
+      setSelectedId(table.id)
+      onSelectTable?.(table)
+      setFreezeViewBox(currentViewBoxStr)
+      const pt = getSvgPoint(e)
+      dragRef.current = {
+        type: 'move',
+        areaId,
+        tableId: table.id,
+        startX: pt.x,
+        startY: pt.y,
+        ox: table.x,
+        oy: table.y
+      }
+      ;(e.target as Element).setPointerCapture(e.pointerId)
+      return
     }
 
     // --- RESERVATION MODE FILTERS ---
@@ -113,14 +109,9 @@ export default function LayoutCanvas({
     onSelectTable?.(table)
   }
 
-  const onResizeStart = (
-    e: React.PointerEvent,
-    areaId: number,
-    table: TableLayout,
-    dir: any
-  ) => {
-    if (!editable) return; // Only allow resize in edit mode
-    
+  const onResizeStart = (e: React.PointerEvent, areaId: number, table: TableLayout, dir: any) => {
+    if (!editable) return // Only allow resize in edit mode
+
     setFreezeViewBox(currentViewBoxStr)
     const pt = getSvgPoint(e)
     dragRef.current = {
@@ -149,7 +140,7 @@ export default function LayoutCanvas({
     } else {
       const dx = pt.x - d.startX
       const dy = pt.y - d.startY
-      
+
       t.width = Math.max(40, d.ow + dx)
       t.height = Math.max(40, d.oh + dy)
     }
@@ -160,8 +151,8 @@ export default function LayoutCanvas({
   const innerSvg = (
     <svg
       ref={svgRef}
-      width="100%"
-      height="100%"
+      width='100%'
+      height='100%'
       viewBox={viewBoxStr}
       style={{
         background: '#f7f7f7',
@@ -171,76 +162,81 @@ export default function LayoutCanvas({
         overflow: enableScroll ? 'visible' : 'hidden'
       }}
       onPointerMove={onMove}
-      onPointerUp={() => { dragRef.current = null; setFreezeViewBox(null); }}
-      onPointerLeave={() => { dragRef.current = null; setFreezeViewBox(null); }}
+      onPointerUp={() => {
+        dragRef.current = null
+        setFreezeViewBox(null)
+      }}
+      onPointerLeave={() => {
+        dragRef.current = null
+        setFreezeViewBox(null)
+      }}
     >
       {/* 1. Draw Areas Backgrounds & Labels (Hide if editing a specific Area) */}
-      {!activeAreaId && layout.areas.map(a => {
-        const x = a.x ?? 50
-        const y = a.y ?? 50
-        const w = a.width ?? 400
-        const h = a.height ?? 300
+      {!activeAreaId &&
+        layout.areas.map((a) => {
+          const x = a.x ?? 50
+          const y = a.y ?? 50
+          const w = a.width ?? 400
+          const h = a.height ?? 300
 
-        // Optional: Auto scale text size depending on Area width
-        const fontSize = Math.max(14, Math.min(24, w / 15))
+          // Optional: Auto scale text size depending on Area width
+          const fontSize = Math.max(14, Math.min(24, w / 15))
 
-        return (
-          <g key={`area-${a.areaId}`}>
-            <rect
-              x={x}
-              y={y}
-              width={w}
-              height={h}
-              rx={12}
-              fill="rgba(0,0,0,0.03)"
-              stroke="rgba(0,0,0,0.1)"
-              strokeWidth={2}
-              strokeDasharray="8 8"
-            />
-            <text
-              x={x + w / 2}
-              y={y + h / 2}
-              textAnchor="middle"
-              dominantBaseline="middle"
-              fontSize={fontSize}
-              fontWeight="bold"
-              fill="#888"
-              style={{ userSelect: 'none', pointerEvents: 'none' }}
-            >
-              Khu vực: {a.areaName}
-            </text>
-          </g>
-        )
-      })}
+          return (
+            <g key={`area-${a.areaId}`}>
+              <rect
+                x={x}
+                y={y}
+                width={w}
+                height={h}
+                rx={12}
+                fill='rgba(0,0,0,0.03)'
+                stroke='rgba(0,0,0,0.1)'
+                strokeWidth={2}
+                strokeDasharray='8 8'
+              />
+              <text
+                x={x + w / 2}
+                y={y + h / 2}
+                textAnchor='middle'
+                dominantBaseline='middle'
+                fontSize={fontSize}
+                fontWeight='bold'
+                fill='#888'
+                style={{ userSelect: 'none', pointerEvents: 'none' }}
+              >
+                Khu vực: {a.areaName}
+              </text>
+            </g>
+          )
+        })}
 
       {/* 2. Draw Tables on top */}
       {layout.areas
-        .filter(a => activeAreaId ? a.areaId === activeAreaId : true)
-        .map(a => (
-        <g key={`area-tables-${a.areaId}`} transform={`translate(${a.x ?? 50}, ${a.y ?? 50})`}>
-          {a.tables.map(t => (
-            <TableShape
-              key={t.id}
-              table={t}
-              editable={editable}
-              selected={selectedTableIds !== undefined ? selectedTableIds.includes(t.id) : t.id === selectedId}
-              onPointerDown={e => onMoveStart(e, a.areaId, t)}
-              onResizeStart={(e, dir) =>
-                onResizeStart(e, a.areaId, t, dir)
-              }
-              guests={guests}
-              isAvailableInTimeSlot={availableTableIds ? availableTableIds.has(t.id) : true}
-              isPaid={isPaid}
-            />
-          ))}
-        </g>
-      ))}
+        .filter((a) => (activeAreaId ? a.areaId === activeAreaId : true))
+        .map((a) => (
+          <g key={`area-tables-${a.areaId}`} transform={`translate(${a.x ?? 50}, ${a.y ?? 50})`}>
+            {a.tables.map((t) => (
+              <TableShape
+                key={t.id}
+                table={t}
+                editable={editable}
+                selected={selectedTableIds !== undefined ? selectedTableIds.includes(t.id) : t.id === selectedId}
+                onPointerDown={(e) => onMoveStart(e, a.areaId, t)}
+                onResizeStart={(e, dir) => onResizeStart(e, a.areaId, t, dir)}
+                guests={guests}
+                isAvailableInTimeSlot={availableTableIds ? availableTableIds.has(t.id) : true}
+                isPaid={isPaid}
+              />
+            ))}
+          </g>
+        ))}
     </svg>
   )
 
   if (enableScroll) {
     return (
-      <div className="w-full h-[600px] overflow-auto relative border border-slate-200 shadow-sm rounded-xl">
+      <div className='relative h-[600px] w-full overflow-auto rounded-xl border border-slate-200 shadow-sm'>
         <div style={{ width: physicalWidth, height: physicalHeight, position: 'relative', margin: '0 auto' }}>
           {innerSvg}
         </div>

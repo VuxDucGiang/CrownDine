@@ -6,10 +6,7 @@ type Props = {
   editable: boolean
   selected?: boolean
   onPointerDown: (e: React.PointerEvent) => void
-  onResizeStart?: (
-    e: React.PointerEvent,
-    dir: 'nw' | 'ne' | 'sw' | 'se'
-  ) => void
+  onResizeStart?: (e: React.PointerEvent, dir: 'nw' | 'ne' | 'sw' | 'se') => void
   guests?: number // Số khách để kiểm tra capacity
   isAvailableInTimeSlot?: boolean // Bàn có available trong khung giờ đã chọn không
   isPaid?: boolean // Nếu đã thanh toán, không cho chọn bàn mới
@@ -41,7 +38,7 @@ export default function TableShape({
 }: Props) {
   const statusKey = table.status as keyof typeof STATUS_STYLE
   const capacity = table.capacity || 2
-  
+
   // Xác định màu sắc dựa trên trạng thái và yêu cầu khách hàng
   let style: { fill: string; text: string } = STATUS_STYLE[statusKey] || STATUS_STYLE.AVAILABLE
   let seatColor: string = SEAT_COLOR[statusKey] || SEAT_COLOR.AVAILABLE
@@ -54,10 +51,10 @@ export default function TableShape({
   // Bàn AVAILABLE, OCCUPIED, hoặc RESERVED -> có thể tương tác
   if (statusKey === 'AVAILABLE' || statusKey === 'OCCUPIED' || statusKey === 'RESERVED') {
     // Trạng thái Unavailable do khung giờ / khách
-    let isUnavailable = false;
-    let isFull = false;
-    if (!isAvailableInTimeSlot) isUnavailable = true;
-    else if (guests !== undefined && capacity < guests) isFull = true;
+    let isUnavailable = false
+    let isFull = false
+    if (!isAvailableInTimeSlot) isUnavailable = true
+    else if (guests !== undefined && capacity < guests) isFull = true
 
     if (isUnavailable) {
       style = { fill: '#d9534f', text: '#fff' } // Đỏ
@@ -70,7 +67,7 @@ export default function TableShape({
       if (selected) {
         style = { fill: '#4caf50', text: '#fff' } // Xanh lá
         seatColor = '#2e7d32'
-        tableStroke = '#4caf50' 
+        tableStroke = '#4caf50'
         tableStrokeWidth = 4
         tableFilter = 'drop-shadow(0 0 8px rgba(76, 175, 80, 0.6))'
       } else {
@@ -112,10 +109,10 @@ export default function TableShape({
             <circle cx={sx} cy={sy} r={6} fill={seatColor} />
             <path
               d={`M ${sx - 8 * Math.sin(angle)},${sy + 8 * Math.cos(angle)} Q ${backX},${backY} ${sx + 8 * Math.sin(angle)},${sy - 8 * Math.cos(angle)}`}
-              fill="none"
+              fill='none'
               stroke={seatColor}
               strokeWidth={2.5}
-              strokeLinecap="round"
+              strokeLinecap='round'
             />
           </g>
         )
@@ -133,13 +130,7 @@ export default function TableShape({
           {/* Seat base */}
           <rect x={-12} y={-4} width={24} height={8} rx={3} fill={seatColor} />
           {/* Chair backrest */}
-          <path
-            d="M -14,-7 Q 0,-10 14,-7"
-            fill="none"
-            stroke={seatColor}
-            strokeWidth={3}
-            strokeLinecap="round"
-          />
+          <path d='M -14,-7 Q 0,-10 14,-7' fill='none' stroke={seatColor} strokeWidth={3} strokeLinecap='round' />
         </g>
       )
     }
@@ -167,20 +158,20 @@ export default function TableShape({
         y={y}
         width={8}
         height={8}
-        fill="#ff9800"
+        fill='#ff9800'
         cursor={`${dir}-resize`}
-        onPointerDown={e => onResizeStart?.(e, dir)}
+        onPointerDown={(e) => onResizeStart?.(e, dir)}
       />
     ) : null
 
   // Xác định bàn có thể chọn được không
   const isSelectable = isPaid
     ? selected
-    : (statusKey === 'AVAILABLE' || statusKey === 'OCCUPIED' || statusKey === 'RESERVED')
-      ? (isAvailableInTimeSlot && (guests === undefined || capacity >= guests))
+    : statusKey === 'AVAILABLE' || statusKey === 'OCCUPIED' || statusKey === 'RESERVED'
+      ? isAvailableInTimeSlot && (guests === undefined || capacity >= guests)
       : false
   const isDisabled = !isSelectable
-  
+
   const minDim = Math.min(width, height)
   const scaleFactor = Math.max(1, minDim / 60)
 
@@ -188,15 +179,15 @@ export default function TableShape({
   const capacityFontSize = Math.max(12, Math.round(12 * scaleFactor))
 
   const centerY = isCircle ? r : height / 2
-  const nameY = centerY - (nameFontSize * 0.5)
-  const capacityY = centerY + (capacityFontSize * 1.0)
+  const nameY = centerY - nameFontSize * 0.5
+  const capacityY = centerY + capacityFontSize * 1.0
 
   return (
     <g
-      transform={`translate(${table.x}, ${table.y}) rotate(${table.rotation || 0}, ${width/2}, ${height/2})`}
+      transform={`translate(${table.x}, ${table.y}) rotate(${table.rotation || 0}, ${width / 2}, ${height / 2})`}
       onPointerDown={isDisabled ? undefined : onPointerDown}
-      style={{ 
-        cursor: isDisabled ? 'not-allowed' : (editable ? 'move' : 'pointer'),
+      style={{
+        cursor: isDisabled ? 'not-allowed' : editable ? 'move' : 'pointer',
         opacity: isDisabled ? 0.6 : 1,
         pointerEvents: isDisabled ? 'none' : 'auto'
       }}
@@ -208,15 +199,7 @@ export default function TableShape({
       {isCircle ? (
         <>
           {selected && (
-            <circle
-              cx={r}
-              cy={r}
-              r={r + 4}
-              fill="none"
-              stroke={tableStroke}
-              strokeWidth={4}
-              opacity={0.5}
-            />
+            <circle cx={r} cy={r} r={r + 4} fill='none' stroke={tableStroke} strokeWidth={4} opacity={0.5} />
           )}
           <circle
             cx={r}
@@ -237,7 +220,7 @@ export default function TableShape({
               width={width + 8}
               height={height + 8}
               rx={18}
-              fill="none"
+              fill='none'
               stroke={tableStroke}
               strokeWidth={4}
               opacity={0.5}
@@ -259,18 +242,18 @@ export default function TableShape({
       <text
         x={isCircle ? r : width / 2}
         y={nameY}
-        textAnchor="middle"
+        textAnchor='middle'
         fontSize={nameFontSize}
         fontWeight={600}
         fill={style.text}
       >
         {table.name}
       </text>
-      
+
       <text
         x={isCircle ? r : width / 2}
         y={capacityY}
-        textAnchor="middle"
+        textAnchor='middle'
         fontSize={capacityFontSize}
         fontWeight={500}
         fill={style.text}

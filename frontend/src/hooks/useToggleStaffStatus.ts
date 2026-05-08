@@ -8,7 +8,7 @@ export const useToggleStaffStatus = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: ({ id, status }: { id: string; status: EStatus }) => 
+    mutationFn: ({ id, status }: { id: string; status: EStatus }) =>
       http.patch<ApiResponse<any>>(`/admin/staff/${id}/status`, null, { params: { status } }),
     onSuccess: (res, variables) => {
       queryClient.invalidateQueries({ queryKey: ['staffs'] })

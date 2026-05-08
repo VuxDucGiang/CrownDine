@@ -1,12 +1,6 @@
 import { ATTENDANCE_STATUS_COLORS, ATTENDANCE_STATUS_LABELS, type EAttendanceStatus } from '@/types/attendance.type'
 
-const STATUS_ORDER: EAttendanceStatus[] = [
-  'ON_TIME',
-  'LATE_EARLY',
-  'MISSING_PUNCH',
-  'NOT_PUNCHED',
-  'ABSENT_OFF'
-]
+const STATUS_ORDER: EAttendanceStatus[] = ['ON_TIME', 'LATE_EARLY', 'MISSING_PUNCH', 'NOT_PUNCHED', 'ABSENT_OFF']
 
 export function AttendanceLegend() {
   return (
@@ -14,7 +8,7 @@ export function AttendanceLegend() {
       {STATUS_ORDER.map((status) => (
         <div
           key={status}
-          className='inline-flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm shadow-xs'
+          className='border-border bg-card inline-flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm shadow-xs'
         >
           <span
             className='h-2.5 w-2.5 shrink-0 rounded-full'

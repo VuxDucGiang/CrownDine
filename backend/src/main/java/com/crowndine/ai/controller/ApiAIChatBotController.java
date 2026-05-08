@@ -5,6 +5,7 @@ import com.crowndine.ai.service.AIAdminChatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.http.MediaType;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -20,6 +21,7 @@ import java.security.Principal;
 @RequiredArgsConstructor
 @RequestMapping("/api/ai")
 @Slf4j(topic = "API-AI-CHAT-BOT-CONTROLLER")
+@ConditionalOnProperty(prefix = "app.ai", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class ApiAIChatBotController {
 
     private final AIAdminChatService aiAdminChatService;

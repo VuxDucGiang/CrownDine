@@ -92,8 +92,8 @@ const Reviews = () => {
 
       {/* Reviews Marquee */}
       {isPending ? (
-        <div className='text-center py-10'>
-          <p className='text-muted-foreground italic animate-pulse'>Đang tải đánh giá...</p>
+        <div className='py-10 text-center'>
+          <p className='text-muted-foreground animate-pulse italic'>Đang tải đánh giá...</p>
         </div>
       ) : reviews.length > 0 ? (
         <div className='space-y-10'>
@@ -120,7 +120,7 @@ const Reviews = () => {
           </div>
         </div>
       ) : (
-        <div className='text-center py-10'>
+        <div className='py-10 text-center'>
           <p className='text-muted-foreground'>Chưa có đánh giá nào.</p>
         </div>
       )}

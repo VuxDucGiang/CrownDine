@@ -42,7 +42,7 @@ export function CreateShiftModal({ onClose, onSaved }: CreateShiftModalProps) {
 
   return (
     <div
-      className='fixed inset-0 z-50 flex items-center justify-center bg-background/80 p-4 backdrop-blur-sm'
+      className='bg-background/80 fixed inset-0 z-50 flex items-center justify-center p-4 backdrop-blur-sm'
       onClick={onClose}
       onKeyDown={(e) => e.key === 'Escape' && onClose()}
       role='dialog'
@@ -56,7 +56,7 @@ export function CreateShiftModal({ onClose, onSaved }: CreateShiftModalProps) {
         onClick={(e) => e.stopPropagation()}
       >
         <div className='border-border flex items-center justify-between border-b p-5'>
-          <h2 className='text-lg font-bold text-foreground'>Thêm Ca Làm Việc</h2>
+          <h2 className='text-foreground text-lg font-bold'>Thêm Ca Làm Việc</h2>
           <button
             type='button'
             onClick={onClose}
@@ -66,31 +66,19 @@ export function CreateShiftModal({ onClose, onSaved }: CreateShiftModalProps) {
           </button>
         </div>
 
-        <div className='p-6 space-y-4'>
+        <div className='space-y-4 p-6'>
           <div>
             <Label className='mb-1.5 block'>Tên ca làm việc</Label>
-            <Input
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder='VD: Ca sáng, Ca tối...'
-            />
+            <Input value={name} onChange={(e) => setName(e.target.value)} placeholder='VD: Ca sáng, Ca tối...' />
           </div>
           <div className='grid grid-cols-2 gap-4'>
             <div>
               <Label className='mb-1.5 block'>Giờ bắt đầu</Label>
-              <Input
-                type='time'
-                value={startTime}
-                onChange={(e) => setStartTime(e.target.value)}
-              />
+              <Input type='time' value={startTime} onChange={(e) => setStartTime(e.target.value)} />
             </div>
             <div>
               <Label className='mb-1.5 block'>Giờ kết thúc</Label>
-              <Input
-                type='time'
-                value={endTime}
-                onChange={(e) => setEndTime(e.target.value)}
-              />
+              <Input type='time' value={endTime} onChange={(e) => setEndTime(e.target.value)} />
             </div>
           </div>
         </div>

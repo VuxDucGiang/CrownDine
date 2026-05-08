@@ -1,4 +1,11 @@
-import { EGender, type User, type Reservation, type Order, type RestaurantTable, type OrderItem } from '@/types/profile.type'
+import {
+  EGender,
+  type User,
+  type Reservation,
+  type Order,
+  type RestaurantTable,
+  type OrderItem
+} from '@/types/profile.type'
 
 // Mock current user
 export const mockCurrentUser: User = {

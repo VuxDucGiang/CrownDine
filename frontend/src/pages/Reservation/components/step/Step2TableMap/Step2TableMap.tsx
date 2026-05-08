@@ -107,7 +107,8 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
     }
 
     // Không cho xem chi tiết bàn đã được đặt (trừ bàn đang chọn)
-    const isInteractive = tableLayout.status === 'AVAILABLE' || tableLayout.status === 'OCCUPIED' || tableLayout.status === 'RESERVED'
+    const isInteractive =
+      tableLayout.status === 'AVAILABLE' || tableLayout.status === 'OCCUPIED' || tableLayout.status === 'RESERVED'
     if (isInteractive && !availableTableIds.has(tableLayout.id) && selectedTable?.id !== tableLayout.id.toString()) {
       return
     }
@@ -118,7 +119,8 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
   // Xác nhận chọn bàn từ ngăn kéo
   const handleConfirmSelect = (tableLayout: TableLayout) => {
     // Không cho chọn bàn nếu capacity < guests
-    const isInteractive = tableLayout.status === 'AVAILABLE' || tableLayout.status === 'OCCUPIED' || tableLayout.status === 'RESERVED'
+    const isInteractive =
+      tableLayout.status === 'AVAILABLE' || tableLayout.status === 'OCCUPIED' || tableLayout.status === 'RESERVED'
     if (isInteractive) {
       const capacity = tableLayout.capacity || 2
       if (capacity < guests) {
@@ -132,7 +134,9 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
       capacity: tableLayout.capacity || 2,
       status: tableLayout.status as 'AVAILABLE' | 'OCCUPIED' | 'RESERVED',
       type: 'STANDARD',
-      areaName: tableLayout.areaName || activeLayout?.areas.find((a) => a.tables.some((t) => t.id === tableLayout.id))?.areaName,
+      areaName:
+        tableLayout.areaName ||
+        activeLayout?.areas.find((a) => a.tables.some((t) => t.id === tableLayout.id))?.areaName,
       floorName: tableLayout.floorName || activeFloor?.name
     }
 
@@ -344,7 +348,7 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
         <div className='absolute right-0 bottom-6 left-0 flex justify-center px-4'>
           <div className='inline-flex flex-wrap items-center justify-center gap-3 rounded-full border-2 border-gray-200/80 bg-white/90 px-5 py-2.5 shadow-lg backdrop-blur-md md:gap-4 md:px-6'>
             <div className='flex items-center gap-2'>
-              <div className='h-3.5 w-3.5 rounded-xs bg-white border border-gray-300 shadow-sm'></div>
+              <div className='h-3.5 w-3.5 rounded-xs border border-gray-300 bg-white shadow-sm'></div>
               <span className='text-xs font-semibold text-gray-700'>Bàn khả dụng</span>
             </div>
             <div className='hidden h-4 w-px bg-gray-300 sm:block'></div>

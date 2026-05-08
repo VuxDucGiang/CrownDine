@@ -42,18 +42,13 @@ export function ScheduleByShiftTable({ data, onCellClick }: ScheduleByShiftTable
   })
 
   return (
-    <div className='overflow-x-auto rounded-xl border border-border bg-card shadow-sm'>
+    <div className='border-border bg-card overflow-x-auto rounded-xl border shadow-sm'>
       <table className='w-full min-w-[700px] border-collapse text-sm'>
         <thead>
-          <tr className='border-b border-border bg-muted/30'>
-            <th className='border-r border-border px-4 py-3 text-left font-medium text-foreground'>
-              Ca làm việc
-            </th>
+          <tr className='border-border bg-muted/30 border-b'>
+            <th className='border-border text-foreground border-r px-4 py-3 text-left font-medium'>Ca làm việc</th>
             {dayLabels.map((d) => (
-              <th
-                key={d.date}
-                className='border-r border-border px-3 py-3 text-center font-medium last:border-r-0'
-              >
+              <th key={d.date} className='border-border border-r px-3 py-3 text-center font-medium last:border-r-0'>
                 <div>{d.dayOfWeek}</div>
                 <div className='text-muted-foreground text-xs'>{d.dateShort}</div>
               </th>
@@ -62,21 +57,16 @@ export function ScheduleByShiftTable({ data, onCellClick }: ScheduleByShiftTable
         </thead>
         <tbody>
           {shifts.map((shift) => (
-            <tr key={shift.id} className='border-b border-border last:border-b-0'>
-              <td className='border-r border-border bg-muted/20 px-4 py-3'>
+            <tr key={shift.id} className='border-border border-b last:border-b-0'>
+              <td className='border-border bg-muted/20 border-r px-4 py-3'>
                 <div className='font-medium'>{shift.name}</div>
-                <div className='text-muted-foreground text-xs'>
-                  {formatShiftTime(shift.startTime, shift.endTime)}
-                </div>
+                <div className='text-muted-foreground text-xs'>{formatShiftTime(shift.startTime, shift.endTime)}</div>
               </td>
               {dayLabels.map((d) => {
                 const cell = cellMap.get(`${shift.id}-${d.date}`)
                 const employees: AttendanceScheduleEmployeeResponse[] = cell?.employees ?? []
                 return (
-                  <td
-                    key={d.date}
-                    className='border-r border-border px-2 py-2 align-top last:border-r-0'
-                  >
+                  <td key={d.date} className='border-border border-r px-2 py-2 align-top last:border-r-0'>
                     {employees.length === 0 ? (
                       <span className='text-muted-foreground'>-</span>
                     ) : (
@@ -86,11 +76,9 @@ export function ScheduleByShiftTable({ data, onCellClick }: ScheduleByShiftTable
                             key={emp.userId}
                             className={cn(
                               'flex items-center gap-2 rounded-md px-2 py-1',
-                              onCellClick && 'cursor-pointer hover:bg-muted/50'
+                              onCellClick && 'hover:bg-muted/50 cursor-pointer'
                             )}
-                            onClick={() =>
-                              onCellClick?.(emp.userId, shift.id, d.date)
-                            }
+                            onClick={() => onCellClick?.(emp.userId, shift.id, d.date)}
                           >
                             <span
                               className='h-2.5 w-2.5 shrink-0 rounded-full'

@@ -17,12 +17,12 @@ interface ProfileInfoProps {
 const profile_info = ({ user, onSave }: ProfileInfoProps) => {
   const [isEditing, setIsEditing] = useState(false)
   const formatBackendDate = (dateStr?: string) => {
-    if (!dateStr) return '';
+    if (!dateStr) return ''
     if (dateStr.includes('/')) {
-      const [day, month, year] = dateStr.split('/');
-      return `${year}-${month}-${day}`;
+      const [day, month, year] = dateStr.split('/')
+      return `${year}-${month}-${day}`
     }
-    return dateStr;
+    return dateStr
   }
 
   const [formData, setFormData] = useState({
@@ -181,7 +181,11 @@ const profile_info = ({ user, onSave }: ProfileInfoProps) => {
       {/* Action Buttons */}
       {isEditing && (
         <div className='flex gap-4'>
-          <Button onClick={handleSave} disabled={updateProfileMutation.isPending} className='bg-primary hover:bg-primary/90 flex-1 text-white'>
+          <Button
+            onClick={handleSave}
+            disabled={updateProfileMutation.isPending}
+            className='bg-primary hover:bg-primary/90 flex-1 text-white'
+          >
             {updateProfileMutation.isPending ? 'Đang lưu...' : 'Lưu Thay Đổi'}
           </Button>
           <Button

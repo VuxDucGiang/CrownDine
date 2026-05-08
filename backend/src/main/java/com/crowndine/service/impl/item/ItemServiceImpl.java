@@ -11,8 +11,12 @@ import com.crowndine.repository.CategoryRepository;
 import com.crowndine.repository.ItemRepository;
 import com.crowndine.repository.FeedbackRepository;
 import com.crowndine.service.item.ItemService;
+import com.github.slugify.Slugify;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.Caching;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -23,19 +27,27 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
 @RequiredArgsConstructor
 @Slf4j(topic = "ITEM-SERVICE")
 public class ItemServiceImpl implements ItemService {
+    private static final String ITEMS_CACHE = "items";
+    private static final String ITEM_BY_ID_CACHE = "item-by-id";
+    private static final String ITEM_BY_NAME_CACHE = "item-by-name";
+    private static final String ITEM_BY_SLUG_CACHE = "item-by-slug";
+
     private final ItemRepository itemRepository;
     private final CategoryRepository categoryRepository;
     private final FeedbackRepository feedbackRepository;
+    private final Slugify slugify = Slugify.builder().build();
 
     @Override
+    @Cacheable(ITEMS_CACHE)
     public List<ItemResponse> getAlItems() {
-        return itemRepository.findAll().stream().map(this::mapToResponse).toList();
+        return itemRepository.findAll().stream().map(this::mapToResponse).collect(Collectors.toList());
     }
 
     private ItemResponse mapToResponse(Item item) {
@@ -44,6 +56,7 @@ public class ItemServiceImpl implements ItemService {
         return ItemResponse.builder()
                 .id(item.getId())
                 .name(item.getName())
+                .slug(item.getSlug())
                 .description(item.getDescription())
                 .imageUrl(item.getImageUrl())
                 .price(item.getPrice())
@@ -56,6 +69,7 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Cacheable(value = ITEM_BY_ID_CACHE, key = "#id")
     public ItemResponse getItemById(Long id) {
         Item item = getItemByIdOrThrow(id);
         return mapToResponse(item);
@@ -67,8 +81,17 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
+    @Cacheable(value = ITEM_BY_NAME_CACHE, key = "#name")
     public ItemResponse getItemByName(String name) {
         Item item = getItemByNameOrThrow(name);
+        return mapToResponse(item);
+    }
+
+    @Override
+    @Cacheable(value = ITEM_BY_SLUG_CACHE, key = "#slug")
+    public ItemResponse getItemBySlug(String slug) {
+        Item item = itemRepository.findBySlug(slug)
+                .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy item với slug: " + slug));
         return mapToResponse(item);
     }
 
@@ -78,6 +101,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = ITEMS_CACHE, allEntries = true),
+            @CacheEvict(value = ITEM_BY_ID_CACHE, allEntries = true),
+            @CacheEvict(value = ITEM_BY_NAME_CACHE, allEntries = true),
+            @CacheEvict(value = ITEM_BY_SLUG_CACHE, allEntries = true)
+    })
     public ItemResponse createItem(ItemRequest itemRequest) {
         Category category = categoryRepository.findById(itemRequest.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy category với id: " + itemRequest.getCategoryId()));
@@ -85,6 +114,7 @@ public class ItemServiceImpl implements ItemService {
         Item item = new Item();
 
         item.setName(itemRequest.getName());
+        item.setSlug(slugify.slugify(itemRequest.getName()));
         item.setDescription(itemRequest.getDescription());
         item.setImageUrl(itemRequest.getImageUrl());
         item.setPrice(itemRequest.getPrice());
@@ -101,6 +131,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = ITEMS_CACHE, allEntries = true),
+            @CacheEvict(value = ITEM_BY_ID_CACHE, allEntries = true),
+            @CacheEvict(value = ITEM_BY_NAME_CACHE, allEntries = true),
+            @CacheEvict(value = ITEM_BY_SLUG_CACHE, allEntries = true)
+    })
     public ItemResponse updateItem(Long id, ItemRequest itemRequest) {
         Item item = getItemByIdOrThrow(id);
 
@@ -108,6 +144,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new ResourceNotFoundException("Không tìm thấy category với id: " + itemRequest.getCategoryId()));
 
         item.setName(itemRequest.getName());
+        item.setSlug(slugify.slugify(itemRequest.getName()));
         item.setDescription(itemRequest.getDescription());
         item.setImageUrl(itemRequest.getImageUrl());
         item.setPrice(itemRequest.getPrice());
@@ -120,6 +157,12 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     @Transactional
+    @Caching(evict = {
+            @CacheEvict(value = ITEMS_CACHE, allEntries = true),
+            @CacheEvict(value = ITEM_BY_ID_CACHE, allEntries = true),
+            @CacheEvict(value = ITEM_BY_NAME_CACHE, allEntries = true),
+            @CacheEvict(value = ITEM_BY_SLUG_CACHE, allEntries = true)
+    })
     public void deleteItem(Long id) {
         Item item = getItemByIdOrThrow(id);
         item.setStatus(EItemStatus.UNAVAILABLE);
@@ -142,7 +185,7 @@ public class ItemServiceImpl implements ItemService {
 
         Page<Item> itemPage = itemRepository.findAll(spec, pageable);
 
-        List<ItemResponse> response = itemPage.stream().map(this::mapToResponse).toList();
+        List<ItemResponse> response = itemPage.stream().map(this::mapToResponse).collect(Collectors.toList());
 
         return PageResponse.<ItemResponse>builder()
                 .page(pageNumber + 1)
@@ -153,6 +196,4 @@ public class ItemServiceImpl implements ItemService {
                 .build();
     }
 
-
 }
-

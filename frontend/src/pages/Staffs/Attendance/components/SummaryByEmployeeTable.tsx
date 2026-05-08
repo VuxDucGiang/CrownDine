@@ -7,7 +7,7 @@ interface SummaryByEmployeeTableProps {
 function EmployeeRow({ emp }: { emp: EmployeeAttendanceSummaryResponse }) {
   if (emp.noData) {
     return (
-      <tr className='border-b border-border bg-muted/10'>
+      <tr className='border-border bg-muted/10 border-b'>
         <td className='px-4 py-3 font-medium'>
           {emp.fullName} ({emp.staffCode})
         </td>
@@ -19,23 +19,19 @@ function EmployeeRow({ emp }: { emp: EmployeeAttendanceSummaryResponse }) {
   }
 
   return (
-    <tr className='border-b border-border hover:bg-muted/20'>
+    <tr className='border-border hover:bg-muted/20 border-b'>
       <td className='px-4 py-3 font-medium'>
         {emp.fullName} ({emp.staffCode})
       </td>
-      <td className='px-4 py-3 text-muted-foreground'>
+      <td className='text-muted-foreground px-4 py-3'>
         {emp.workShiftCount} ca, {emp.workHoursTotal}
       </td>
-      <td className='px-4 py-3 text-muted-foreground'>
-        {emp.leaveShiftCount > 0 ? `${emp.leaveShiftCount} ca` : '-'}
-      </td>
-      <td className='px-4 py-3 text-muted-foreground'>
+      <td className='text-muted-foreground px-4 py-3'>{emp.leaveShiftCount > 0 ? `${emp.leaveShiftCount} ca` : '-'}</td>
+      <td className='text-muted-foreground px-4 py-3'>
         {emp.lateCount > 0 ? `${emp.lateCount} lần, ${emp.lateDuration}` : '-'}
       </td>
-      <td className='px-4 py-3 text-muted-foreground'>
-        {emp.earlyLeaveCount > 0
-          ? `${emp.earlyLeaveCount} lần, ${emp.earlyLeaveDuration}`
-          : '-'}
+      <td className='text-muted-foreground px-4 py-3'>
+        {emp.earlyLeaveCount > 0 ? `${emp.earlyLeaveCount} lần, ${emp.earlyLeaveDuration}` : '-'}
       </td>
     </tr>
   )
@@ -43,26 +39,15 @@ function EmployeeRow({ emp }: { emp: EmployeeAttendanceSummaryResponse }) {
 
 export function SummaryByEmployeeTable({ data }: SummaryByEmployeeTableProps) {
   return (
-    <div className='overflow-x-auto rounded-xl border border-border bg-card shadow-sm'>
+    <div className='border-border bg-card overflow-x-auto rounded-xl border shadow-sm'>
       <table className='w-full min-w-[600px] border-collapse text-sm'>
         <thead>
-          <tr className='border-b border-border bg-muted/30'>
-            <th className='border-r border-border px-4 py-3 text-left font-medium text-foreground'>
-              Nhân viên
-            </th>
-            <th className='border-r border-border px-4 py-3 text-left font-medium'>
-              Đi làm
-            </th>
-            <th className='border-r border-border px-4 py-3 text-left font-medium'>
-              Nghỉ làm
-            </th>
-            <th className='border-r border-border px-4 py-3 text-left font-medium'>
-              Đi muộn
-            </th>
-            <th className='border-r border-border px-4 py-3 text-left font-medium'>
-              Về sớm
-            </th>
-
+          <tr className='border-border bg-muted/30 border-b'>
+            <th className='border-border text-foreground border-r px-4 py-3 text-left font-medium'>Nhân viên</th>
+            <th className='border-border border-r px-4 py-3 text-left font-medium'>Đi làm</th>
+            <th className='border-border border-r px-4 py-3 text-left font-medium'>Nghỉ làm</th>
+            <th className='border-border border-r px-4 py-3 text-left font-medium'>Đi muộn</th>
+            <th className='border-border border-r px-4 py-3 text-left font-medium'>Về sớm</th>
           </tr>
         </thead>
         <tbody>

@@ -35,7 +35,7 @@ function DetailStatusBadge({ status }: { status: OrderDetailStatus }) {
   switch (status) {
     case 'PENDING':
       return (
-        <span className='inline-flex items-center rounded-md bg-yellow-100 px-2.5 py-1 text-xs font-bold text-yellow-800 ring-1 ring-inset ring-yellow-300'>
+        <span className='inline-flex items-center rounded-md bg-yellow-100 px-2.5 py-1 text-xs font-bold text-yellow-800 ring-1 ring-yellow-300 ring-inset'>
           CHỜ
         </span>
       )
@@ -53,7 +53,7 @@ function DetailStatusBadge({ status }: { status: OrderDetailStatus }) {
       )
     case 'CANCELLED':
       return (
-        <span className='inline-flex items-center rounded-md bg-red-100 px-2.5 py-1 text-xs font-bold text-red-700 ring-1 ring-inset ring-red-300'>
+        <span className='inline-flex items-center rounded-md bg-red-100 px-2.5 py-1 text-xs font-bold text-red-700 ring-1 ring-red-300 ring-inset'>
           HỦY
         </span>
       )
@@ -355,9 +355,7 @@ const KitchenDisplay = () => {
                                 {detail.quantity}x {name}
                               </p>
                               {detail.note && (
-                                <p className='text-muted-foreground mt-1 text-xs italic'>
-                                  Ghi chú: {detail.note}
-                                </p>
+                                <p className='text-muted-foreground mt-1 text-xs italic'>Ghi chú: {detail.note}</p>
                               )}
                             </div>
                             <DetailStatusBadge status={detail.status} />
@@ -402,8 +400,8 @@ const KitchenDisplay = () => {
 
                 {/* All-served indicator */}
                 {allServed && batch.items.length > 0 && (
-                  <div className='bg-green-50/50 flex items-center justify-center gap-2 border-t border-green-100 p-3'>
-                    <span className='text-xs font-black text-green-600 uppercase tracking-widest'>Tất cả đã xong</span>
+                  <div className='flex items-center justify-center gap-2 border-t border-green-100 bg-green-50/50 p-3'>
+                    <span className='text-xs font-black tracking-widest text-green-600 uppercase'>Tất cả đã xong</span>
                   </div>
                 )}
               </div>

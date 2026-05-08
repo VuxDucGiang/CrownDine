@@ -9,6 +9,7 @@ import com.crowndine.service.chat.ChatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -18,6 +19,7 @@ import java.util.List;
 @RequiredArgsConstructor
 @RequestMapping("/api/chat")
 @Slf4j(topic = "API-CHAT-CONTROLLER")
+@ConditionalOnProperty(prefix = "app.ai", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class ApiChatController {
 
     private final ChatService chatService;

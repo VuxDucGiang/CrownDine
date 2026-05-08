@@ -83,7 +83,13 @@ public class GlobalExceptionHandler {
 
     @ResponseStatus(CONFLICT)
     @ExceptionHandler(InvalidDataException.class)
-    public ErrorResponse handleDuplicateKeyException(InvalidDataException e, WebRequest request) {
+    public ErrorResponse handleInvalidDataConflictException(InvalidDataException e, WebRequest request) {
+        return buildErrorResponse(CONFLICT, request, CONFLICT.getReasonPhrase(), messageService.resolveMessageOrKey(e.getMessage()));
+    }
+
+    @ResponseStatus(CONFLICT)
+    @ExceptionHandler(ReservationConflictException.class)
+    public ErrorResponse handleReservationConflictException(ReservationConflictException e, WebRequest request) {
         return buildErrorResponse(CONFLICT, request, CONFLICT.getReasonPhrase(), messageService.resolveMessageOrKey(e.getMessage()));
     }
 

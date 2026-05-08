@@ -63,9 +63,7 @@ export default function Chat() {
       if (response.data.data) {
         setCurrentConversation(response.data.data)
         // Update in conversations list too
-        setConversations((prev) =>
-          prev.map((conv) => (conv.id === conversationId ? response.data.data! : conv))
-        )
+        setConversations((prev) => prev.map((conv) => (conv.id === conversationId ? response.data.data! : conv)))
       }
     } catch (error) {
       console.error('Failed to load conversation:', error)
@@ -156,157 +154,152 @@ export default function Chat() {
   }
 
   return (
-    <div className="flex h-[calc(100vh-80px)] bg-gray-50">
+    <div className='flex h-[calc(100vh-80px)] bg-gray-50'>
       {/* Sidebar - Conversations List */}
-      <div className="w-80 bg-white border-r border-gray-200 flex flex-col">
-  <div className="p-4 border-b border-gray-200">
-  <div className="flex items-center justify-between mb-4">
-  <h2 className="text-xl font-bold text-gray-800">Trò chuyện</h2>
-  <Button
-  onClick={createConversation}
-  disabled={isCreatingConversation}
-  size="sm"
-  className="bg-blue-600 hover:bg-blue-700"
-  >
-  <Plus className="w-4 h-4 mr-1" />
-    Mới
-    </Button>
-    </div>
-    </div>
-
-    <div className="flex-1 overflow-y-auto">
-    {conversations.length === 0 ? (
-        <div className="p-4 text-center text-gray-500">
-        <MessageSquare className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-          <p>Chưa có cuộc trò chuyện nào</p>
-        <p className="text-sm mt-1">Tạo cuộc trò chuyện mới để bắt đầu</p>
-    </div>
-) : (
-    conversations.map((conv) => (
-      <div
-        key={conv.id}
-  onClick={() => loadConversation(conv.id)}
-  className={`p-4 border-b border-gray-100 cursor-pointer hover:bg-gray-50 transition-colors ${
-    currentConversation?.id === conv.id ? 'bg-blue-50 border-l-4 border-l-blue-600' : ''
-  }`}
->
-  <div className="flex items-start justify-between">
-  <div className="flex-1 min-w-0">
-  <h3 className="font-semibold text-gray-800 truncate">{conv.title}</h3>
-    <p className="text-sm text-gray-500 mt-1">
-    {conv.messages.length > 0
-        ? conv.messages[conv.messages.length - 1].content.substring(0, 50) + '...'
-        : 'Chưa có tin nhắn'}
-    </p>
-    <p className="text-xs text-gray-400 mt-1">
-    {new Date(conv.updatedAt).toLocaleDateString('vi-VN')}
-    </p>
-    </div>
-    <button
-  onClick={(e) => {
-    e.stopPropagation()
-    deleteConversation(conv.id)
-  }}
-  className="ml-2 p-1 text-gray-400 hover:text-red-600 transition-colors"
-  >
-  <Trash2 className="w-4 h-4" />
-    </button>
-    </div>
-    </div>
-))
-)}
-  </div>
-  </div>
-
-  {/* Main Chat Area */}
-  <div className="flex-1 flex flex-col">
-    {currentConversation ? (
-        <>
-          {/* Chat Header */}
-        <div className="bg-white border-b border-gray-200 p-4">
-      <h3 className="text-lg font-semibold text-gray-800">{currentConversation.title}</h3>
+      <div className='flex w-80 flex-col border-r border-gray-200 bg-white'>
+        <div className='border-b border-gray-200 p-4'>
+          <div className='mb-4 flex items-center justify-between'>
+            <h2 className='text-xl font-bold text-gray-800'>Trò chuyện</h2>
+            <Button
+              onClick={createConversation}
+              disabled={isCreatingConversation}
+              size='sm'
+              className='bg-blue-600 hover:bg-blue-700'
+            >
+              <Plus className='mr-1 h-4 w-4' />
+              Mới
+            </Button>
+          </div>
         </div>
 
-  {/* Messages */}
-  <div className="flex-1 overflow-y-auto p-4 space-y-4">
-  {currentConversation.messages
-      .filter((msg) => msg.role !== 'system')
-      .map((msg) => (
-        <div
-          key={msg.id}
-    className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}
-  >
-  <div
-    className={`max-w-[70%] rounded-lg p-3 ${
-    msg.role === 'user'
-      ? 'bg-blue-600 text-white'
-      : 'bg-white border border-gray-200 text-gray-800'
-  }`}
->
-  <p className="whitespace-pre-wrap break-words">{msg.content}</p>
-    <p
-  className={`text-xs mt-1 ${
-    msg.role === 'user' ? 'text-blue-100' : 'text-gray-400'
-  }`}
->
-  {new Date(msg.createdAt).toLocaleTimeString('vi-VN', {
-    hour: '2-digit',
-    minute: '2-digit'
-  })}
-  </p>
-  </div>
-  </div>
-))}
-  {isLoading && (
-    <div className="flex justify-start">
-    <div className="bg-white border border-gray-200 rounded-lg p-3">
-    <div className="flex space-x-1">
-    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" />
-    <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }} />
-  <div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }} />
-  </div>
-  </div>
-  </div>
-  )}
-  <div ref={messagesEndRef} />
-  </div>
+        <div className='flex-1 overflow-y-auto'>
+          {conversations.length === 0 ? (
+            <div className='p-4 text-center text-gray-500'>
+              <MessageSquare className='mx-auto mb-2 h-12 w-12 text-gray-300' />
+              <p>Chưa có cuộc trò chuyện nào</p>
+              <p className='mt-1 text-sm'>Tạo cuộc trò chuyện mới để bắt đầu</p>
+            </div>
+          ) : (
+            conversations.map((conv) => (
+              <div
+                key={conv.id}
+                onClick={() => loadConversation(conv.id)}
+                className={`cursor-pointer border-b border-gray-100 p-4 transition-colors hover:bg-gray-50 ${
+                  currentConversation?.id === conv.id ? 'border-l-4 border-l-blue-600 bg-blue-50' : ''
+                }`}
+              >
+                <div className='flex items-start justify-between'>
+                  <div className='min-w-0 flex-1'>
+                    <h3 className='truncate font-semibold text-gray-800'>{conv.title}</h3>
+                    <p className='mt-1 text-sm text-gray-500'>
+                      {conv.messages.length > 0
+                        ? conv.messages[conv.messages.length - 1].content.substring(0, 50) + '...'
+                        : 'Chưa có tin nhắn'}
+                    </p>
+                    <p className='mt-1 text-xs text-gray-400'>{new Date(conv.updatedAt).toLocaleDateString('vi-VN')}</p>
+                  </div>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation()
+                      deleteConversation(conv.id)
+                    }}
+                    className='ml-2 p-1 text-gray-400 transition-colors hover:text-red-600'
+                  >
+                    <Trash2 className='h-4 w-4' />
+                  </button>
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
 
-  {/* Input Area */}
-  <div className="bg-white border-t border-gray-200 p-4">
-  <div className="flex items-end space-x-2">
-  <textarea
-    value={message}
-  onChange={(e) => setMessage(e.target.value)}
-  onKeyPress={handleKeyPress}
-  placeholder="Nhập tin nhắn của bạn..."
-  className="flex-1 min-h-[60px] max-h-[120px] p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
-  rows={2}
-  disabled={isLoading}
-  />
-  <Button
-  onClick={sendMessage}
-  disabled={!message.trim() || isLoading}
-  className="bg-blue-600 hover:bg-blue-700 h-[60px] px-6"
-  >
-  <Send className="w-5 h-5" />
-    </Button>
+      {/* Main Chat Area */}
+      <div className='flex flex-1 flex-col'>
+        {currentConversation ? (
+          <>
+            {/* Chat Header */}
+            <div className='border-b border-gray-200 bg-white p-4'>
+              <h3 className='text-lg font-semibold text-gray-800'>{currentConversation.title}</h3>
+            </div>
+
+            {/* Messages */}
+            <div className='flex-1 space-y-4 overflow-y-auto p-4'>
+              {currentConversation.messages
+                .filter((msg) => msg.role !== 'system')
+                .map((msg) => (
+                  <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
+                    <div
+                      className={`max-w-[70%] rounded-lg p-3 ${
+                        msg.role === 'user' ? 'bg-blue-600 text-white' : 'border border-gray-200 bg-white text-gray-800'
+                      }`}
+                    >
+                      <p className='break-words whitespace-pre-wrap'>{msg.content}</p>
+                      <p className={`mt-1 text-xs ${msg.role === 'user' ? 'text-blue-100' : 'text-gray-400'}`}>
+                        {new Date(msg.createdAt).toLocaleTimeString('vi-VN', {
+                          hour: '2-digit',
+                          minute: '2-digit'
+                        })}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              {isLoading && (
+                <div className='flex justify-start'>
+                  <div className='rounded-lg border border-gray-200 bg-white p-3'>
+                    <div className='flex space-x-1'>
+                      <div className='h-2 w-2 animate-bounce rounded-full bg-gray-400' />
+                      <div
+                        className='h-2 w-2 animate-bounce rounded-full bg-gray-400'
+                        style={{ animationDelay: '0.1s' }}
+                      />
+                      <div
+                        className='h-2 w-2 animate-bounce rounded-full bg-gray-400'
+                        style={{ animationDelay: '0.2s' }}
+                      />
+                    </div>
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Input Area */}
+            <div className='border-t border-gray-200 bg-white p-4'>
+              <div className='flex items-end space-x-2'>
+                <textarea
+                  value={message}
+                  onChange={(e) => setMessage(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder='Nhập tin nhắn của bạn...'
+                  className='max-h-[120px] min-h-[60px] flex-1 resize-none rounded-lg border border-gray-300 p-3 focus:ring-2 focus:ring-blue-500 focus:outline-none'
+                  rows={2}
+                  disabled={isLoading}
+                />
+                <Button
+                  onClick={sendMessage}
+                  disabled={!message.trim() || isLoading}
+                  className='h-[60px] bg-blue-600 px-6 hover:bg-blue-700'
+                >
+                  <Send className='h-5 w-5' />
+                </Button>
+              </div>
+            </div>
+          </>
+        ) : (
+          <div className='flex flex-1 items-center justify-center'>
+            <div className='text-center text-gray-500'>
+              <MessageSquare className='mx-auto mb-4 h-24 w-24 text-gray-300' />
+              <h3 className='mb-2 text-xl font-semibold'>Chào mừng đến với CrownDine Chat!</h3>
+              <p className='mb-4'>Chọn một cuộc trò chuyện hoặc tạo mới để bắt đầu</p>
+              <Button onClick={createConversation} className='bg-blue-600 hover:bg-blue-700'>
+                <Plus className='mr-2 h-4 w-4' />
+                Tạo cuộc trò chuyện mới
+              </Button>
+            </div>
+          </div>
+        )}
+      </div>
     </div>
-    </div>
-    </>
-) : (
-    <div className="flex-1 flex items-center justify-center">
-    <div className="text-center text-gray-500">
-    <MessageSquare className="w-24 h-24 mx-auto mb-4 text-gray-300" />
-    <h3 className="text-xl font-semibold mb-2">Chào mừng đến với CrownDine Chat!</h3>
-  <p className="mb-4">Chọn một cuộc trò chuyện hoặc tạo mới để bắt đầu</p>
-  <Button onClick={createConversation} className="bg-blue-600 hover:bg-blue-700">
-  <Plus className="w-4 h-4 mr-2" />
-    Tạo cuộc trò chuyện mới
-  </Button>
-  </div>
-  </div>
-)}
-  </div>
-  </div>
-)
+  )
 }

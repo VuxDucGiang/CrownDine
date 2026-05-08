@@ -52,6 +52,17 @@ public class ApiComboController {
                 .build();
     }
 
+    @GetMapping("/slug/{slug}")
+    public ApiResponse getComboBySlug(@PathVariable String slug) {
+        log.info("Get combo request with slug: {}", slug);
+        ComboResponse combo = comboService.getComboBySlug(slug);
+        return ApiResponse.builder()
+                .status(HttpStatus.OK.value())
+                .message("Lấy thông tin combo thành công")
+                .data(combo)
+                .build();
+    }
+
     @PostMapping
     public ApiResponse createCombo(@Valid @RequestBody ComboRequest request) {
         log.info("Create combo request: {}", request.getName());
