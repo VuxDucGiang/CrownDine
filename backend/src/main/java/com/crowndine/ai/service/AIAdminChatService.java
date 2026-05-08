@@ -6,6 +6,7 @@ import com.crowndine.exception.AiRateLimitException;
 import com.crowndine.exception.AiServiceException;
 import com.google.genai.errors.ApiException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.ai.chat.client.advisor.MessageChatMemoryAdvisor;
 import org.springframework.ai.chat.client.advisor.SimpleLoggerAdvisor;
@@ -19,6 +20,7 @@ import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Service
+@ConditionalOnProperty(prefix = "app.ai", name = "enabled", havingValue = "true", matchIfMissing = true)
 public class AIAdminChatService {
 
     private final ChatClient chatClient;
