@@ -23,6 +23,12 @@ spring:
       genai:
         api-key: test-api-key
         project-id: test-project-id
+  rabbitmq:
+    listener:
+      simple:
+        auto-startup: false
+      direct:
+        auto-startup: false
 
 jwt:
   access-key: test-access-key-should-be-at-least-32-characters

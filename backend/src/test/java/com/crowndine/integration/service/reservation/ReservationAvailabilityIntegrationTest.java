@@ -3,7 +3,7 @@ package com.crowndine.integration.service.reservation;
 import com.crowndine.common.enums.EReservationStatus;
 import com.crowndine.common.enums.ETableShape;
 import com.crowndine.common.enums.ETableStatus;
-import com.crowndine.exception.InvalidDataException;
+import com.crowndine.exception.ReservationConflictException;
 import com.crowndine.model.Reservation;
 import com.crowndine.model.RestaurantTable;
 import com.crowndine.repository.ReservationRepository;
@@ -53,7 +53,7 @@ class ReservationAvailabilityIntegrationTest {
         Long tableId = table.getId();
 
 
-        assertThrows(InvalidDataException.class,
+        assertThrows(ReservationConflictException.class,
                 () -> reservationAvailabilityService.ensureTableAvailable(date, time, tableId));
     }
 
