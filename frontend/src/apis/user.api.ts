@@ -2,6 +2,7 @@ import http from '@/utils/http'
 import type { ApiResponse } from '@/types/utils.type'
 import type { UpdateUserRequest, User, PointHistory, ChangePasswordRequest } from '@/types/profile.type'
 import type { PageResponse } from '@/types/utils.type'
+import type { MyVoucherResponse } from '@/types/voucher.type'
 
 type UserProfileResponse = User & { avatarUrl?: string }
 
@@ -38,7 +39,7 @@ const userApi = {
     return http.get<ApiResponse<User[]>>('users')
   },
   getAvailableVouchers(customerId: number) {
-    return http.get<ApiResponse<null>>(`user-vouchers/customer/${customerId}`)
+    return http.get<ApiResponse<MyVoucherResponse[]>>(`user-vouchers/customer/${customerId}`)
   },
   changePassword(data: ChangePasswordRequest) {
     return http.post<ApiResponse<null>>('users/change-password', data)

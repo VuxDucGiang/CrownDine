@@ -32,7 +32,6 @@ export function AssignUsersModal({ isOpen, onClose, voucher, onAssign, isSubmitt
   const filteredCustomers = customers.filter(
     (c) =>
       c.phone?.includes(searchTerm) ||
-      c.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.firstName?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       c.lastName?.toLowerCase().includes(searchTerm.toLowerCase())
   )

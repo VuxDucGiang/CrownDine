@@ -285,7 +285,7 @@ export default function Dashboard() {
                     border: 'none',
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                   }}
-                  formatter={(value: number | string) => [
+                  formatter={(value: number | string | undefined) => [
                     `${(Number(value) * 1000000).toLocaleString('vi-VN')} VNĐ`,
                     'Doanh thu'
                   ]}
@@ -339,7 +339,10 @@ export default function Dashboard() {
                     border: 'none',
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                   }}
-                  formatter={(value: number | string) => [`${Number(value).toLocaleString('vi-VN')} khách`, 'Số lượng']}
+                  formatter={(value: number | string | undefined) => [
+                    `${Number(value).toLocaleString('vi-VN')} khách`,
+                    'Số lượng'
+                  ]}
                 />
                 <Line
                   type='monotone'
@@ -419,7 +422,7 @@ export default function Dashboard() {
                     border: 'none',
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                   }}
-                  formatter={(value: number | string) => {
+                  formatter={(value: number | string | undefined) => {
                     if (topProductsViewMode === 'quantity') {
                       return [`${Number(value).toLocaleString('vi-VN')} món`, 'Số lượng bán']
                     }

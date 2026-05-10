@@ -4,7 +4,15 @@ import http from '@/utils/http'
 
 const COMBO_URL = 'combos'
 
-type UpsertComboPayload = Omit<Combo, 'id'>
+export interface UpsertComboPayload {
+  name: string
+  description: string
+  price: number
+  priceAfterDiscount: number | null
+  status: string
+  imageUrl: string | null
+  items: { itemId: number; quantity: number }[]
+}
 
 const comboApi = {
   getCombos() {

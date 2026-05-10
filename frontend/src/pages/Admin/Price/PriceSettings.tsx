@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import categoryApi from '@/apis/category.api'
 import itemApi from '@/apis/item.api'
 import type { Item } from '@/types/item.type'
+import type { UpsertItemPayload } from '@/apis/item.api'
 
 export default function PriceSettings() {
   const [searchTerm, setSearchTerm] = useState('')
@@ -36,7 +37,7 @@ export default function PriceSettings() {
 
   // Update Item Price Mutation
   const updatePriceMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: Item }) => itemApi.updateItem(id, data),
+    mutationFn: ({ id, data }: { id: number; data: UpsertItemPayload }) => itemApi.updateItem(id, data),
     onSuccess: () => {
       toast.success('Cập nhật giá thành công')
       queryClient.invalidateQueries({ queryKey: ['items'] })
@@ -50,13 +51,15 @@ export default function PriceSettings() {
     const newPrice = parseFloat(newPriceStr.replace(/\./g, '').replace(',', '.'))
     if (isNaN(newPrice) || newPrice === item.price) return
 
-    const payload = {
+    const payload: UpsertItemPayload = {
       name: item.name,
       description: item.description,
       imageUrl: item.imageUrl,
       price: newPrice,
+      priceAfterDiscount: item.priceAfterDiscount,
       status: item.status,
-      categoryId: item.categoryId
+      categoryId: item.categoryId,
+      slug: item.slug
     }
 
     updatePriceMutation.mutate({ id: item.id, data: payload })

@@ -32,11 +32,14 @@ const ReservationList = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('CALENDAR')
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [selectedReservation, setSelectedReservation] = useState<StaffReservationResponse | null>(null)
-  const [initialBookingData, setInitialBookingData] = useState<{
-    tableId?: string | number
-    startTime?: string
-    date?: string
-  } | null>(null)
+  const [initialBookingData, setInitialBookingData] = useState<
+    | {
+        tableId?: string | number
+        startTime?: string
+        date?: string
+      }
+    | undefined
+  >(undefined)
 
   // Advanced Filter states
   const [statusFilter, setStatusFilter] = useState('')
@@ -68,7 +71,7 @@ const ReservationList = () => {
           .filter(Boolean)
       )
     )
-  ]
+  ] as string[]
 
   const checkInMutation = useMutation({
     mutationFn: async (reservation: StaffReservationResponse) =>
@@ -394,7 +397,7 @@ const ReservationList = () => {
         isOpen={isCreateModalOpen}
         onClose={() => {
           setIsCreateModalOpen(false)
-          setInitialBookingData(null)
+          setInitialBookingData(undefined)
         }}
         onSuccess={() => {
           queryClient.invalidateQueries({ queryKey: ['staff-reservations'] })

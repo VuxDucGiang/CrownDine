@@ -119,6 +119,7 @@ export function ScheduleTable({ isAdmin = false, currentDate, schedules, staffs,
     }
 
     const emp = employeesMap.get(schedule.user.id)
+    if (!emp) return
     // Find which day index this schedule corresponds to
     const dayIndex = days.findIndex((d) => d.fullDateStr === schedule.workDate)
 

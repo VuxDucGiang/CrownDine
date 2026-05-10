@@ -70,7 +70,7 @@ const Cashier = () => {
 
   // Dynamic Filters based on data
   const floors = useMemo(() => {
-    return Array.from(new Set(rawTables.map((t: Table) => t.floorName).filter(Boolean)))
+    return Array.from(new Set(rawTables.map((t: Table) => t.floorName).filter(Boolean))) as string[]
   }, [rawTables])
 
   const effectiveActiveFloor = activeFloor || floors[0] || ''
@@ -80,7 +80,7 @@ const Cashier = () => {
     if (effectiveActiveFloor) {
       filtered = rawTables.filter((t: Table) => t.floorName === effectiveActiveFloor)
     }
-    const list = Array.from(new Set(filtered.map((t: Table) => t.areaName).filter(Boolean)))
+    const list = Array.from(new Set(filtered.map((t: Table) => t.areaName).filter(Boolean))) as string[]
     return ['Tất cả', ...list]
   }, [rawTables, effectiveActiveFloor])
 
@@ -142,7 +142,7 @@ const Cashier = () => {
     } else {
       // For empty table, opening drawer to create a new order
       setSelectedOrder(null)
-      setPreSelectedTableId(table.id)
+      setPreSelectedTableId(Number(table.id))
       setIsDrawerOpen(true)
     }
   }

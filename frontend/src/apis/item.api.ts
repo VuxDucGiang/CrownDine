@@ -13,7 +13,7 @@ export interface GetListItemsParams {
   size?: number
 }
 
-type UpsertItemPayload = Omit<Item, 'id'>
+export type UpsertItemPayload = Omit<Item, 'id'>
 
 const itemApi = {
   getItems() {

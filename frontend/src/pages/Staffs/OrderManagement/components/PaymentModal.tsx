@@ -11,12 +11,7 @@ import { useMutation, useQuery } from '@tanstack/react-query'
 import type { User } from '@/types/profile.type'
 import type { ErrorResponse } from '@/types/utils.type'
 import { isAxiosError } from '@/utils/utils'
-
-type CustomerVoucher = {
-  voucherId: number
-  code: string
-  name: string
-}
+import type { MyVoucherResponse } from '@/types/voucher.type'
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -30,7 +25,7 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
   const [phone, setPhone] = useState('')
   const [voucherCode, setVoucherCode] = useState('')
   const [foundCustomer, setFoundCustomer] = useState<User | null>(null)
-  const [customerVouchers, setCustomerVouchers] = useState<CustomerVoucher[]>([])
+  const [customerVouchers, setCustomerVouchers] = useState<MyVoucherResponse[]>([])
 
   const {
     data: checkoutData,
@@ -56,11 +51,11 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
       const data = res.data?.data
       if (!data || !data.id) throw new Error('Không tìm thấy khách hàng')
 
-      let vouchers: CustomerVoucher[] = []
+      let vouchers: MyVoucherResponse[] = []
       if (order?.id) {
         await orderApi.mapCustomerToOrder(order.id, Number(data.id))
         const vouchersRes = await userApi.getAvailableVouchers(Number(data.id))
-        vouchers = (vouchersRes.data?.data as CustomerVoucher[]) || []
+        vouchers = vouchersRes.data?.data ?? []
       }
       return { customer: data, vouchers }
     },
