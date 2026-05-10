@@ -2,6 +2,7 @@ import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
 import { Check, X, User, Phone, Calendar, Clock, Users, Hash, FileText, ShoppingBag } from 'lucide-react'
 import type { StaffReservationResponse } from '@/types/reservation.type'
+import type { OrderDetail } from '@/types/order.type'
 import { formatCurrency } from '@/utils/utils'
 import clsx from 'clsx'
 
@@ -128,7 +129,7 @@ export default function ReservationDetailModal({
               <ShoppingBag size={14} className='text-primary' /> Món ăn đặt trước
             </h4>
             <div className='divide-y divide-slate-100 overflow-hidden rounded-2xl border border-slate-100 bg-slate-50/50'>
-              {reservation.orderDetails.map((orderDetail: any, idx: number) => {
+              {(reservation.orderDetails as OrderDetail[]).map((orderDetail, idx: number) => {
                 const name = orderDetail.item?.name || orderDetail.combo?.name || 'Món không tên'
                 const unitPrice = orderDetail.item?.price || orderDetail.combo?.price || 0
 
@@ -148,7 +149,7 @@ export default function ReservationDetailModal({
                 <span className='text-[10px] font-black tracking-widest text-slate-500 uppercase'>Tạm tính món ăn</span>
                 <span className='text-primary text-lg font-black'>
                   {formatCurrency(
-                    reservation.orderDetails.reduce((acc: number, i: any) => {
+                    (reservation.orderDetails as OrderDetail[]).reduce((acc: number, i) => {
                       const price = i.item?.price || i.combo?.price || 0
                       return acc + price * i.quantity
                     }, 0)

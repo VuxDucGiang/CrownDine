@@ -76,22 +76,24 @@ export default function CreateReservationModal({
 
   useEffect(() => {
     if (isOpen && initialData) {
-      setFormData((prev) => ({
-        ...prev,
-        date: initialData.date || prev.date,
-        startTime: initialData.startTime || prev.startTime,
-        tableId: initialData.tableId?.toString() || prev.tableId
-      }))
+      queueMicrotask(() => {
+        setFormData((prev) => ({
+          ...prev,
+          date: initialData.date || prev.date,
+          startTime: initialData.startTime || prev.startTime,
+          tableId: initialData.tableId?.toString() || prev.tableId
+        }))
+      })
     }
   }, [isOpen, initialData])
 
   // --- Queries ---
-  const { data: tableData } = useQuery({
+  const { data: tables = [] } = useQuery({
     queryKey: ['tables'],
     queryFn: () => tableApi.getAllTables(),
+    select: (res) => res.data.data,
     enabled: isOpen
   })
-  const tables = tableData?.data?.data || []
 
   // --- Handlers ---
   const handleSelectItem = (item: MenuCardItem, type: 'item' | 'combo') => {
@@ -180,9 +182,6 @@ export default function CreateReservationModal({
       toast.success('Tạo đơn đặt bàn & đặt món thành công')
       onSuccess()
       handleClose()
-    },
-    onError: (err: any) => {
-      toast.error('Lỗi: ' + (err.response?.data?.message || err.message))
     }
   })
 
@@ -347,7 +346,7 @@ export default function CreateReservationModal({
                         onChange={(e) => setFormData({ ...formData, tableId: e.target.value })}
                       >
                         <option value=''>Trong danh sách bàn khả dụng...</option>
-                        {tables.map((t: any) => (
+                        {tables.map((t) => (
                           <option key={t.id} value={t.id}>
                             {t.name} (Sức chứa: {t.capacity} người)
                           </option>

@@ -12,7 +12,6 @@ export default function Chat() {
   const [isLoading, setIsLoading] = useState(false)
   const [isCreatingConversation, setIsCreatingConversation] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const [pollingInterval, setPollingInterval] = useState<ReturnType<typeof setInterval> | null>(null)
 
   // Load conversations on mount
   useEffect(() => {
@@ -25,15 +24,7 @@ export default function Chat() {
       const interval = setInterval(() => {
         loadConversation(currentConversation.id)
       }, 2000) // Poll every 2 seconds
-      setPollingInterval(interval)
-      return () => {
-        clearInterval(interval)
-      }
-    } else {
-      if (pollingInterval) {
-        clearInterval(pollingInterval)
-        setPollingInterval(null)
-      }
+      return () => clearInterval(interval)
     }
   }, [currentConversation])
 

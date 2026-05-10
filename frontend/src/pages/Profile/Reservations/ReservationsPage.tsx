@@ -14,15 +14,16 @@ import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
 import feedbackApi from '@/apis/feedback.api'
 import paymentApi from '@/apis/payment.api'
+import reservationApi from '@/apis/reservation.api'
 import { toast } from 'react-toastify'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
-interface ReservationHistoryProps {
-  reservations: ReservationHistoryResponse[]
-  isLoading?: boolean
-}
-
-const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps) => {
+const ReservationsPage = () => {
+  const { data: reservations = [], isLoading } = useQuery({
+    queryKey: ['reservation-history'],
+    queryFn: () => reservationApi.getReservationHistory({ page: 0, size: 100 }),
+    select: (res) => res.data.data.data as ReservationHistoryResponse[]
+  })
   const [expandedId, setExpandedId] = useState<number | string | null>(null)
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [rating, setRating] = useState(5)
@@ -51,9 +52,6 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
       toast.success('Gửi đánh giá thành công!')
       resetFeedbackModal()
       queryClient.invalidateQueries({ queryKey: ['reservation-history'] })
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Gửi đánh giá thất bại')
     }
   })
 
@@ -64,9 +62,6 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
       toast.success('Cập nhật đánh giá thành công!')
       resetFeedbackModal()
       queryClient.invalidateQueries({ queryKey: ['reservation-history'] })
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Cập nhật đánh giá thất bại')
     }
   })
 
@@ -89,9 +84,6 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
       }
 
       window.location.href = checkoutUrl
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Không thể tạo liên kết thanh toán')
     },
     onSettled: () => {
       setPendingReservationCode(null)
@@ -570,4 +562,4 @@ const ReservationHistory = ({ reservations, isLoading }: ReservationHistoryProps
   )
 }
 
-export default ReservationHistory
+export default ReservationsPage

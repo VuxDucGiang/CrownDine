@@ -3,8 +3,9 @@ import ItemCard from '@/components/MenuSection/ItemCard/ItemCard'
 import { Heart } from 'lucide-react'
 import { Link, useNavigate } from 'react-router-dom'
 import { comboToCardItem } from '@/types/item.type'
+import path from '@/constants/path'
 
-const ProfileFavorites = () => {
+export default function FavoritesPage() {
   const { favorites, isLoading } = useFavoriteStore()
   const navigate = useNavigate()
 
@@ -27,7 +28,7 @@ const ProfileFavorites = () => {
           Hãy khám phá thực đơn của chúng tôi và lưu lại những món bạn yêu thích để dễ dàng đặt lại lần sau.
         </p>
         <Link
-          to='/menu'
+          to={path.menu}
           className='bg-primary text-primary-foreground hover:bg-primary/90 mt-8 rounded-full px-8 py-3 font-semibold transition-all'
         >
           Khám phá Menu
@@ -55,7 +56,7 @@ const ProfileFavorites = () => {
               item={itemData}
               isCombo={isCombo}
               onViewDetails={(item) =>
-                navigate(item.slug ? `/menu/${isCombo ? 'combo' : 'item'}/${item.slug}` : '/menu')
+                navigate(item.slug ? `${path.menu}/${isCombo ? 'combo' : 'item'}/${item.slug}` : path.menu)
               }
             />
           )
@@ -64,5 +65,3 @@ const ProfileFavorites = () => {
     </div>
   )
 }
-
-export default ProfileFavorites

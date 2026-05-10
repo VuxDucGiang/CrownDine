@@ -1,5 +1,5 @@
 import { Clock3 } from 'lucide-react'
-import { useEffect, useState } from 'react'
+import { useEffect, useMemo, useSyncExternalStore } from 'react'
 
 type Props = {
   expiratedAt: string | null // ISO string format
@@ -7,33 +7,25 @@ type Props = {
 }
 
 const CountdownTimer = ({ expiratedAt, onExpire }: Props) => {
-  const [seconds, setSeconds] = useState(0)
+  const now = useSyncExternalStore(
+    (onStoreChange) => {
+      if (!expiratedAt) return () => {}
+      const timer = setInterval(onStoreChange, 1000)
+      return () => clearInterval(timer)
+    },
+    () => Date.now(),
+    () => Date.now()
+  )
+
+  const seconds = useMemo(() => {
+    if (!expiratedAt) return 0
+    const expiry = new Date(expiratedAt).getTime()
+    return Math.max(0, Math.floor((expiry - now) / 1000))
+  }, [expiratedAt, now])
 
   useEffect(() => {
-    if (!expiratedAt) {
-      setSeconds(0)
-      return
-    }
-
-    const updateTimer = () => {
-      const now = new Date().getTime()
-      const expiry = new Date(expiratedAt).getTime()
-      const diff = Math.max(0, Math.floor((expiry - now) / 1000))
-
-      setSeconds(diff)
-
-      if (diff <= 0) {
-        onExpire()
-      }
-    }
-
-    // Update immediately
-    updateTimer()
-
-    // Update every second
-    const timer = setInterval(updateTimer, 1000)
-    return () => clearInterval(timer)
-  }, [expiratedAt, onExpire])
+    if (expiratedAt && seconds <= 0) onExpire()
+  }, [expiratedAt, onExpire, seconds])
 
   const fmt = (s: number) =>
     `${Math.floor(s / 60)

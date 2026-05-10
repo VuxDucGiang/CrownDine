@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react'
+import { useState, useMemo } from 'react'
 import { X, User, CalendarDays, AlertCircle } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { format, parseISO, parse, isAfter, startOfDay } from 'date-fns'
@@ -30,13 +30,13 @@ export function AttendanceModal({ userId, defaultShiftId, defaultWorkDate, onClo
     : format(new Date(), 'dd/MM/yyyy')
 
   const [workDate] = useState(workDateDefault)
-  const [shiftId, setShiftId] = useState<number>(defaultShiftId ?? 0)
+  const [shiftId] = useState<number>(defaultShiftId ?? 0)
   const [note, setNote] = useState('')
   const [attendanceType, setAttendanceType] = useState<EAttendanceType>('WORKING')
   const [hasPunchIn, setHasPunchIn] = useState(true)
   const [hasPunchOut, setHasPunchOut] = useState(true)
-  const [checkInAt, setCheckInAt] = useState('08:00')
-  const [checkOutAt, setCheckOutAt] = useState('12:00')
+  const [checkInAt, setCheckInAt] = useState('')
+  const [checkOutAt, setCheckOutAt] = useState('')
 
   const { data: employeeInfo } = useQuery({
     queryKey: ['attendances', 'employee', userId],
@@ -66,19 +66,9 @@ export function AttendanceModal({ userId, defaultShiftId, defaultWorkDate, onClo
     }
   })
 
-  useEffect(() => {
-    if (defaultShiftId && !shiftId) setShiftId(defaultShiftId)
-  }, [defaultShiftId, shiftId])
-
-  // Khi đổi ca làm việc → cập nhật giờ Vào/Ra theo ca đó
-  useEffect(() => {
-    if (!shiftId || !shifts.length) return
-    const shift = shifts.find((s: ShiftResponse) => s.id === shiftId)
-    if (shift?.startTime != null && shift?.endTime != null) {
-      setCheckInAt(shift.startTime.slice(0, 5))
-      setCheckOutAt(shift.endTime.slice(0, 5))
-    }
-  }, [shiftId, shifts])
+  const selectedShift = useMemo(() => shifts.find((s: ShiftResponse) => s.id === shiftId), [shifts, shiftId])
+  const effectiveCheckInAt = checkInAt || selectedShift?.startTime?.slice(0, 5) || '08:00'
+  const effectiveCheckOutAt = checkOutAt || selectedShift?.endTime?.slice(0, 5) || '12:00'
 
   // Kiểm tra ngày tương lai
   const isFutureDate = useMemo(() => {
@@ -103,8 +93,8 @@ export function AttendanceModal({ userId, defaultShiftId, defaultWorkDate, onClo
       return
     }
     const dateStr = `${String(d).padStart(2, '0')}/${String(m).padStart(2, '0')}/${y}`
-    const checkInDateTime = hasPunchIn ? `${dateStr} ${checkInAt}` : undefined
-    const checkOutDateTime = hasPunchOut ? `${dateStr} ${checkOutAt}` : undefined
+    const checkInDateTime = hasPunchIn ? `${dateStr} ${effectiveCheckInAt}` : undefined
+    const checkOutDateTime = hasPunchOut ? `${dateStr} ${effectiveCheckOutAt}` : undefined
 
     saveMutation.mutate({
       userId,
@@ -266,7 +256,7 @@ export function AttendanceModal({ userId, defaultShiftId, defaultWorkDate, onClo
                     </label>
                     <Input
                       type='time'
-                      value={checkInAt}
+                      value={effectiveCheckInAt}
                       onChange={(e) => setCheckInAt(e.target.value)}
                       disabled={!hasPunchIn}
                     />
@@ -283,7 +273,7 @@ export function AttendanceModal({ userId, defaultShiftId, defaultWorkDate, onClo
                     </label>
                     <Input
                       type='time'
-                      value={checkOutAt}
+                      value={effectiveCheckOutAt}
                       onChange={(e) => setCheckOutAt(e.target.value)}
                       disabled={!hasPunchOut}
                     />

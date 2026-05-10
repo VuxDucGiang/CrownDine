@@ -78,10 +78,11 @@ export default function MenuDetail() {
     }
   }
 
-  const { data: categoriesData } = useQuery({
+  const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
     queryFn: () => categoryApi.getCategories(),
-    enabled: !!item
+    enabled: !!item,
+    select: (res) => (res.data?.data ?? []) as Category[]
   })
 
   const { data: feedbacksItemData } = useQuery({
@@ -96,7 +97,6 @@ export default function MenuDetail() {
     enabled: !!combo
   })
 
-  const categories: Category[] = categoriesData?.data?.data ?? []
   const feedbacks: Feedback[] = isCombo ? (feedbacksComboData?.data?.data ?? []) : (feedbacksItemData?.data?.data ?? [])
 
   const categoryMap = useMemo(() => {

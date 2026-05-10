@@ -1,61 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { QueryClientProvider } from '@tanstack/react-query'
 import { RouterProvider } from 'react-router-dom'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'sonner'
-import { StompSessionProvider } from 'react-stomp-hooks'
 import '@/index.css'
 import router from '@/router'
 import { AppProvider } from '@/contexts/app.context'
-import { WebSocketEnabledProvider } from '@/contexts/WebSocketEnabledProvider'
-import { useAuthStore } from '@/stores/useAuthStore'
-import NotificationRealtimeListener from '@/components/NotificationRealtimeListener/NotificationRealtimeListener'
-import { jwtDecode } from 'jwt-decode'
 import { GoogleOAuthProvider } from '@react-oauth/google'
-
-export const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-      retry: 0
-    }
-  }
-})
-
-function AppWebSocketProvider({ children }: { children: React.ReactNode }) {
-  const accessToken = useAuthStore((state) => state.accessToken)
-  const hasValidAccessToken = isAccessTokenStillValid(accessToken)
-
-  if (!hasValidAccessToken || !accessToken) {
-    return <WebSocketEnabledProvider enabled={false}>{children}</WebSocketEnabledProvider>
-  }
-
-  const rawAccessToken = accessToken?.startsWith('Bearer ') ? accessToken.slice(7) : accessToken
-  const defaultWsBaseUrl = import.meta.env.PROD ? 'wss://crowndine.onrender.com' : 'ws://localhost:8080'
-  const wsBaseUrl = import.meta.env.VITE_WS_BASE_URL || defaultWsBaseUrl
-  const websocketUrl = rawAccessToken
-    ? `${wsBaseUrl}/ws-restaurant?access_token=${encodeURIComponent(rawAccessToken)}`
-    : `${wsBaseUrl}/ws-restaurant`
-
-  return (
-    <WebSocketEnabledProvider enabled={true}>
-      <StompSessionProvider
-        key={accessToken || 'anonymous'}
-        url={websocketUrl}
-        reconnectDelay={5000}
-        heartbeatIncoming={10000}
-        heartbeatOutgoing={10000}
-        onConnect={() => console.log('WebSocket Connected!')}
-        onDisconnect={() => console.log('WebSocket Disconnected!')}
-        debug={(str) => console.log(str)}
-      >
-        <NotificationRealtimeListener />
-        {children}
-      </StompSessionProvider>
-    </WebSocketEnabledProvider>
-  )
-}
+import { queryClient } from '@/lib/queryClient'
+import AppWebSocketProvider from '@/components/AppWebSocketProvider/AppWebSocketProvider'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
@@ -73,22 +27,3 @@ createRoot(document.getElementById('root')!).render(
     </GoogleOAuthProvider>
   </StrictMode>
 )
-
-function isAccessTokenStillValid(accessToken: string | null) {
-  if (!accessToken) {
-    return false
-  }
-
-  const rawAccessToken = accessToken.startsWith('Bearer ') ? accessToken.slice(7) : accessToken
-
-  try {
-    const decoded = jwtDecode<{ exp?: number }>(rawAccessToken)
-    if (!decoded.exp) {
-      return false
-    }
-
-    return decoded.exp * 1000 > Date.now()
-  } catch {
-    return false
-  }
-}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState } from 'react'
 import { Users } from 'lucide-react'
 import { useQuery } from '@tanstack/react-query'
 import { Modal } from '@/components/ui/modal'
@@ -22,13 +22,12 @@ export function AssignUsersModal({ isOpen, onClose, voucher, onAssign, isSubmitt
   const [usageLimit, setUsageLimit] = useState('1')
   const [expiredAt, setExpiredAt] = useState('')
 
-  const { data: customersData, isLoading } = useQuery({
+  const { data: customers = [], isLoading } = useQuery({
     queryKey: ['customers', 'all'],
     queryFn: () => userApi.getAllCustomers(),
+    select: (res) => res.data.data,
     enabled: isOpen
   })
-
-  const customers = customersData?.data?.data || []
 
   const filteredCustomers = customers.filter(
     (c) =>
@@ -54,16 +53,11 @@ export function AssignUsersModal({ isOpen, onClose, voucher, onAssign, isSubmitt
     onAssign(voucher.id, selectedUserIds, limit, expiredAt)
   }
 
-  useEffect(() => {
-    if (!isOpen) {
-      setSelectedUserIds([])
-      setSearchTerm('')
-      setUsageLimit('1')
-      setExpiredAt('')
-    }
-  }, [isOpen])
-
   const handleClose = () => {
+    setSelectedUserIds([])
+    setSearchTerm('')
+    setUsageLimit('1')
+    setExpiredAt('')
     onClose()
   }
 

@@ -24,10 +24,6 @@ const useVerifyEmailOtp = () => {
       }
 
       toast.success('Đổi email thành công!')
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Mã OTP không chính xác hoặc đã hết hạn'
-      toast.error(message)
     }
   })
 }

@@ -3,7 +3,7 @@ import { ArrowLeft } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { toast } from 'sonner'
-import { queryClient } from '@/main'
+import { queryClient } from '@/lib/queryClient'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import orderApi from '@/apis/order.api'
 import tableApi from '@/apis/table.api'
@@ -45,15 +45,20 @@ export default function OrderDrawer({
   const [orderNote, setOrderNote] = useState<string>('')
 
   // Fetch tables to show in a dropdown
-  const { data: tableData } = useQuery({
+  const { data: tables = [] } = useQuery({
     queryKey: ['tables'],
-    queryFn: () => tableApi.getAllTables()
+    queryFn: () => tableApi.getAllTables(),
+    select: (res) => res.data.data
   })
 
   // Load existing order details when editing
   useEffect(() => {
+    let nextCart: CartItem[] = []
+    let nextSelectedTableId: string | null = null
+    let shouldResetOrderNote = false
+
     if (order && order.orderDetails) {
-      const existingCart: CartItem[] = order.orderDetails.map((detail) => {
+      nextCart = order.orderDetails.map((detail) => {
         const dItem = detail.item || detail.combo
         return {
           cartId: `ext-${detail.id}-${Math.random()}`,
@@ -74,17 +79,23 @@ export default function OrderDrawer({
           status: detail.status
         }
       })
-      setCart(existingCart)
-      // Extract table ID if possible (backend might not send tableId directly on Order, map it if needed)
-      // For now, if order has no tableId available, we leave it empty.
     } else if (order) {
-      // Order exists but no details yet
-      setCart([])
+      nextCart = []
     } else {
-      setCart([])
-      setSelectedTableId(preSelectedTableId ? preSelectedTableId.toString() : '')
-      setOrderNote('')
+      nextCart = []
+      nextSelectedTableId = preSelectedTableId ? preSelectedTableId.toString() : ''
+      shouldResetOrderNote = true
     }
+
+    queueMicrotask(() => {
+      setCart(nextCart)
+      if (nextSelectedTableId !== null) {
+        setSelectedTableId(nextSelectedTableId)
+      }
+      if (shouldResetOrderNote) {
+        setOrderNote('')
+      }
+    })
   }, [order, isOpen, preSelectedTableId])
 
   const handleSelectItem = (item: MenuCardItem, type: 'item' | 'combo') => {
@@ -105,7 +116,7 @@ export default function OrderDrawer({
         await orderApi.deleteOrderDetail(existingDetailId)
         toast.success('Đã xóa món khỏi đơn.')
         queryClient.invalidateQueries({ queryKey: ['orders'] })
-      } catch (err: any) {
+      } catch {
         return
       }
     }
@@ -147,7 +158,7 @@ export default function OrderDrawer({
   }
 
   const createOrderMutation = useMutation({
-    mutationFn: async (): Promise<any> => {
+    mutationFn: async () => {
       if (reservationId) {
         return orderApi.openOrderForReservation(reservationId, {
           items: cart.map((c) => ({
@@ -174,9 +185,6 @@ export default function OrderDrawer({
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       queryClient.invalidateQueries({ queryKey: ['staff-reservations'] })
       onClose()
-    },
-    onError: (err: any) => {
-      toast.error('Lỗi: ' + err.message)
     }
   })
 
@@ -198,9 +206,6 @@ export default function OrderDrawer({
       if (res) toast.success('Đã thêm món vào đơn!')
       queryClient.invalidateQueries({ queryKey: ['orders'] })
       onClose()
-    },
-    onError: (err: any) => {
-      toast.error('Lỗi: ' + err.message)
     }
   })
 
@@ -233,7 +238,6 @@ export default function OrderDrawer({
   const finalPrice = Math.max(0, totalPrice - discountPrice)
   const isSaving = createOrderMutation.isPending || addDetailsMutation.isPending
   const hasNewItems = cart.some((c) => !c.existingDetailId)
-  const tables = tableData?.data?.data || []
 
   return (
     <>

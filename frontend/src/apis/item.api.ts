@@ -13,6 +13,8 @@ export interface GetListItemsParams {
   size?: number
 }
 
+type UpsertItemPayload = Omit<Item, 'id'>
+
 const itemApi = {
   getItems() {
     return http.get<ApiResponse<Item[]>>(ITEM_URL)
@@ -35,14 +37,14 @@ const itemApi = {
       params: { categoryId, size: 100 }
     })
   },
-  createItem(data: any) {
+  createItem(data: UpsertItemPayload) {
     return http.post<ApiResponse<Item>>(ITEM_URL, data)
   },
-  updateItem(id: number | string, data: any) {
+  updateItem(id: number | string, data: UpsertItemPayload) {
     return http.put<ApiResponse<Item>>(`${ITEM_URL}/${id}`, data)
   },
   deleteItem(id: number | string) {
-    return http.delete<ApiResponse<any>>(`${ITEM_URL}/${id}`)
+    return http.delete<ApiResponse<null>>(`${ITEM_URL}/${id}`)
   }
 }
 

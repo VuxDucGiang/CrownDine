@@ -7,14 +7,10 @@ export const useDeleteStaff = () => {
   const queryClient = useQueryClient()
 
   return useMutation({
-    mutationFn: (id: string) => http.delete<ApiResponse<any>>(`/admin/staff/${id}`),
+    mutationFn: (id: string) => http.delete<ApiResponse<null>>(`/admin/staff/${id}`),
     onSuccess: (res) => {
       queryClient.invalidateQueries({ queryKey: ['staffs'] })
       toast.success(res.data?.message || 'Xóa nhân viên thành công')
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Có lỗi xảy ra khi xóa nhân viên'
-      toast.error(message)
     }
   })
 }

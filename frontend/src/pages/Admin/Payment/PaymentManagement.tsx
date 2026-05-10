@@ -1,4 +1,4 @@
-import { useState, useEffect, Fragment } from 'react'
+import { useState, Fragment } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { format } from 'date-fns'
 import { vi } from 'date-fns/locale'
@@ -27,7 +27,7 @@ const RawDataModal = ({ data, onClose }: { data: string | null; onClose: () => v
   try {
     // Attempt to format if it's JSON
     parsedJson = JSON.stringify(JSON.parse(data), null, 2)
-  } catch (e) {
+  } catch {
     // leave as text
   }
 
@@ -99,7 +99,11 @@ const PaymentManagement = () => {
   const { fromDate, toDate } = getFilterDates()
 
   // React Query Fetch Data
-  const { data, isLoading, refetch } = useQuery({
+  const {
+    data: pageData,
+    isLoading,
+    refetch
+  } = useQuery({
     queryKey: ['payments', { page, size, search, status, type, target, method, fromDate, toDate }],
     queryFn: () =>
       paymentApi.getPayments({
@@ -112,13 +116,14 @@ const PaymentManagement = () => {
         method: method || undefined,
         fromDate: fromDate || undefined,
         toDate: toDate || undefined
-      })
+      }),
+    select: (res) => res.data.data
   })
 
   // Fallbacks
-  const payments = data?.data?.data?.data || [] // Adjusted mapping to match standard Pagination response
-  const totalPages = data?.data?.data?.totalPages || 0
-  const totalItems = data?.data?.data?.totalItems || 0
+  const payments = pageData?.data || []
+  const totalPages = pageData?.totalPages || 0
+  const totalItems = pageData?.totalItems || 0
 
   // Format money helper
   const formatCurrency = (amount: number) => {
@@ -181,11 +186,6 @@ const PaymentManagement = () => {
     )
   }
 
-  // Reset pagination when filter changes
-  useEffect(() => {
-    setPage(1)
-  }, [search, status, type, target, method, dateFilterType, customStartDate, customEndDate])
-
   return (
     <div className='bg-background mx-auto flex min-h-screen w-full max-w-[1400px] flex-col p-6 md:p-8'>
       <header className='mb-6 flex flex-col items-start justify-between gap-4 md:flex-row md:items-end'>
@@ -213,7 +213,10 @@ const PaymentManagement = () => {
             <Input
               placeholder='Tra cứu theo mã GD, Ref Code...'
               value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => {
+                setSearch(e.target.value)
+                setPage(1)
+              }}
               className='bg-background w-full pl-9 shadow-none'
             />
           </div>
@@ -228,7 +231,10 @@ const PaymentManagement = () => {
             <label className='text-muted-foreground text-[11px] font-semibold uppercase'>Trạng thái (Status)</label>
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value)}
+              onChange={(e) => {
+                setStatus(e.target.value)
+                setPage(1)
+              }}
               className='bg-background border-border rounded-md border px-3 py-2 text-sm font-medium shadow-sm outline-none'
             >
               <option value=''>Tất cả</option>
@@ -242,7 +248,10 @@ const PaymentManagement = () => {
             <label className='text-muted-foreground text-[11px] font-semibold uppercase'>Phân loại (Type)</label>
             <select
               value={type}
-              onChange={(e) => setType(e.target.value)}
+              onChange={(e) => {
+                setType(e.target.value)
+                setPage(1)
+              }}
               className='bg-background border-border rounded-md border px-3 py-2 text-sm font-medium shadow-sm outline-none'
             >
               <option value=''>Tất cả Type</option>
@@ -256,7 +265,10 @@ const PaymentManagement = () => {
             <label className='text-muted-foreground text-[11px] font-semibold uppercase'>Mục tiêu (Target)</label>
             <select
               value={target}
-              onChange={(e) => setTarget(e.target.value)}
+              onChange={(e) => {
+                setTarget(e.target.value)
+                setPage(1)
+              }}
               className='bg-background border-border rounded-md border px-3 py-2 text-sm font-medium shadow-sm outline-none'
             >
               <option value=''>Tất cả Target</option>
@@ -269,7 +281,10 @@ const PaymentManagement = () => {
             <label className='text-muted-foreground text-[11px] font-semibold uppercase'>Kênh (Method)</label>
             <select
               value={method}
-              onChange={(e) => setMethod(e.target.value)}
+              onChange={(e) => {
+                setMethod(e.target.value)
+                setPage(1)
+              }}
               className='bg-background border-border rounded-md border px-3 py-2 text-sm font-medium shadow-sm outline-none'
             >
               <option value=''>Mọi kênh</option>
@@ -285,7 +300,10 @@ const PaymentManagement = () => {
             <div className='flex flex-wrap items-center gap-2 lg:flex-nowrap'>
               <select
                 value={dateFilterType}
-                onChange={(e) => setDateFilterType(e.target.value)}
+                onChange={(e) => {
+                  setDateFilterType(e.target.value)
+                  setPage(1)
+                }}
                 className='bg-background border-border flex-shrink-0 rounded-md border px-3 py-2 text-sm font-medium shadow-sm outline-none lg:w-[130px]'
               >
                 <option value='ALL'>Mọi lúc</option>
@@ -299,14 +317,20 @@ const PaymentManagement = () => {
                   <Input
                     type='date'
                     value={customStartDate}
-                    onChange={(e) => setCustomStartDate(e.target.value)}
+                    onChange={(e) => {
+                      setCustomStartDate(e.target.value)
+                      setPage(1)
+                    }}
                     className='h-[38px] text-sm'
                   />
                   <span className='text-muted-foreground'>-</span>
                   <Input
                     type='date'
                     value={customEndDate}
-                    onChange={(e) => setCustomEndDate(e.target.value)}
+                    onChange={(e) => {
+                      setCustomEndDate(e.target.value)
+                      setPage(1)
+                    }}
                     className='h-[38px] text-sm'
                   />
                 </div>

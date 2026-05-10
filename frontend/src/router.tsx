@@ -16,6 +16,12 @@ import Dashboard from '@/pages/Admin/Dashboard/Dashboard'
 import { createBrowserRouter, Navigate } from 'react-router-dom'
 import LayoutPage from '@/pages/Layout'
 import Profile from '@/pages/Profile'
+import InfoPage from '@/pages/Profile/Info'
+import ReservationsPage from '@/pages/Profile/Reservations'
+import FavoritesPage from '@/pages/Profile/Favorites'
+import RewardPointsPage from '@/pages/Profile/RewardPoints'
+import VouchersPage from '@/pages/Profile/Vouchers'
+import SecurityPage from '@/pages/Profile/Security'
 import VerifyRegister from '@/pages/VerifyRegister/VerifyRegister'
 import { ProtectedRoute, RejectedRoute, AdminRoute, StaffRoute } from '@/routes/RouteGuard'
 import StaffLayout from './layouts/StaffLayout/StaffLayout'
@@ -42,7 +48,19 @@ const router = createBrowserRouter([
       {
         element: <ProtectedRoute />,
         children: [
-          { path: path.profile, element: <Profile /> },
+          {
+            path: path.profile,
+            element: <Profile />,
+            children: [
+              { index: true, element: <Navigate to={path.profileInfo} replace /> },
+              { path: path.profileInfo, element: <InfoPage /> },
+              { path: path.profileReservations, element: <ReservationsPage /> },
+              { path: path.profileFavorites, element: <FavoritesPage /> },
+              { path: path.profileRewardPoints, element: <RewardPointsPage /> },
+              { path: path.profileVouchers, element: <VouchersPage /> },
+              { path: path.profileSecurity, element: <SecurityPage /> }
+            ]
+          },
           { path: path.reservation, element: <Reservation /> }
         ]
       }

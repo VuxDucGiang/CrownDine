@@ -44,7 +44,7 @@ const orderApi = {
   },
 
   createPaymentLink(body: { orderCode: string; returnUrl?: string; method: string }) {
-    return http.post<ApiResponse<any>>('payments/create', body)
+    return http.post<ApiResponse<null>>('payments/create', body)
   },
 
   updateOrderStatus(orderId: number, status: OrderStatus, cancelReason?: string) {
@@ -52,15 +52,15 @@ const orderApi = {
     if (cancelReason) {
       url += `&cancelReason=${encodeURIComponent(cancelReason)}`
     }
-    return http.patch<ApiResponse<any>>(url)
+    return http.patch<ApiResponse<null>>(url)
   },
 
   applyVoucher(orderId: number, code: string) {
-    return http.post<ApiResponse<any>>(`${TABLE_URL}/${orderId}/voucher/apply`, { code })
+    return http.post<ApiResponse<null>>(`${TABLE_URL}/${orderId}/voucher/apply`, { code })
   },
 
   removeVoucher(orderId: number) {
-    return http.post<ApiResponse<any>>(`${TABLE_URL}/${orderId}/voucher/remove`)
+    return http.post<ApiResponse<null>>(`${TABLE_URL}/${orderId}/voucher/remove`)
   },
 
   mapCustomerToOrder(orderId: number, customerId: number) {

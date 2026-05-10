@@ -18,7 +18,7 @@ interface SecurityTab {
   description: string
 }
 
-const SecuritySetting = () => {
+const SecurityPage = () => {
   const [activeTab, setActiveTab] = useState<'password' | 'email'>('password')
   const [showPassword, setShowPassword] = useState(false)
   const [showCurrentPassword, setShowCurrentPassword] = useState(false)
@@ -360,4 +360,4 @@ const SecuritySetting = () => {
   )
 }
 
-export default SecuritySetting
+export default SecurityPage

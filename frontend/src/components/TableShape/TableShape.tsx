@@ -151,7 +151,7 @@ export default function TableShape({
   }
 
   /* ===== RESIZE HANDLE ===== */
-  const handle = (x: number, y: number, dir: any) =>
+  const handle = (x: number, y: number, dir: 'nw' | 'ne' | 'sw' | 'se') =>
     editable && selected ? (
       <rect
         x={x}

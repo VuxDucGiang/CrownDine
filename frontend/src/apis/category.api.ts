@@ -18,7 +18,7 @@ const categoryApi = {
     return http.put<ApiResponse<Category>>(`${CATEGORY_URL}/${id}`, data)
   },
   deleteCategory(id: number | string) {
-    return http.delete<ApiResponse<any>>(`${CATEGORY_URL}/${id}`)
+    return http.delete<ApiResponse<null>>(`${CATEGORY_URL}/${id}`)
   }
 }
 

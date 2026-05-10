@@ -14,27 +14,24 @@ const MAX_ITEMS_PER_ROW = 8
 const MenuSection = () => {
   const [activeTab, setActiveTab] = useState('All')
 
-  const { data: categoryData, isPending: categoriesLoading } = useQuery({
+  const { data: categories = [], isPending: categoriesLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => categoryApi.getCategories()
+    queryFn: () => categoryApi.getCategories(),
+    select: (res) => res.data.data
   })
 
-  const { data: itemData, isPending: itemsLoading } = useQuery({
+  const { data: rawItems = [], isPending: itemsLoading } = useQuery({
     queryKey: ['items'],
-    queryFn: () => itemApi.getItems()
+    queryFn: () => itemApi.getItems(),
+    select: (res) => res.data.data
   })
 
-  const { data: comboData, isPending: combosLoading } = useQuery({
+  const { data: combos = [], isPending: combosLoading } = useQuery({
     queryKey: ['combos'],
-    queryFn: () => comboApi.getCombos()
+    queryFn: () => comboApi.getCombos(),
+    select: (res) => res.data.data
   })
-
-  const categories = categoryData?.data?.data ?? []
-  const rawItems: Item[] = itemData?.data?.data ?? []
-  const combosAsCardItems: MenuCardItem[] = useMemo(
-    () => (comboData?.data?.data ?? []).map(comboToCardItem),
-    [comboData?.data?.data]
-  )
+  const combosAsCardItems: MenuCardItem[] = useMemo(() => combos.map(comboToCardItem), [combos])
 
   const categoryMap = useMemo(() => {
     const map: Record<number, string> = {}

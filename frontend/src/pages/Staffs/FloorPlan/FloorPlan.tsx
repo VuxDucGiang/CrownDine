@@ -1,5 +1,5 @@
 import tableApi from '@/apis/table.api'
-import { queryClient } from '@/main'
+import { queryClient } from '@/lib/queryClient'
 import type { Order } from '@/types/order.type'
 import type { ETableShape, ETableStatus, Table } from '@/types/table.type'
 import { useQuery } from '@tanstack/react-query'
@@ -34,12 +34,11 @@ const FloorPlan = () => {
   const stompClient = useStompClient()
 
   // 1. Fetch dữ liệu ban đầu bằng React Query
-  const { data: tableData, isLoading } = useQuery({
+  const { data: tables = [], isLoading } = useQuery({
     queryKey: ['tables'],
-    queryFn: () => tableApi.getAllTables()
+    queryFn: () => tableApi.getAllTables(),
+    select: (res) => res.data.data
   })
-
-  const tables = tableData?.data.data || []
 
   // 3. Hàm giả lập Staff cập nhật trạng thái
   const updateStatus = (tableId: string, newStatus: ETableStatus) => {

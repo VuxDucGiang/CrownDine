@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/useAuthStore'
+import path from '@/constants/path'
 import { useMutation } from '@tanstack/react-query'
 import authApi from '@/apis/auth.api'
 import { toast } from 'react-toastify'
@@ -111,7 +112,7 @@ const StaffHeader = () => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to='/profile' className='cursor-pointer'>
+                  <Link to={path.profile} className='cursor-pointer'>
                     <User className='mr-2 h-4 w-4' />
                     <span>Hồ sơ của tôi</span>
                   </Link>

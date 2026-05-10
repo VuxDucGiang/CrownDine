@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
 import { Logo } from '@/components/ui/logo'
 import { useAuthStore } from '@/stores/useAuthStore'
+import path from '@/constants/path'
 import { useMutation } from '@tanstack/react-query'
 import authApi from '@/apis/auth.api'
 import { toast } from 'react-toastify'
@@ -18,6 +19,9 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+
+type NavChild = { label: string; href: string }
+type NavItem = { label: string; href?: string; children?: NavChild[] }
 
 export default function AdminHeader() {
   const [isOpen, setIsOpen] = useState(false)
@@ -49,7 +53,7 @@ export default function AdminHeader() {
     logoutMutation.mutate()
   }
 
-  const navItems = [
+  const navItems: NavItem[] = [
     { label: 'Tổng quan', href: '/admin/dashboard' },
     {
       label: 'Hàng hoá',
@@ -76,10 +80,10 @@ export default function AdminHeader() {
     }
   ]
 
-  const isActive = (item: any) => {
+  const isActive = (item: NavItem) => {
     if (item.href === location.pathname) return true
     if (item.children) {
-      return item.children.some((child: any) => child.href === location.pathname)
+      return item.children.some((child) => child.href === location.pathname)
     }
     return false
   }
@@ -193,7 +197,7 @@ export default function AdminHeader() {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to='/profile' className='cursor-pointer'>
+                  <Link to={path.profile} className='cursor-pointer'>
                     <User className='mr-2 h-4 w-4' />
                     <span>Hồ sơ của tôi</span>
                   </Link>

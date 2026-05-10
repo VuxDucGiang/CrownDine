@@ -23,14 +23,13 @@ export default function CategoryList() {
   const queryClient = useQueryClient()
 
   // Categories query
-  const { data: categoriesData, isLoading: isLoadingCategories } = useQuery({
+  const { data: categoryList = [], isLoading: isLoadingCategories } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => categoryApi.getCategories()
+    queryFn: () => categoryApi.getCategories(),
+    select: (res) => res.data.data
   })
 
-  const categories = (categoriesData?.data.data || []).filter((c) =>
-    c.name.toLowerCase().includes(searchTerm.toLowerCase())
-  )
+  const categories = categoryList.filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
   // Create Category Mutation
   const createCategoryMutation = useMutation({
@@ -65,7 +64,7 @@ export default function CategoryList() {
   // --- ITEM MUTATIONS ---
 
   const createItemMutation = useMutation({
-    mutationFn: (data: any) => itemApi.createItem(data),
+    mutationFn: (data: ItemFormData) => itemApi.createItem(data),
     onSuccess: () => {
       if (selectedCategoryForItems) {
         handleRowClick(selectedCategoryForItems) // Refresh item list
@@ -77,7 +76,7 @@ export default function CategoryList() {
   })
 
   const updateItemMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => itemApi.updateItem(id, data),
+    mutationFn: ({ id, data }: { id: number; data: ItemFormData }) => itemApi.updateItem(id, data),
     onSuccess: () => {
       if (selectedCategoryForItems) {
         handleRowClick(selectedCategoryForItems) // Refresh item list
@@ -100,12 +99,13 @@ export default function CategoryList() {
 
   // --- COMBO MUTATIONS ---
 
-  const { data: combosData, isLoading: isLoadingCombos } = useQuery({
+  const { data: comboList = [], isLoading: isLoadingCombos } = useQuery({
     queryKey: ['combos'],
-    queryFn: () => comboApi.getCombos()
+    queryFn: () => comboApi.getCombos(),
+    select: (res) => res.data.data
   })
 
-  const combos = (combosData?.data.data || []).filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
+  const combos = comboList.filter((c) => c.name.toLowerCase().includes(searchTerm.toLowerCase()))
 
   const deleteComboMutation = useMutation({
     mutationFn: (id: number) => comboApi.deleteCombo(id),
@@ -164,13 +164,13 @@ export default function CategoryList() {
     setIsCategoryModalOpen(true)
   }
 
-  const handleEditCategory = (e: React.MouseEvent, category: any) => {
+  const handleEditCategory = (e: React.MouseEvent, category: Category) => {
     e.stopPropagation() // Prevent row click
     setEditingCategory(category)
     setIsCategoryModalOpen(true)
   }
 
-  const handleDeleteCategory = (e: React.MouseEvent, category: any) => {
+  const handleDeleteCategory = (e: React.MouseEvent, category: Category) => {
     e.stopPropagation()
     if (window.confirm(`Bạn có chắc chắn muốn xóa danh mục "${category.name}"?`)) {
       deleteCategoryMutation.mutate(category.id)
@@ -187,7 +187,7 @@ export default function CategoryList() {
 
   // --- HANDLERS FOR ITEMS ---
 
-  const handleRowClick = async (category: any) => {
+  const handleRowClick = async (category: Category) => {
     setSelectedCategoryForItems(category)
     setIsLoadingItems(true)
     setIsItemsModalOpen(true)

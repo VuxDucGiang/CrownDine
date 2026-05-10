@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import { MessageSquare, X, Send, Minimize2, UtensilsCrossed, Sparkles } from 'lucide-react'
 import chatApi from '@/apis/chat.api'
 import type { ChatConversation, ChatMessage, ChatMessageRequest } from '@/types/chat.type'
@@ -66,55 +66,15 @@ export default function ChatWidget() {
     })
   }
 
-  // Load conversations when widget opens
-  useEffect(() => {
-    if (isOpen && isAuthenticated) {
-      loadConversations()
-    }
-  }, [isOpen, isAuthenticated])
-
   // Check if user is at bottom of chat
-  const isAtBottom = () => {
+  const isAtBottom = useCallback(() => {
     if (!messagesContainerRef.current) return true
     const container = messagesContainerRef.current
     const threshold = 100 // pixels from bottom
     return container.scrollHeight - container.scrollTop - container.clientHeight < threshold
-  }
+  }, [])
 
-  // Handle scroll events to detect user scrolling
-  useEffect(() => {
-    const container = messagesContainerRef.current
-    if (!container) return
-
-    const handleScroll = () => {
-      setIsUserScrolling(!isAtBottom())
-    }
-
-    container.addEventListener('scroll', handleScroll)
-    return () => container.removeEventListener('scroll', handleScroll)
-  }, [currentConversation])
-
-  // Auto scroll to bottom only if user is at bottom (new messages)
-  useEffect(() => {
-    if (isOpen && !isMinimized && isAtBottom() && !isUserScrolling) {
-      scrollToBottom()
-    }
-  }, [currentConversation?.messages, isOpen, isMinimized])
-
-  // Poll for new messages when conversation is active
-  useEffect(() => {
-    if (currentConversation && isOpen && !isMinimized) {
-      const interval = setInterval(
-        () => {
-          loadConversation(currentConversation.id)
-        },
-        isWaitingForResponse ? 1000 : 2000
-      ) // Poll faster when waiting for response
-      return () => clearInterval(interval)
-    }
-  }, [currentConversation, isOpen, isMinimized, isWaitingForResponse])
-
-  const scrollToBottom = () => {
+  const scrollToBottom = useCallback(() => {
     if (messagesContainerRef.current) {
       messagesContainerRef.current.scrollTo({
         top: messagesContainerRef.current.scrollHeight,
@@ -123,9 +83,94 @@ export default function ChatWidget() {
     } else {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
     }
-  }
+  }, [])
 
-  const loadConversations = async () => {
+  const createConversation = useCallback(async () => {
+    try {
+      const response = await chatApi.createConversation({})
+      if (response.data.data) {
+        const newConv = response.data.data
+        setConversations((prev) => [newConv, ...prev])
+        setCurrentConversation(newConv)
+      }
+    } catch (error) {
+      toast.error('Không thể tạo cuộc trò chuyện mới')
+      console.error('Failed to create conversation:', error)
+    }
+  }, [])
+
+  const loadConversation = useCallback(
+    async (conversationId: number): Promise<ChatConversation | null> => {
+      try {
+        const response = await chatApi.getConversation(conversationId)
+        if (response.data.data) {
+          const updatedConversation = response.data.data
+          setCurrentConversation(updatedConversation)
+
+          // Check if we got a new assistant response (created in last 10 seconds)
+          const now = Date.now()
+          const newAssistantMessages = updatedConversation.messages.filter(
+            (msg) => msg.role === 'assistant' && now - new Date(msg.createdAt).getTime() < 10000
+          )
+
+          // If we were waiting and now have assistant message, stop aggressive polling
+          if (isWaitingForResponse && newAssistantMessages.length > 0) {
+            setIsWaitingForResponse(false)
+          }
+
+          // Auto-navigate if assistant message contains a reservation link OR confirmation message
+          newAssistantMessages.forEach((msg) => {
+            // Improved regex to match reservation links even with spaces in tableName
+            const reservationLinkRegex = /\/?reservation\?step=\d+.*?guests=\d+/gi
+            const matches = msg.content.match(reservationLinkRegex)
+
+            if (matches && matches.length > 0) {
+              matches.forEach((link) => {
+                // Clean up the link (remove leading/trailing whitespace and punctuation)
+                let cleanLink = link.trim().replace(/^\/?/, '/') // Ensure starts with /
+                cleanLink = cleanLink.replace(/[.,!?;:]$/, '').trim()
+
+                // Ensure it's a valid reservation link
+                if (cleanLink.startsWith('/reservation?step=')) {
+                  // Check if we've already processed this link
+                  if (!processedLinks.has(cleanLink)) {
+                    console.log(' Auto-navigating to reservation page:', cleanLink)
+                    setProcessedLinks((prev) => new Set([...prev, cleanLink]))
+
+                    // Show toast notification
+                    const stepNumber = cleanLink.includes('step=4') ? '4 (Thanh toán)' : '3 (Đặt món)'
+                    toast.info('Đang chuyển đến trang đặt bàn...', {
+                      description: `Chuyển đến bước ${stepNumber}`
+                    })
+
+                    // Auto-navigate after a short delay to show the message
+                    setTimeout(() => {
+                      navigate(cleanLink)
+                      setIsOpen(false)
+                      setIsMinimized(false)
+                    }, 1500) // 1.5 second delay to let user see the message
+                  } else {
+                    console.log('⏭️ Link already processed, skipping:', cleanLink)
+                  }
+                } else {
+                  console.warn('⚠️ Invalid reservation link format:', cleanLink)
+                }
+              })
+            }
+          })
+
+          return updatedConversation
+        }
+        return null
+      } catch (error) {
+        console.error('Failed to load conversation:', error)
+        return null
+      }
+    },
+    [isWaitingForResponse, navigate, processedLinks]
+  )
+
+  const loadConversations = useCallback(async () => {
     try {
       const response = await chatApi.listConversations()
       if (response.data.data) {
@@ -140,89 +185,47 @@ export default function ChatWidget() {
     } catch (error) {
       console.error('Failed to load conversations:', error)
     }
-  }
+  }, [createConversation, loadConversation])
 
-  const loadConversation = async (conversationId: number): Promise<ChatConversation | null> => {
-    try {
-      const response = await chatApi.getConversation(conversationId)
-      if (response.data.data) {
-        const updatedConversation = response.data.data
-        setCurrentConversation(updatedConversation)
-
-        // Check if we got a new assistant response (created in last 10 seconds)
-        const now = Date.now()
-        const newAssistantMessages = updatedConversation.messages.filter(
-          (msg) => msg.role === 'assistant' && now - new Date(msg.createdAt).getTime() < 10000
-        )
-
-        // If we were waiting and now have assistant message, stop aggressive polling
-        if (isWaitingForResponse && newAssistantMessages.length > 0) {
-          setIsWaitingForResponse(false)
-        }
-
-        // Auto-navigate if assistant message contains a reservation link OR confirmation message
-        newAssistantMessages.forEach((msg) => {
-          // Improved regex to match reservation links even with spaces in tableName
-          const reservationLinkRegex = /\/?reservation\?step=\d+.*?guests=\d+/gi
-          let matches = msg.content.match(reservationLinkRegex)
-
-          if (matches && matches.length > 0) {
-            matches.forEach((link) => {
-              // Clean up the link (remove leading/trailing whitespace and punctuation)
-              let cleanLink = link.trim().replace(/^\/?/, '/') // Ensure starts with /
-              cleanLink = cleanLink.replace(/[.,!?;:]$/, '').trim()
-
-              // Ensure it's a valid reservation link
-              if (cleanLink.startsWith('/reservation?step=')) {
-                // Check if we've already processed this link
-                if (!processedLinks.has(cleanLink)) {
-                  console.log(' Auto-navigating to reservation page:', cleanLink)
-                  setProcessedLinks((prev) => new Set([...prev, cleanLink]))
-
-                  // Show toast notification
-                  const stepNumber = cleanLink.includes('step=4') ? '4 (Thanh toán)' : '3 (Đặt món)'
-                  toast.info('Đang chuyển đến trang đặt bàn...', {
-                    description: `Chuyển đến bước ${stepNumber}`
-                  })
-
-                  // Auto-navigate after a short delay to show the message
-                  setTimeout(() => {
-                    navigate(cleanLink)
-                    setIsOpen(false)
-                    setIsMinimized(false)
-                  }, 1500) // 1.5 second delay to let user see the message
-                } else {
-                  console.log('⏭️ Link already processed, skipping:', cleanLink)
-                }
-              } else {
-                console.warn('⚠️ Invalid reservation link format:', cleanLink)
-              }
-            })
-          }
-        })
-
-        return updatedConversation
-      }
-      return null
-    } catch (error) {
-      console.error('Failed to load conversation:', error)
-      return null
+  // Load conversations when widget opens
+  useEffect(() => {
+    if (isOpen && isAuthenticated) {
+      loadConversations()
     }
-  }
+  }, [isOpen, isAuthenticated, loadConversations])
 
-  const createConversation = async () => {
-    try {
-      const response = await chatApi.createConversation({})
-      if (response.data.data) {
-        const newConv = response.data.data
-        setConversations([newConv, ...conversations])
-        setCurrentConversation(newConv)
-      }
-    } catch (error) {
-      toast.error('Không thể tạo cuộc trò chuyện mới')
-      console.error('Failed to create conversation:', error)
+  // Handle scroll events to detect user scrolling
+  useEffect(() => {
+    const container = messagesContainerRef.current
+    if (!container) return
+
+    const handleScroll = () => {
+      setIsUserScrolling(!isAtBottom())
     }
-  }
+
+    container.addEventListener('scroll', handleScroll)
+    return () => container.removeEventListener('scroll', handleScroll)
+  }, [currentConversation, isAtBottom])
+
+  // Auto scroll to bottom only if user is at bottom (new messages)
+  useEffect(() => {
+    if (isOpen && !isMinimized && isAtBottom() && !isUserScrolling) {
+      scrollToBottom()
+    }
+  }, [currentConversation?.messages, isOpen, isMinimized, isAtBottom, isUserScrolling, scrollToBottom])
+
+  // Poll for new messages when conversation is active
+  useEffect(() => {
+    if (currentConversation && isOpen && !isMinimized) {
+      const interval = setInterval(
+        () => {
+          loadConversation(currentConversation.id)
+        },
+        isWaitingForResponse ? 1000 : 2000
+      ) // Poll faster when waiting for response
+      return () => clearInterval(interval)
+    }
+  }, [currentConversation, isOpen, isMinimized, isWaitingForResponse, loadConversation])
 
   const sendMessage = async () => {
     if (!message.trim() || !currentConversation || isLoading || !isAuthenticated) return

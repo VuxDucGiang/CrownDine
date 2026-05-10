@@ -17,10 +17,6 @@ export default function useCreateStaff() {
       toast.success('Thêm nhân viên thành công!')
       // Invalidate the staffs query to refresh the list
       queryClient.invalidateQueries({ queryKey: ['staffs'] })
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Có lỗi xảy ra khi thêm nhân viên'
-      toast.error(message)
     }
   })
 }

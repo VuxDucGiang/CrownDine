@@ -1,14 +1,11 @@
 'use client'
 
+import { useQuery } from '@tanstack/react-query'
+import userVoucherApi from '@/apis/userVoucher.api'
 import type { MyVoucherResponse } from '@/types/voucher.type'
 import { Ticket, Copy, Tag, Calendar, Hash } from 'lucide-react'
 import { formatCurrency } from '@/utils/utils'
 import { toast } from 'sonner'
-
-interface MyVouchersProps {
-  vouchers: MyVoucherResponse[]
-  isLoading?: boolean
-}
 
 const formatDate = (dateStr: string) => {
   return new Date(dateStr).toLocaleDateString('vi-VN', {
@@ -18,7 +15,13 @@ const formatDate = (dateStr: string) => {
   })
 }
 
-const MyVouchers = ({ vouchers, isLoading }: MyVouchersProps) => {
+export default function VouchersPage() {
+  const { data: vouchers = [], isLoading } = useQuery({
+    queryKey: ['my-vouchers'],
+    queryFn: () => userVoucherApi.getMyVouchers(),
+    select: (res) => res.data.data
+  })
+
   const copyCode = (code: string) => {
     navigator.clipboard.writeText(code)
     toast.success(`Đã copy mã: ${code}`)
@@ -105,5 +108,3 @@ const MyVouchers = ({ vouchers, isLoading }: MyVouchersProps) => {
     </div>
   )
 }
-
-export default MyVouchers

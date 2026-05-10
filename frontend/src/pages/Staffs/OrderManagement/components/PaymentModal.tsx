@@ -8,6 +8,15 @@ import orderApi from '@/apis/order.api'
 import userApi from '@/apis/user.api'
 import type { Order } from '@/types/order.type'
 import { useMutation, useQuery } from '@tanstack/react-query'
+import type { User } from '@/types/profile.type'
+import type { ErrorResponse } from '@/types/utils.type'
+import { isAxiosError } from '@/utils/utils'
+
+type CustomerVoucher = {
+  voucherId: number
+  code: string
+  name: string
+}
 
 interface PaymentModalProps {
   isOpen: boolean
@@ -20,8 +29,8 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
   const [method, setMethod] = useState<'CASH' | 'PAYOS' | null>(null)
   const [phone, setPhone] = useState('')
   const [voucherCode, setVoucherCode] = useState('')
-  const [foundCustomer, setFoundCustomer] = useState<any>(null)
-  const [customerVouchers, setCustomerVouchers] = useState<any[]>([])
+  const [foundCustomer, setFoundCustomer] = useState<User | null>(null)
+  const [customerVouchers, setCustomerVouchers] = useState<CustomerVoucher[]>([])
 
   const {
     data: checkoutData,
@@ -47,11 +56,11 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
       const data = res.data?.data
       if (!data || !data.id) throw new Error('Không tìm thấy khách hàng')
 
-      let vouchers: any[] = []
+      let vouchers: CustomerVoucher[] = []
       if (order?.id) {
-        await orderApi.mapCustomerToOrder(order.id, data.id)
-        const vouchersRes = await userApi.getAvailableVouchers(data.id)
-        vouchers = vouchersRes.data?.data || []
+        await orderApi.mapCustomerToOrder(order.id, Number(data.id))
+        const vouchersRes = await userApi.getAvailableVouchers(Number(data.id))
+        vouchers = (vouchersRes.data?.data as CustomerVoucher[]) || []
       }
       return { customer: data, vouchers }
     },
@@ -60,10 +69,13 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
       setCustomerVouchers(data.vouchers)
       toast.success(`Tìm thấy khách hàng: ${data.customer.firstName} ${data.customer.lastName}`)
     },
-    onError: (err: any) => {
+    onError: (err: unknown) => {
       setFoundCustomer(null)
       setCustomerVouchers([])
-      toast.error('Lỗi khi tra cứu: ' + (err.response?.data?.message || err.message))
+      const message = isAxiosError<ErrorResponse>(err)
+        ? err.response?.data?.message || err.message
+        : 'Không thể tra cứu khách hàng'
+      toast.error(`Lỗi khi tra cứu: ${message}`)
     }
   })
 
@@ -77,8 +89,9 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
       refetchCheckout()
       onSuccess()
     },
-    onError: (err: any) => {
-      toast.error('Lỗi áp dụng voucher: ' + (err.response?.data?.message || err.message))
+    onError: (err: unknown) => {
+      const message = isAxiosError<ErrorResponse>(err) ? err.response?.data?.message || err.message : 'Lỗi hệ thống'
+      toast.error(`Lỗi áp dụng voucher: ${message}`)
     }
   })
 
@@ -120,8 +133,9 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
         }
       }
     },
-    onError: (err: any) => {
-      toast.error('Lỗi thanh toán: ' + err.message)
+    onError: (err: unknown) => {
+      const message = isAxiosError<ErrorResponse>(err) ? err.response?.data?.message || err.message : 'Lỗi hệ thống'
+      toast.error(`Lỗi thanh toán: ${message}`)
     }
   })
 

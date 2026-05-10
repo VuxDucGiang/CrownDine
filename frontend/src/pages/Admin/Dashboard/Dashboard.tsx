@@ -29,6 +29,7 @@ import {
 } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
+import type { RecentActivity } from '@/types/dashboard.type'
 
 // Fake data removed, will use data from API
 
@@ -284,7 +285,10 @@ export default function Dashboard() {
                     border: 'none',
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                   }}
-                  formatter={(value: any) => [`${(Number(value) * 1000000).toLocaleString('vi-VN')} VNĐ`, 'Doanh thu']}
+                  formatter={(value: number | string) => [
+                    `${(Number(value) * 1000000).toLocaleString('vi-VN')} VNĐ`,
+                    'Doanh thu'
+                  ]}
                 />
                 <Bar dataKey='value' radius={[4, 4, 0, 0]}>
                   {displaySalesData.map((_, index) => (
@@ -335,7 +339,7 @@ export default function Dashboard() {
                     border: 'none',
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                   }}
-                  formatter={(value: any) => [`${Number(value).toLocaleString('vi-VN')} khách`, 'Số lượng']}
+                  formatter={(value: number | string) => [`${Number(value).toLocaleString('vi-VN')} khách`, 'Số lượng']}
                 />
                 <Line
                   type='monotone'
@@ -415,7 +419,7 @@ export default function Dashboard() {
                     border: 'none',
                     boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)'
                   }}
-                  formatter={(value: any) => {
+                  formatter={(value: number | string) => {
                     if (topProductsViewMode === 'quantity') {
                       return [`${Number(value).toLocaleString('vi-VN')} món`, 'Số lượng bán']
                     }
@@ -462,7 +466,7 @@ export default function Dashboard() {
                   Chưa có hoạt động nào trong khoảng thời gian này
                 </div>
               ) : (
-                displayRecentActivities.map((activity: any) => (
+                displayRecentActivities.map((activity: RecentActivity) => (
                   <div key={activity.id} className='hover:bg-muted/5 flex gap-4 p-4 transition-colors'>
                     <div
                       className={`mt-1 flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${
@@ -545,7 +549,7 @@ export default function Dashboard() {
                 </thead>
                 <tbody className='divide-border bg-card text-card-foreground divide-y'>
                   {summaryResults?.recentActivities?.length ? (
-                    summaryResults.recentActivities.map((activity: any) => (
+                    summaryResults.recentActivities.map((activity: RecentActivity) => (
                       <tr key={activity.id} className='hover:bg-muted/30 transition-colors'>
                         <td className='text-foreground px-6 py-4 whitespace-nowrap'>{activity.time}</td>
                         <td className='px-6 py-4'>

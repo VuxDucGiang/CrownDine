@@ -176,7 +176,7 @@ export default function Reservation() {
       }
     }
     handleAutoBooking()
-  }, []) // Chỉ chạy 1 lần khi mount màn hình Reservation
+  }, [date, guests, reservationId, searchParams, startTime]) // Chỉ chạy 1 lần logic chính nhờ guard ref
 
   const authUser = useAuthStore((state) => state.user)
   const paymentMutation = useMutation({

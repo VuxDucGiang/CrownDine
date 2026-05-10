@@ -1,7 +1,7 @@
 import { Modal } from '@/components/ui/modal'
 import { Input } from '@/components/ui/input'
 import { Button } from '@/components/ui/button'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { createStaffSchema, type CreateStaffValues } from '@/utils/auth.schema'
 import useCreateStaff from '@/hooks/useCreateStaff'
@@ -19,8 +19,8 @@ export function StaffModal({ isOpen, onClose }: StaffModalProps) {
     register,
     handleSubmit,
     reset,
-    watch,
     setValue,
+    control,
     formState: { errors }
   } = useForm<CreateStaffValues>({
     resolver: zodResolver(createStaffSchema),
@@ -58,7 +58,7 @@ export function StaffModal({ isOpen, onClose }: StaffModalProps) {
   }, [isOpen, reset])
 
   // Watch email changes to dynamically update username
-  const emailVal = watch('email')
+  const emailVal = useWatch({ control, name: 'email' })
   useEffect(() => {
     if (emailVal) {
       const parts = emailVal.split('@')

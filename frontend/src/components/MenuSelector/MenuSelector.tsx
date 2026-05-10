@@ -2,10 +2,8 @@ import comboApi from '@/apis/combo.api'
 import categoryApi from '@/apis/category.api'
 import itemApi from '@/apis/item.api'
 import favoritesApi from '@/apis/favorites.api'
-import type { Category } from '@/types/category.type'
 import type { Item } from '@/types/item.type'
 import { comboToCardItem, type MenuCardItem } from '@/types/item.type'
-import type { Combo } from '@/types/combo.type'
 import { formatCurrency, getImageUrl, DEFAULT_PLACEHOLDER } from '@/utils/utils'
 import { useQuery } from '@tanstack/react-query'
 import { useMemo, useState } from 'react'
@@ -24,31 +22,30 @@ export default function MenuSelector({ onSelectItem, isSidebar = false }: MenuSe
   const { isAuthenticated } = useAuthStore()
 
   // --- Fetching Data ---
-  const { data: categoryData, isPending: categoriesLoading } = useQuery({
+  const { data: categories = [], isPending: categoriesLoading } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => categoryApi.getCategories()
+    queryFn: () => categoryApi.getCategories(),
+    select: (res) => res.data.data
   })
 
-  const { data: itemData, isPending: itemsLoading } = useQuery({
+  const { data: rawItems = [], isPending: itemsLoading } = useQuery({
     queryKey: ['items'],
-    queryFn: () => itemApi.getItems()
+    queryFn: () => itemApi.getItems(),
+    select: (res) => res.data.data
   })
 
-  const { data: comboData, isPending: combosLoading } = useQuery({
+  const { data: combos = [], isPending: combosLoading } = useQuery({
     queryKey: ['combos'],
-    queryFn: () => comboApi.getCombos()
+    queryFn: () => comboApi.getCombos(),
+    select: (res) => res.data.data
   })
 
-  const { data: favoriteData, isPending: favoritesLoading } = useQuery({
+  const { data: favorites = [], isPending: favoritesLoading } = useQuery({
     queryKey: ['favorites'],
     queryFn: () => favoritesApi.getMyFavorites(),
+    select: (res) => res.data.data,
     enabled: isAuthenticated
   })
-
-  const categories: Category[] = categoryData?.data?.data ?? []
-  const rawItems: Item[] = itemData?.data?.data ?? []
-  const combos: Combo[] = comboData?.data?.data ?? []
-  const favorites = favoriteData?.data?.data ?? []
 
   const categoryMap = useMemo(() => {
     const map: Record<number, string> = {}
