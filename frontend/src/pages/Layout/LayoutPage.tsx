@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import type { ReactNode } from 'react'
 import { ChevronDown, ChevronRight, Plus, X } from 'lucide-react'
 import LayoutCanvas from '@/components/Layout/LayoutCanvas'
 import AreaCanvas from '@/components/Layout/AreaCanvas'
@@ -20,7 +21,7 @@ const SHAPE_SIZE = {
   RECT: { width: 270, height: 120, capacity: 10 }
 } as const
 
-const Field = ({ label, children }: { label: string; children: any }) => (
+const Field = ({ label, children }: { label: string; children: ReactNode }) => (
   <div className='space-y-1'>
     <div className='text-sm font-semibold text-gray-700'>{label}</div>
     {children}
@@ -80,7 +81,45 @@ export default function LayoutPage() {
   }
 
   useEffect(() => {
-    loadAllData()
+    let isCancelled = false
+
+    const bootstrapLayout = async () => {
+      try {
+        const res = await layoutApi.getAllFloors()
+        const floorRecords = res.data.data
+        const fullLayouts = (
+          await Promise.all(
+            floorRecords.map(async (f) => {
+              try {
+                const layoutRes = await layoutApi.getFloorLayout(f.id)
+                return layoutRes.data.data
+              } catch (e) {
+                console.warn(`Could not load layout for floor ${f.id}`, e)
+                return null
+              }
+            })
+          )
+        ).filter(Boolean) as FloorLayoutResponse[]
+
+        if (isCancelled) return
+        setFloors(fullLayouts)
+        if (fullLayouts.length > 0) {
+          setActiveFloorId((prev) => prev ?? fullLayouts[0].floorId)
+          if (fullLayouts[0].areas.length > 0) {
+            const firstAreaId = fullLayouts[0].areas[0].areaId
+            setActiveAreaId((prev) => prev ?? firstAreaId)
+          }
+          setExpandedFloors(fullLayouts.map((f) => f.floorId))
+        }
+      } catch (error) {
+        console.error('Failed to load layout data:', error)
+      }
+    }
+
+    void bootstrapLayout()
+    return () => {
+      isCancelled = true
+    }
   }, [])
 
   /* ---------- ADD AREA ---------- */

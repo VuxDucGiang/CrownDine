@@ -17,6 +17,28 @@ interface ScheduleTableProps {
   isLoading: boolean
 }
 
+type DayShift = {
+  id: string
+  name: string
+  colorClass: string
+  repeatGroupId?: string
+  startTime: string
+  endTime: string
+}
+
+type EmployeeDaySchedule = {
+  dayIndex: number
+  shifts: DayShift[]
+}
+
+type EmployeeScheduleRow = {
+  id: string
+  rawId: number
+  name: string
+  salarySetting: string
+  schedule: EmployeeDaySchedule[]
+}
+
 export function ScheduleTable({ isAdmin = false, currentDate, schedules, staffs, isLoading }: ScheduleTableProps) {
   const [isModalOpen, setIsModalOpen] = useState(false)
   const [selectedStaffId, setSelectedStaffId] = useState<number | null>(null)
@@ -70,7 +92,7 @@ export function ScheduleTable({ isAdmin = false, currentDate, schedules, staffs,
   })
 
   // Map backend response into grouped employees
-  const employeesMap = new Map<number, any>()
+  const employeesMap = new Map<number, EmployeeScheduleRow>()
 
   // 1. Initialize map with ALL staffs first
   staffs.forEach((staff) => {
@@ -97,11 +119,12 @@ export function ScheduleTable({ isAdmin = false, currentDate, schedules, staffs,
     }
 
     const emp = employeesMap.get(schedule.user.id)
+    if (!emp) return
     // Find which day index this schedule corresponds to
     const dayIndex = days.findIndex((d) => d.fullDateStr === schedule.workDate)
 
     if (dayIndex !== -1) {
-      let daySch = emp.schedule.find((s: any) => s.dayIndex === dayIndex)
+      let daySch = emp.schedule.find((s) => s.dayIndex === dayIndex)
       if (!daySch) {
         daySch = { dayIndex, shifts: [] }
         emp.schedule.push(daySch)
@@ -176,7 +199,7 @@ export function ScheduleTable({ isAdmin = false, currentDate, schedules, staffs,
                   <div className='text-muted-foreground text-xs'>{emp.id}</div>
                 </td>
                 {days.map((d, dayIdx) => {
-                  const dayShifts = emp.schedule.find((s: any) => s.dayIndex === dayIdx)?.shifts || []
+                  const dayShifts = emp.schedule.find((s) => s.dayIndex === dayIdx)?.shifts || []
                   return (
                     <ScheduleCell
                       key={dayIdx}

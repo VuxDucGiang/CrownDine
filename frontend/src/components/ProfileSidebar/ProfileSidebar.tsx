@@ -1,5 +1,7 @@
 import { useRef } from 'react'
+import { NavLink } from 'react-router-dom'
 import type { User } from '@/types/profile.type'
+import path from '@/constants/path'
 import { User as UserIcon, Clock, Lock, Camera, Loader2, Ticket, Heart, Gift } from 'lucide-react'
 import { calculateMembershipTier, getMembershipTierConfig } from '@/lib/membership_tier'
 import userApi from '@/apis/user.api'
@@ -9,11 +11,9 @@ import { useAuthStore } from '@/stores/useAuthStore'
 
 interface ProfileSidebarProps {
   user: User
-  activeTab: string
-  onTabChange: (tabId: string) => void
 }
 
-const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) => {
+const ProfileSidebar = ({ user }: ProfileSidebarProps) => {
   const fileInputRef = useRef<HTMLInputElement>(null)
   const setUser = useAuthStore((state) => state.setUser)
   const authRoles = useAuthStore((state) => state.roles)
@@ -56,19 +56,18 @@ const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) =
   }
 
   const tabs = [
-    { id: 'info', label: 'Thông Tin Của Tôi', icon: UserIcon },
-    { id: 'reservations', label: 'Lịch Sử Đặt Bàn', icon: Clock },
-    { id: 'favorites', label: 'Yêu Thích', icon: Heart },
-    { id: 'reward-points', label: 'Điểm Thưởng', icon: Gift },
-    { id: 'vouchers', label: 'Voucher Của Tôi', icon: Ticket },
-    { id: 'security', label: 'Mật Khẩu & Bảo Mật', icon: Lock }
+    { to: path.profileInfo, label: 'Thông Tin Của Tôi', icon: UserIcon },
+    { to: path.profileReservations, label: 'Lịch Sử Đặt Bàn', icon: Clock },
+    { to: path.profileFavorites, label: 'Yêu Thích', icon: Heart },
+    { to: path.profileRewardPoints, label: 'Điểm Thưởng', icon: Gift },
+    { to: path.profileVouchers, label: 'Voucher Của Tôi', icon: Ticket },
+    { to: path.profileSecurity, label: 'Mật Khẩu & Bảo Mật', icon: Lock }
   ]
-  const getInitials = () => {
-    return `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
-  }
+
+  const getInitials = () => `${user.firstName.charAt(0)}${user.lastName.charAt(0)}`.toUpperCase()
+
   return (
     <aside className='bg-card border-border sticky top-20 h-fit w-full rounded-lg border p-6'>
-      {/* Avatar Section */}
       <div className='mb-8 flex flex-col items-center'>
         <div
           className='group border-primary bg-primary/10 relative mb-4 h-24 w-24 cursor-pointer overflow-hidden rounded-full border-4'
@@ -87,7 +86,6 @@ const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) =
             </div>
           )}
 
-          {/* Hover Overlay */}
           <div className='absolute inset-0 flex flex-col items-center justify-center bg-black/50 opacity-0 transition-opacity group-hover:opacity-100'>
             {uploadAvatarMutation.isPending ? (
               <Loader2 className='h-6 w-6 animate-spin text-white' />
@@ -100,7 +98,6 @@ const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) =
           {user.firstName} {user.lastName}
         </h3>
 
-        {/* Membership Tier Badge */}
         {primaryRole === 'USER' && user.totalSpent !== undefined && (
           <div className='mt-3 w-full'>
             {(() => {
@@ -120,30 +117,29 @@ const ProfileSidebar = ({ user, activeTab, onTabChange }: ProfileSidebarProps) =
         <p className='text-foreground/60 mt-2 text-sm'>{roleLabel}</p>
       </div>
 
-      {/* Navigation Tabs */}
       <nav className='space-y-2'>
         {tabs.map((tab) => {
           const IconComponent = tab.icon
-          const isActive = activeTab === tab.id
 
           return (
-            <button
-              key={tab.id}
-              onClick={() => onTabChange(tab.id)}
-              className={`flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium transition-all duration-300 ${
-                isActive
-                  ? 'bg-primary text-white shadow-lg'
-                  : 'text-foreground/70 hover:bg-card-foreground/5 hover:text-foreground'
-              }`}
+            <NavLink
+              key={tab.to}
+              to={tab.to}
+              className={({ isActive }) =>
+                `flex w-full items-center gap-3 rounded-lg px-4 py-3 font-medium transition-all duration-300 ${
+                  isActive
+                    ? 'bg-primary text-white shadow-lg'
+                    : 'text-foreground/70 hover:bg-card-foreground/5 hover:text-foreground'
+                }`
+              }
             >
               <IconComponent className='h-5 w-5' />
               <span className='text-sm'>{tab.label}</span>
-            </button>
+            </NavLink>
           )
         })}
       </nav>
 
-      {/* Additional Info */}
       <div className='border-border/50 mt-8 space-y-3 border-t pt-6 text-sm'>
         <div>
           <p className='text-foreground/60'>Email</p>

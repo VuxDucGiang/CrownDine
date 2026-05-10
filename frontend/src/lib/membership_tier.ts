@@ -72,8 +72,8 @@ export function getProgressToNextTier(totalSpent: number = 0): {
   const currentIndex = tiers.indexOf(currentTier)
   const nextTier = currentIndex < tiers.length - 1 ? tiers[currentIndex + 1] : null
 
-  let currentAmount = MEMBERSHIP_TIERS[currentTier].minAmount
-  let nextTierAmount = nextTier ? MEMBERSHIP_TIERS[nextTier].minAmount : totalSpent + 1
+  const currentAmount = MEMBERSHIP_TIERS[currentTier].minAmount
+  const nextTierAmount = nextTier ? MEMBERSHIP_TIERS[nextTier].minAmount : totalSpent + 1
 
   // For current tier, show progress to next tier
   const spentInCurrentTier = totalSpent - currentAmount

@@ -2,6 +2,9 @@ import http from '@/utils/http'
 import type { ApiResponse } from '@/types/utils.type'
 import type { UpdateUserRequest, User, PointHistory, ChangePasswordRequest } from '@/types/profile.type'
 import type { PageResponse } from '@/types/utils.type'
+import type { MyVoucherResponse } from '@/types/voucher.type'
+
+type UserProfileResponse = User & { avatarUrl?: string }
 
 const userApi = {
   getPointHistory(page: number = 1, size: number = 5) {
@@ -10,9 +13,9 @@ const userApi = {
     })
   },
   getProfile() {
-    return http.get<ApiResponse<User>>('users/profile', {}).then((res) => {
-      if (res.data?.data && (res.data.data as any).avatarUrl) {
-        res.data.data.avatar = (res.data.data as any).avatarUrl
+    return http.get<ApiResponse<UserProfileResponse>>('users/profile', {}).then((res) => {
+      if (res.data?.data && res.data.data.avatarUrl) {
+        res.data.data.avatar = res.data.data.avatarUrl
       }
       return res
     })
@@ -30,22 +33,22 @@ const userApi = {
     })
   },
   getCustomerByPhone(phone: string) {
-    return http.get<ApiResponse<any>>(`users/customer/${phone}`)
+    return http.get<ApiResponse<User>>(`users/customer/${phone}`)
   },
   getAllCustomers() {
-    return http.get<ApiResponse<any[]>>('users')
+    return http.get<ApiResponse<User[]>>('users')
   },
   getAvailableVouchers(customerId: number) {
-    return http.get<ApiResponse<any>>(`user-vouchers/customer/${customerId}`)
+    return http.get<ApiResponse<MyVoucherResponse[]>>(`user-vouchers/customer/${customerId}`)
   },
   changePassword(data: ChangePasswordRequest) {
-    return http.post<ApiResponse<any>>('users/change-password', data)
+    return http.post<ApiResponse<null>>('users/change-password', data)
   },
   sendEmailOtp(newEmail: string) {
-    return http.post<ApiResponse<any>>('users/profile/email-otp/send', { newEmail })
+    return http.post<ApiResponse<null>>('users/profile/email-otp/send', { newEmail })
   },
   verifyEmailOtp(data: { otp: string; newEmail: string }) {
-    return http.post<ApiResponse<any>>('users/profile/email-otp/verify', data)
+    return http.post<ApiResponse<null>>('users/profile/email-otp/verify', data)
   }
 }
 

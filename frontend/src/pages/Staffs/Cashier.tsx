@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useSyncExternalStore } from 'react'
 import { LayoutGrid, ChevronLeft, ChevronRight, UtensilsCrossed, Users, Clock, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
@@ -8,10 +8,11 @@ import orderApi from '@/apis/order.api'
 import OrderDrawer from './OrderManagement/components/OrderDrawer'
 import PaymentModal from './OrderManagement/components/PaymentModal'
 import { CancelModal } from './OrderManagement/components/CancelModal'
-import { queryClient } from '@/main'
+import { queryClient } from '@/lib/queryClient'
 import { toast } from 'sonner'
 import { useSubscription } from 'react-stomp-hooks'
 import type { Order } from '@/types/order.type'
+import type { Table } from '@/types/table.type'
 
 const Cashier = () => {
   // Pagination State
@@ -29,11 +30,20 @@ const Cashier = () => {
   const [paymentOrder, setPaymentOrder] = useState<Order | null>(null)
   const [cancelingOrder, setCancelingOrder] = useState<Order | null>(null)
   const [preSelectedTableId, setPreSelectedTableId] = useState<number | null>(null)
+  const nowMs = useSyncExternalStore(
+    (onStoreChange) => {
+      const timer = setInterval(onStoreChange, 60000)
+      return () => clearInterval(timer)
+    },
+    () => Date.now(),
+    () => Date.now()
+  )
 
   // Fetch Tables
-  const { data: tableData, isLoading: isLoadingTables } = useQuery({
+  const { data: rawTables = [], isLoading: isLoadingTables } = useQuery({
     queryKey: ['tables'],
-    queryFn: () => tableApi.getAllTables()
+    queryFn: () => tableApi.getAllTables(),
+    select: (res) => res.data.data
   })
 
   // Fetch Active Orders (all to ensure matching regardless of specific served status)
@@ -41,7 +51,7 @@ const Cashier = () => {
     queryKey: ['orders-active'],
     queryFn: () => orderApi.getAllOrders({}),
     select: (response) => {
-      const all = response?.data?.data?.data ?? []
+      const all = response.data.data.data
       return all.filter((o) => o.status !== 'COMPLETED' && o.status !== 'CANCELLED' && o.status !== 'PRE_ORDER')
     }
   })
@@ -56,36 +66,30 @@ const Cashier = () => {
     queryClient.invalidateQueries({ queryKey: ['tables'] })
   })
 
-  const rawTables = tableData?.data.data || []
   const activeOrders = orderData || []
 
   // Dynamic Filters based on data
   const floors = useMemo(() => {
-    return Array.from(new Set(rawTables.map((t: any) => t.floorName).filter(Boolean)))
+    return Array.from(new Set(rawTables.map((t: Table) => t.floorName).filter(Boolean))) as string[]
   }, [rawTables])
 
-  // Default to first floor if not selected
-  useMemo(() => {
-    if (!activeFloor && floors.length > 0) {
-      setActiveFloor(floors[0])
-    }
-  }, [floors, activeFloor])
+  const effectiveActiveFloor = activeFloor || floors[0] || ''
 
   const areas = useMemo(() => {
     let filtered = rawTables
-    if (activeFloor) {
-      filtered = rawTables.filter((t: any) => t.floorName === activeFloor)
+    if (effectiveActiveFloor) {
+      filtered = rawTables.filter((t: Table) => t.floorName === effectiveActiveFloor)
     }
-    const list = Array.from(new Set(filtered.map((t: any) => t.areaName).filter(Boolean)))
+    const list = Array.from(new Set(filtered.map((t: Table) => t.areaName).filter(Boolean))) as string[]
     return ['Tất cả', ...list]
-  }, [rawTables, activeFloor])
+  }, [rawTables, effectiveActiveFloor])
 
   // Table Stats
   const stats = useMemo(() => {
     const total = rawTables.length
-    const using = rawTables.filter((t: any) => t.status === 'OCCUPIED').length
-    const empty = rawTables.filter((t: any) => t.status === 'AVAILABLE').length
-    const reserved = rawTables.filter((t: any) => t.status === 'RESERVED').length
+    const using = rawTables.filter((t: Table) => t.status === 'OCCUPIED').length
+    const empty = rawTables.filter((t: Table) => t.status === 'AVAILABLE').length
+    const reserved = rawTables.filter((t: Table) => t.status === 'RESERVED').length
     return { total, using, empty, reserved }
   }, [rawTables])
 
@@ -98,9 +102,9 @@ const Cashier = () => {
 
   // Filter logic
   const filteredTables = useMemo(() => {
-    return rawTables.filter((table: any) => {
+    return rawTables.filter((table: Table) => {
       // 1. Floor Filter
-      if (activeFloor && table.floorName !== activeFloor) return false
+      if (effectiveActiveFloor && table.floorName !== effectiveActiveFloor) return false
 
       // 2. Area Filter (Khu vực / Phòng)
       if (activeArea !== 'Tất cả' && table.areaName !== activeArea) return false
@@ -112,7 +116,7 @@ const Cashier = () => {
 
       return true
     })
-  }, [rawTables, activeFloor, activeArea, activeFilter])
+  }, [rawTables, effectiveActiveFloor, activeArea, activeFilter])
 
   // Pagination calculation
   const totalPages = Math.ceil(filteredTables.length / pageSize)
@@ -129,7 +133,7 @@ const Cashier = () => {
     return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(value)
   }
 
-  const handleTableClick = (table: any) => {
+  const handleTableClick = (table: Table) => {
     const order = getTableOrder(table.name)
     if (order) {
       setSelectedOrder(order)
@@ -138,7 +142,7 @@ const Cashier = () => {
     } else {
       // For empty table, opening drawer to create a new order
       setSelectedOrder(null)
-      setPreSelectedTableId(table.id)
+      setPreSelectedTableId(Number(table.id))
       setIsDrawerOpen(true)
     }
   }
@@ -150,9 +154,6 @@ const Cashier = () => {
       queryClient.invalidateQueries({ queryKey: ['orders-active'] })
       queryClient.invalidateQueries({ queryKey: ['tables'] })
       setCancelingOrder(null)
-    },
-    onError: (err: any) => {
-      toast.error('Lỗi khi hủy đơn hàng: ' + err.message)
     }
   })
 
@@ -173,14 +174,14 @@ const Cashier = () => {
         <div className='flex flex-col gap-3'>
           <div className='scrollbar-hide flex flex-wrap items-center justify-center gap-2 pb-1'>
             <span className='mr-2 text-[10px] font-black tracking-widest text-slate-400 uppercase'>Tầng:</span>
-            {floors.map((floor: any) => (
+            {floors.map((floor) => (
               <Button
                 key={floor}
                 variant='ghost'
                 size='sm'
                 className={cn(
                   'h-8 rounded-xl border px-5 text-sm font-bold transition-all',
-                  activeFloor === floor
+                  effectiveActiveFloor === floor
                     ? 'bg-primary border-primary text-white shadow-md'
                     : 'hover:border-primary/30 border-slate-100 bg-white text-slate-500 shadow-sm'
                 )}
@@ -197,7 +198,7 @@ const Cashier = () => {
 
           <div className='scrollbar-hide flex flex-wrap items-center justify-center gap-2 pb-1'>
             <span className='mr-2 text-[10px] font-black tracking-widest text-slate-400 uppercase'>Khu vực:</span>
-            {areas.map((area: any) => (
+            {areas.map((area) => (
               <Button
                 key={area}
                 variant='ghost'
@@ -271,12 +272,12 @@ const Cashier = () => {
         {/* Right Side: Table Grid */}
         <div className='flex-1'>
           <div className='grid grid-cols-2 gap-4 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6'>
-            {paginatedTables.map((table: any) => {
+            {paginatedTables.map((table: Table) => {
               const isOccupied = table.status === 'OCCUPIED'
               const isReserved = table.status === 'RESERVED'
               const isUnavailable = table.status === 'UNAVAILABLE'
               const order = isOccupied ? getTableOrder(table.name) : null
-              const itemCount = order?.orderDetails?.reduce((acc: number, d: any) => acc + d.quantity, 0) || 0
+              const itemCount = order?.orderDetails?.reduce((acc: number, d) => acc + d.quantity, 0) || 0
 
               return (
                 <div
@@ -343,7 +344,7 @@ const Cashier = () => {
                               <span className='text-[10px] font-black uppercase opacity-80'>Tiền:</span>
                               <div className='flex items-center gap-1 rounded-lg bg-white/20 px-2 py-0.5 text-[10px] font-bold'>
                                 <Clock className='h-3 w-3' />
-                                {Math.floor((Date.now() - new Date(order.createdAt).getTime()) / 60000)}p
+                                {Math.floor((nowMs - new Date(order.createdAt).getTime()) / 60000)}p
                               </div>
                             </div>
                             <span className='text-sm leading-none font-black drop-shadow-sm sm:text-lg'>

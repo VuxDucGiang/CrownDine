@@ -17,13 +17,12 @@ export default function VoucherInput({ orderId, disabled = false, onPreviewChang
   const [voucherPreview, setVoucherPreview] = useState<VoucherValidateResponse | null>(null)
   const [validatingCode, setValidatingCode] = useState('')
 
-  const { data: myVouchersResponse, isLoading: isLoadingVouchers } = useQuery({
+  const { data: myVouchers = [], isLoading: isLoadingVouchers } = useQuery({
     queryKey: ['my-vouchers'],
     queryFn: () => userVoucherApi.getMyVouchers(),
+    select: (res) => res.data.data,
     enabled: !disabled
   })
-
-  const myVouchers = myVouchersResponse?.data?.data || []
 
   const { mutate: validateVoucher, isPending: isValidatingVoucher } = useMutation({
     mutationFn: (body: VoucherValidateRequest) => voucherApi.validateVoucher(body),

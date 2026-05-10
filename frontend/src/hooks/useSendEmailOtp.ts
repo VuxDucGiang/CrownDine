@@ -7,10 +7,6 @@ const useSendEmailOtp = () => {
     mutationFn: (newEmail: string) => userApi.sendEmailOtp(newEmail),
     onSuccess: () => {
       toast.success('Mã OTP đã được gửi đến email cũ của bạn')
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Có lỗi xảy ra khi gửi mã OTP'
-      toast.error(message)
     }
   })
 }

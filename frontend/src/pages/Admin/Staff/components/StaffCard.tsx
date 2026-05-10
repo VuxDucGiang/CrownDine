@@ -45,14 +45,16 @@ interface StaffCardProps {
 }
 
 export function StaffCard({ staff, onDelete, onEdit, ontoggleStatus }: StaffCardProps) {
+  const avatarSrc = getImageUrl((staff as Staff & { avatarUrl?: string }).avatarUrl || staff.avatar)
+  const fullName = `${staff.firstName} ${staff.lastName}`.trim()
   return (
     <div className='group bg-card hover:bg-muted/40 border-border relative rounded-xl border p-5 shadow-sm transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md'>
       <div className='mb-4 flex items-start justify-between'>
         <div className='flex items-center gap-4'>
           <div className='relative'>
             <img
-              src={getImageUrl((staff as any).avatarUrl || (staff as any).avatar)}
-              alt={`${staff.firstName} ${staff.lastName}` || 'Staff Member'}
+              src={avatarSrc}
+              alt={fullName || 'Staff Member'}
               className='border-background h-14 w-14 rounded-full border-2 object-cover shadow-sm'
               onError={(e) => {
                 const target = e.target as HTMLImageElement
@@ -64,7 +66,7 @@ export function StaffCard({ staff, onDelete, onEdit, ontoggleStatus }: StaffCard
           </div>
           <div>
             <h3 className='group-hover:text-primary mb-1 text-lg leading-none font-semibold transition-colors'>
-              {`${staff.firstName} ${staff.lastName}` || 'Staff Member'}
+              {fullName || 'Staff Member'}
             </h3>
             <div className='mt-2 flex items-center gap-2'>
               <RoleBadge role={staff.role || 'Staff'} />

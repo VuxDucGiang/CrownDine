@@ -156,7 +156,7 @@ export default function AreaCanvas({
   const getSvgPoint = (e: React.PointerEvent) => {
     const svg = svgRef.current
     if (!svg) return { x: e.clientX, y: e.clientY }
-    let point = svg.createSVGPoint()
+    const point = svg.createSVGPoint()
     point.x = e.clientX
     point.y = e.clientY
     return point.matrixTransform(svg.getScreenCTM()!.inverse())
@@ -183,7 +183,7 @@ export default function AreaCanvas({
     ;(e.target as Element).setPointerCapture(e.pointerId)
   }
 
-  const onResizeStart = (e: React.PointerEvent, area: AreaLayout, dir: any) => {
+  const onResizeStart = (e: React.PointerEvent, area: AreaLayout, dir: 'nw' | 'ne' | 'sw' | 'se') => {
     setFreezeViewBox(currentViewBoxStr)
     const pt = getSvgPoint(e)
     dragRef.current = {

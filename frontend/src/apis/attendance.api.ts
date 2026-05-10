@@ -37,7 +37,7 @@ const attendanceApi = {
   },
 
   saveRecord(body: AttendanceRecordRequest) {
-    return http.post<ApiResponse<unknown>>(`${ATTENDANCE_URL}/record`, body)
+    return http.post<ApiResponse<null>>(`${ATTENDANCE_URL}/record`, body)
   },
 
   getAllShifts() {

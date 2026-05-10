@@ -68,7 +68,7 @@ export default function LayoutCanvas({
   const getSvgPoint = (e: React.PointerEvent) => {
     const svg = svgRef.current
     if (!svg) return { x: e.clientX, y: e.clientY }
-    let point = svg.createSVGPoint()
+    const point = svg.createSVGPoint()
     point.x = e.clientX
     point.y = e.clientY
     return point.matrixTransform(svg.getScreenCTM()!.inverse())
@@ -109,7 +109,7 @@ export default function LayoutCanvas({
     onSelectTable?.(table)
   }
 
-  const onResizeStart = (e: React.PointerEvent, areaId: number, table: TableLayout, dir: any) => {
+  const onResizeStart = (e: React.PointerEvent, areaId: number, table: TableLayout, dir: 'nw' | 'ne' | 'sw' | 'se') => {
     if (!editable) return // Only allow resize in edit mode
 
     setFreezeViewBox(currentViewBoxStr)

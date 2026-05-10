@@ -23,7 +23,7 @@ export default function VoucherList() {
   const [editingVoucher, setEditingVoucher] = useState<Voucher | null>(null)
   const [assignVoucher, setAssignVoucher] = useState<Voucher | null>(null)
 
-  const { data: vouchersResponse, isLoading } = useQuery({
+  const { data: pageData, isLoading } = useQuery({
     queryKey: ['vouchers', searchTerm, typeFilter, page],
     queryFn: () =>
       voucherApi.getVouchers({
@@ -31,10 +31,10 @@ export default function VoucherList() {
         type: typeFilter || undefined,
         page,
         size: PAGE_SIZE
-      })
+      }),
+    select: (res) => res.data.data
   })
 
-  const pageData = vouchersResponse?.data?.data
   const vouchers = pageData?.data ?? []
   const totalPages = pageData?.totalPages ?? 0
   const totalItems = pageData?.totalItems ?? 0

@@ -1,11 +1,13 @@
 import { useState } from 'react'
+import { useOutletContext } from 'react-router-dom'
 import { Gift, Award, Clock, ArrowUpRight, ArrowDownRight } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import type { User, PointHistory } from '@/types/profile.type'
+import type { PointHistory } from '@/types/profile.type'
 import voucherApi from '@/apis/voucher.api'
 import userApi from '@/apis/user.api'
 import { toast } from 'sonner'
 import type { Voucher } from '@/types/voucher.type'
+import type { ProfileOutletContext } from '@/pages/Profile/profileContext'
 import { Modal } from '@/components/ui/modal'
 import { Button } from '@/components/ui/button'
 import {
@@ -17,12 +19,8 @@ import {
   PaginationPrevious
 } from '@/components/ui/pagination'
 
-interface RewardPointsProps {
-  user: User
-  onUpdateUser: (user: User) => void
-}
-
-const RewardPointsTab = ({ user, onUpdateUser }: RewardPointsProps) => {
+const RewardPointsPage = () => {
+  const { user, setUser } = useOutletContext<ProfileOutletContext>()
   const queryClient = useQueryClient()
   const [selectedVoucher, setSelectedVoucher] = useState<Voucher | null>(null)
   const [historyPage, setHistoryPage] = useState(1)
@@ -58,7 +56,7 @@ const RewardPointsTab = ({ user, onUpdateUser }: RewardPointsProps) => {
       // Update local user points immediately
       const exchangedVoucher = rewardVouchers.find((v: Voucher) => v.id === voucherId)
       if (exchangedVoucher && user.rewardPoints !== undefined) {
-        onUpdateUser({
+        setUser({
           ...user,
           rewardPoints: user.rewardPoints - (exchangedVoucher.pointsRequired || 0)
         })
@@ -68,9 +66,6 @@ const RewardPointsTab = ({ user, onUpdateUser }: RewardPointsProps) => {
       queryClient.invalidateQueries({ queryKey: ['my-vouchers'] })
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       setSelectedVoucher(null)
-    },
-    onError: (error: any) => {
-      toast.error(error.response?.data?.message || 'Đổi voucher thất bại. Vui lòng thử lại!')
     }
   })
 
@@ -278,4 +273,4 @@ const RewardPointsTab = ({ user, onUpdateUser }: RewardPointsProps) => {
   )
 }
 
-export default RewardPointsTab
+export default RewardPointsPage

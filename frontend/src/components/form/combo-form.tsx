@@ -31,12 +31,11 @@ export const ComboForm = ({ initialData, onSubmit, onCancel }: ComboFormProps) =
   })
 
   // Fetch all items to populate selection
-  const { data: itemsData } = useQuery({
+  const { data: allItems = [] } = useQuery({
     queryKey: ['all-items'],
-    queryFn: () => itemApi.getItems()
+    queryFn: () => itemApi.getItems(),
+    select: (res) => res.data.data
   })
-
-  const allItems = itemsData?.data.data || []
 
   const handleAddItem = () => {
     setFormData({

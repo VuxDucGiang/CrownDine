@@ -13,14 +13,10 @@ const useUpdateProfile = () => {
     onSuccess: (_, variables) => {
       const currentUser = useAuthStore.getState().user
       if (currentUser) {
-        setUser({ ...currentUser, ...variables, gender: variables.gender?.toLowerCase() as any })
+        setUser({ ...currentUser, ...variables })
       }
       queryClient.invalidateQueries({ queryKey: ['profile'] })
       toast.success('Thay đổi thông tin cá nhân thành công!')
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Có lỗi xảy ra'
-      toast.error(message)
     }
   })
 }

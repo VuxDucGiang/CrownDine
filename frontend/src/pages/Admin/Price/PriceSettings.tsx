@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { Search, ChevronDown, FileText, ChevronRight, Save } from 'lucide-react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -7,20 +7,19 @@ import { Button } from '@/components/ui/button'
 import categoryApi from '@/apis/category.api'
 import itemApi from '@/apis/item.api'
 import type { Item } from '@/types/item.type'
+import type { UpsertItemPayload } from '@/apis/item.api'
 
 export default function PriceSettings() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategoryId, setSelectedCategoryId] = useState<number | null>(null)
-  const [items, setItems] = useState<Item[]>([])
   const queryClient = useQueryClient()
 
   // Categories query for sidebar
-  const { data: categoriesData } = useQuery({
+  const { data: categories = [] } = useQuery({
     queryKey: ['categories'],
-    queryFn: () => categoryApi.getCategories()
+    queryFn: () => categoryApi.getCategories(),
+    select: (res) => res.data.data
   })
-
-  const categories = categoriesData?.data.data || []
   const categoryMap = Object.fromEntries(categories.map((c) => [c.id, c.name]))
 
   // Items query based on selected category or search
@@ -32,15 +31,13 @@ export default function PriceSettings() {
         return res.data.data.data // Access the array inside PageResponse
       }
       const res = await itemApi.getItems()
-      // If getItems also returns PageResponse, adjust accordingly.
-      // Based on item.api.ts line 18, it returns Item[] directly after res.data.data
-      return Array.isArray(res.data.data) ? res.data.data : (res.data.data as any).data
+      return res.data.data
     }
   })
 
   // Update Item Price Mutation
   const updatePriceMutation = useMutation({
-    mutationFn: ({ id, data }: { id: number; data: any }) => itemApi.updateItem(id, data),
+    mutationFn: ({ id, data }: { id: number; data: UpsertItemPayload }) => itemApi.updateItem(id, data),
     onSuccess: () => {
       toast.success('Cập nhật giá thành công')
       queryClient.invalidateQueries({ queryKey: ['items'] })
@@ -50,28 +47,25 @@ export default function PriceSettings() {
     }
   })
 
-  useEffect(() => {
-    if (itemsData) {
-      setItems(itemsData)
-    }
-  }, [itemsData])
-
   const handlePriceUpdate = (item: Item, newPriceStr: string) => {
     const newPrice = parseFloat(newPriceStr.replace(/\./g, '').replace(',', '.'))
     if (isNaN(newPrice) || newPrice === item.price) return
 
-    const payload = {
+    const payload: UpsertItemPayload = {
       name: item.name,
       description: item.description,
       imageUrl: item.imageUrl,
       price: newPrice,
+      priceAfterDiscount: item.priceAfterDiscount,
       status: item.status,
-      categoryId: item.categoryId
+      categoryId: item.categoryId,
+      slug: item.slug
     }
 
     updatePriceMutation.mutate({ id: item.id, data: payload })
   }
 
+  const items = itemsData ?? []
   const filteredItems = items.filter(
     (item) => item.name.toLowerCase().includes(searchTerm.toLowerCase()) || item.id.toString().includes(searchTerm)
   )

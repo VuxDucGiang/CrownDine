@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import reservationApi from '@/apis/reservation.api'
 import clsx from 'clsx'
-import { queryClient } from '@/main'
+import { queryClient } from '@/lib/queryClient'
 import { toast } from 'sonner'
 import { useNavigate } from 'react-router-dom'
 import type { StaffReservationResponse } from '@/types/reservation.type'
@@ -13,6 +13,7 @@ import CreateReservationModal from './components/CreateReservationModal'
 import ReservationCalendarView from './components/ReservationCalendarView'
 import ReservationDetailModal from './components/ReservationDetailModal'
 import tableApi from '@/apis/table.api'
+import type { Table } from '@/types/table.type'
 
 type ViewMode = 'LIST' | 'CALENDAR'
 
@@ -31,7 +32,14 @@ const ReservationList = () => {
   const [viewMode, setViewMode] = useState<ViewMode>('CALENDAR')
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [selectedReservation, setSelectedReservation] = useState<StaffReservationResponse | null>(null)
-  const [initialBookingData, setInitialBookingData] = useState<any>(null)
+  const [initialBookingData, setInitialBookingData] = useState<
+    | {
+        tableId?: string | number
+        startTime?: string
+        date?: string
+      }
+    | undefined
+  >(undefined)
 
   // Advanced Filter states
   const [statusFilter, setStatusFilter] = useState('')
@@ -45,26 +53,25 @@ const ReservationList = () => {
   })
 
   // Fetch Tables once for filter data
-  const { data: tableData } = useQuery({
+  const { data: rawTables = [] } = useQuery({
     queryKey: ['tables-filter'],
-    queryFn: () => tableApi.getAllTables()
+    queryFn: () => tableApi.getAllTables(),
+    select: (res) => res.data.data
   })
 
-  const rawTables = tableData?.data.data || []
-
   // Filter UI data
-  const floors = ['Tất cả', ...Array.from(new Set(rawTables.map((t: any) => t.floorName).filter(Boolean)))]
+  const floors = ['Tất cả', ...Array.from(new Set(rawTables.map((t: Table) => t.floorName).filter(Boolean)))]
   const areas = [
     'Tất cả',
     ...Array.from(
       new Set(
-        (rawTables as any[])
+        rawTables
           .filter((t) => activeFloor === 'Tất cả' || t.floorName === activeFloor)
           .map((t) => t.areaName)
           .filter(Boolean)
       )
     )
-  ]
+  ] as string[]
 
   const checkInMutation = useMutation({
     mutationFn: async (reservation: StaffReservationResponse) =>
@@ -390,7 +397,7 @@ const ReservationList = () => {
         isOpen={isCreateModalOpen}
         onClose={() => {
           setIsCreateModalOpen(false)
-          setInitialBookingData(null)
+          setInitialBookingData(undefined)
         }}
         onSuccess={() => {
           queryClient.invalidateQueries({ queryKey: ['staff-reservations'] })

@@ -1,6 +1,6 @@
 package com.crowndine.service.reservation;
 
-import com.crowndine.exception.InvalidDataException;
+import com.crowndine.exception.ReservationConflictException;
 import com.crowndine.model.Reservation;
 import com.crowndine.model.RestaurantTable;
 import com.crowndine.repository.ReservationRepository;
@@ -62,7 +62,7 @@ class ReservationAvailabilityServiceTest {
                 .thenReturn(List.of(blocking));
         when(reservationOverlapService.isBlockingReservation(blocking, requestedStart)).thenReturn(true);
 
-        assertThrows(InvalidDataException.class,
+        assertThrows(ReservationConflictException.class,
                 () -> reservationAvailabilityService.ensureTableAvailable(date, startTime, 10L));
     }
 

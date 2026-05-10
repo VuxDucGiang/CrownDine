@@ -1,6 +1,6 @@
 import orderApi from '@/apis/order.api'
-import { queryClient } from '@/main'
-import type { Order, OrderDetailStatus } from '@/types/order.type'
+import { queryClient } from '@/lib/queryClient'
+import type { Order, OrderDetail, OrderDetailStatus } from '@/types/order.type'
 import { useQuery } from '@tanstack/react-query'
 import type { AxiosResponse } from 'axios'
 import { useEffect, useRef, useState, useMemo } from 'react'
@@ -12,6 +12,22 @@ import { toast } from 'sonner'
 // ──────────────────────────────────────────────────────
 const URGENT_MINUTES = 15
 const OVERDUE_MINUTES = 20
+
+type KitchenOrderItem = OrderDetail & {
+  orderId: number
+  orderCode: string
+  tableName: string | null
+  createdAt: string
+}
+
+type KitchenBatch = {
+  id: string
+  orderId: number
+  orderCode: string
+  tableName: string | null
+  createdAt: string
+  items: KitchenOrderItem[]
+}
 
 // ──────────────────────────────────────────────────────
 // Helpers
@@ -220,7 +236,7 @@ const KitchenDisplay = () => {
       return timeA - timeB
     })
 
-    const grouped: any[] = []
+    const grouped: KitchenBatch[] = []
     flatItems.forEach((item) => {
       const lastBatch = grouped[grouped.length - 1]
       const itemTime = item.createdAt ? new Date(item.createdAt).getTime() : 0
@@ -287,8 +303,8 @@ const KitchenDisplay = () => {
           {batches.map((batch) => {
             const batchTimeStr = batch.createdAt || ''
             const elapsedMin = getElapsedMinutes(batchTimeStr)
-            const allServed = batch.items.every((d: any) => d.status === 'SERVED' || d.status === 'CANCELLED')
-            const hasPending = batch.items.some((d: any) => d.status === 'PENDING')
+            const allServed = batch.items.every((d) => d.status === 'SERVED' || d.status === 'CANCELLED')
+            const hasPending = batch.items.some((d) => d.status === 'PENDING')
 
             // Chỉ tính cảnh báo khi còn món PENDING chưa nấu
             const isOverdue = hasPending && elapsedMin >= OVERDUE_MINUTES
@@ -342,8 +358,8 @@ const KitchenDisplay = () => {
                 {/* Items List */}
                 <div className='flex-1 space-y-3 p-4'>
                   {batch.items
-                    .filter((d: any) => d.status !== 'CANCELLED')
-                    .map((detail: any) => {
+                    .filter((d) => d.status !== 'CANCELLED')
+                    .map((detail) => {
                       const name = detail.item?.name || detail.combo?.name || 'Món ăn'
                       const detailElapsed = getElapsedMinutes(detail.createdAt)
 

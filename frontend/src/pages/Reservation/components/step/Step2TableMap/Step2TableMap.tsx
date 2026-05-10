@@ -93,7 +93,7 @@ const Step2TableMap = ({ selectedTable, toggleTable, guests, date, startTime, is
       }
     }
     fetchAvailableTables()
-  }, [date, startTime, guests])
+  }, [date, startTime, guests, selectedTable])
 
   const handleSelectArea = (area: AreaLayout) => {
     setActiveAreaId(area.areaId)

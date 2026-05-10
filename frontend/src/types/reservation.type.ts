@@ -1,6 +1,7 @@
 import type { Combo } from './combo.type'
 import type { Item } from './item.type'
 import type { Table as BaseTable } from './table.type'
+import type { OrderDetail } from './order.type'
 
 export interface ReservationCreateRequest {
   date: string // YYYY-MM-DD
@@ -153,7 +154,7 @@ export interface StaffReservationResponse {
   note?: string
   status: string
   orderId: number | null
-  orderDetails: Array<any>
+  orderDetails: OrderDetail[]
   floorName?: string
   areaName?: string
 }

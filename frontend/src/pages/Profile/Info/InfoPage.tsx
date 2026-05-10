@@ -1,20 +1,29 @@
-'use client'
-
-import React from 'react'
-
 import { useState } from 'react'
-import type { User } from '@/types/profile.type'
+import { useOutletContext } from 'react-router-dom'
+import { EGender } from '@/types/profile.type'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import MembershipBenefits from './membership-benefits'
+import MembershipBenefits from '@/pages/Profile/Info/MembershipBenefits'
 import useUpdateProfile from '@/hooks/useUpdateProfile'
+import type { ProfileOutletContext } from '@/pages/Profile/profileContext'
 
-interface ProfileInfoProps {
-  user: User
-  onSave?: (updatedUser: Partial<User>) => void
+type GenderOption = 'male' | 'female' | 'other'
+
+const toGenderOption = (gender?: EGender): GenderOption => {
+  if (gender === EGender.MALE) return 'male'
+  if (gender === EGender.FEMALE) return 'female'
+  return 'other'
 }
-const profile_info = ({ user, onSave }: ProfileInfoProps) => {
+
+const toEGender = (gender: GenderOption): EGender => {
+  if (gender === 'male') return EGender.MALE
+  if (gender === 'female') return EGender.FEMALE
+  return EGender.OTHER
+}
+
+export default function InfoPage() {
+  const { user, setUser } = useOutletContext<ProfileOutletContext>()
   const [isEditing, setIsEditing] = useState(false)
   const formatBackendDate = (dateStr?: string) => {
     if (!dateStr) return ''
@@ -26,24 +35,24 @@ const profile_info = ({ user, onSave }: ProfileInfoProps) => {
   }
 
   const [formData, setFormData] = useState({
-    firstName: user.firstName || '',
-    lastName: user.lastName || '',
-    dateOfBirth: formatBackendDate(user.dateOfBirth),
-    gender: (user.gender?.toLowerCase() || 'other') as any
+    firstName: '',
+    lastName: '',
+    dateOfBirth: '',
+    gender: 'other' as GenderOption
   })
 
-  React.useEffect(() => {
+  const startEditing = () => {
     setFormData({
       firstName: user.firstName || '',
       lastName: user.lastName || '',
       dateOfBirth: formatBackendDate(user.dateOfBirth),
-      gender: (user.gender?.toLowerCase() || 'other') as any
+      gender: toGenderOption(user.gender)
     })
-  }, [user])
+    setIsEditing(true)
+  }
 
   const updateProfileMutation = useUpdateProfile()
 
-  /* Cập nhật dòng này trong file ProfileInfo.tsx của bạn */
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target
     setFormData((prev) => ({ ...prev, [name]: value }))
@@ -60,14 +69,18 @@ const profile_info = ({ user, onSave }: ProfileInfoProps) => {
       firstName: formData.firstName,
       lastName: formData.lastName,
       dateOfBirth: formattedDate,
-      gender: formData.gender?.toUpperCase() as any
+      gender: toEGender(formData.gender)
     }
 
     updateProfileMutation.mutate(payload, {
       onSuccess: () => {
-        if (onSave) {
-          onSave(formData as any) // suppress TS type mismatch since formData uses string instead of EGender
-        }
+        setUser((prev) => ({
+          ...prev,
+          firstName: formData.firstName,
+          lastName: formData.lastName,
+          dateOfBirth: formattedDate,
+          gender: payload.gender
+        }))
         setIsEditing(false)
       }
     })
@@ -79,7 +92,7 @@ const profile_info = ({ user, onSave }: ProfileInfoProps) => {
       <div className='mb-8 flex items-center justify-between'>
         <h2 className='text-2xl font-bold'>Thông Tin Của Tôi</h2>
         {!isEditing && (
-          <Button onClick={() => setIsEditing(true)} className='bg-primary hover:bg-primary/90 text-white'>
+          <Button onClick={startEditing} className='bg-primary hover:bg-primary/90 text-white'>
             Chỉnh Sửa Hồ Sơ
           </Button>
         )}
@@ -95,7 +108,7 @@ const profile_info = ({ user, onSave }: ProfileInfoProps) => {
           <Input
             id='firstName'
             name='firstName'
-            value={formData.firstName}
+            value={isEditing ? formData.firstName : user.firstName || ''}
             onChange={handleChange}
             disabled={!isEditing}
             className='border-border disabled:bg-foreground/5 mt-2 rounded-lg border-2'
@@ -110,7 +123,7 @@ const profile_info = ({ user, onSave }: ProfileInfoProps) => {
           <Input
             id='lastName'
             name='lastName'
-            value={formData.lastName}
+            value={isEditing ? formData.lastName : user.lastName || ''}
             onChange={handleChange}
             disabled={!isEditing}
             className='border-border disabled:bg-foreground/5 mt-2 rounded-lg border-2'
@@ -125,7 +138,7 @@ const profile_info = ({ user, onSave }: ProfileInfoProps) => {
             id='dateOfBirth'
             name='dateOfBirth'
             type='date'
-            value={formData.dateOfBirth}
+            value={isEditing ? formData.dateOfBirth : formatBackendDate(user.dateOfBirth)}
             onChange={handleChange}
             disabled={!isEditing}
             className='border-border disabled:bg-foreground/5 mt-2 rounded-lg border-2'
@@ -140,7 +153,7 @@ const profile_info = ({ user, onSave }: ProfileInfoProps) => {
           <select
             id='gender'
             name='gender'
-            value={formData.gender}
+            value={isEditing ? formData.gender : toGenderOption(user.gender)}
             /* 1. Sử dụng trực tiếp hàm handleChange của bạn */
             onChange={handleChange}
             disabled={!isEditing}
@@ -191,12 +204,6 @@ const profile_info = ({ user, onSave }: ProfileInfoProps) => {
           <Button
             onClick={() => {
               setIsEditing(false)
-              setFormData({
-                firstName: user.firstName,
-                lastName: user.lastName,
-                dateOfBirth: user.dateOfBirth || '',
-                gender: user.gender || 'other'
-              })
             }}
             variant='outline'
             className='border-foreground/20 flex-1 border-2'
@@ -211,5 +218,3 @@ const profile_info = ({ user, onSave }: ProfileInfoProps) => {
     </div>
   )
 }
-
-export default profile_info

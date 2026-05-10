@@ -5,6 +5,7 @@ import { useTheme } from 'next-themes'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useFavoriteStore } from '@/stores/useFavoriteStore'
+import path from '@/constants/path'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import authApi from '@/apis/auth.api'
 import notificationApi from '@/apis/notification.api'
@@ -270,7 +271,7 @@ const Header = () => {
                     <>
                       <DropdownMenuSeparator />
                       <Link
-                        to='/profile?tab=favorites'
+                        to={path.profileFavorites}
                         className='text-primary block p-2 text-center text-xs font-medium hover:underline'
                       >
                         Xem tất cả yêu thích
@@ -312,7 +313,7 @@ const Header = () => {
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
-                  <Link to='/profile' className='cursor-pointer'>
+                  <Link to={path.profile} className='cursor-pointer'>
                     <User className='mr-2 h-4 w-4' />
                     <span>Hồ sơ của tôi</span>
                   </Link>

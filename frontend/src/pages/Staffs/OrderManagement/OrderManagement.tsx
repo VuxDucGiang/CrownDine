@@ -1,6 +1,6 @@
 import orderApi from '@/apis/order.api'
-import { queryClient } from '@/main'
-import type { Order } from '@/types/order.type'
+import { queryClient } from '@/lib/queryClient'
+import type { Order, OrderStatus } from '@/types/order.type'
 import { useQuery, useMutation } from '@tanstack/react-query'
 import type { AxiosResponse } from 'axios'
 import { useState, useEffect, Fragment } from 'react'
@@ -70,11 +70,11 @@ const OrderManagement = () => {
     queryKey: ['orders', statusFilter, fromDate, toDate],
     queryFn: () =>
       orderApi.getAllOrders({
-        status: statusFilter !== 'ALL' ? (statusFilter as any) : undefined,
+        status: statusFilter !== 'ALL' ? (statusFilter as OrderStatus) : undefined,
         fromDate,
         toDate
       }),
-    select: (response) => response?.data?.data?.data ?? []
+    select: (response) => response.data.data.data
   })
 
   // Filter orders
@@ -180,9 +180,6 @@ const OrderManagement = () => {
     onSuccess: () => {
       toast.success('Hủy đơn hàng thành công')
       queryClient.invalidateQueries({ queryKey: ['orders'] })
-    },
-    onError: (err: any) => {
-      toast.error('Lỗi khi hủy đơn hàng: ' + err.message)
     }
   })
 

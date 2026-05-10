@@ -8,10 +8,6 @@ const useChangePassword = () => {
     mutationFn: (data: ChangePasswordRequest) => userApi.changePassword(data),
     onSuccess: () => {
       toast.success('Đổi mật khẩu thành công!')
-    },
-    onError: (error: any) => {
-      const message = error.response?.data?.message || 'Có lỗi xảy ra khi đổi mật khẩu'
-      toast.error(message)
     }
   })
 }
