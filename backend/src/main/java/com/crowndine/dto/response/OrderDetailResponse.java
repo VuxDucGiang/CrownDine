@@ -5,6 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 @Getter
 @Setter
@@ -16,5 +17,5 @@ public class OrderDetailResponse {
     private String note;
     private EOrderDetailStatus status;
     private BigDecimal totalPrice;
-    private java.time.LocalDateTime createdAt;
+    private LocalDateTime createdAt;
 }

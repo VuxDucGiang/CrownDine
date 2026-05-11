@@ -28,11 +28,8 @@ public class ApiReservationController {
     private final ReservationOrderService reservationOrderService;
 
     @GetMapping("/history")
-    public ApiResponse getReservationHistory(
-            Principal principal,
-            @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size
-    ) {
+    public ApiResponse getReservationHistory(Principal principal, @RequestParam(defaultValue = "0") int page,
+                                             @RequestParam(defaultValue = "10") int size) {
         return ApiResponse.builder()
                 .status(200)
                 .message("Get reservation history successfully")
