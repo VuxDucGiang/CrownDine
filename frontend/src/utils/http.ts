@@ -7,6 +7,7 @@ import { REFRESH_TOKEN_URL } from '@/apis/auth.api'
 import type { RefreshTokenResponse } from '@/types/auth.type'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { getCurrentLocale } from '@/utils/locale'
+import path from '@/constants/path'
 
 class Http {
   instance: AxiosInstance
@@ -42,14 +43,21 @@ class Http {
     this.instance.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-        // Toast lỗi nếu không phải lỗi xác thực (401) hoặc lỗi dữ liệu không hợp lệ
-        if (![HttpStatusCode.Unauthorized].includes(error.response?.status as number)) {
+        const statusCode = error.response?.status as number | undefined
+
+        if (statusCode === HttpStatusCode.Forbidden) {
+          if (window.location.pathname !== path.forbidden) {
+            window.location.assign(path.forbidden)
+          }
+          return Promise.reject(error)
+        }
+
+        if (![HttpStatusCode.Unauthorized].includes(statusCode as number)) {
           const data = error.response?.data as { message?: string } | undefined
           const message = data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.'
           toast.error(message)
         }
 
-        // Xử lý lỗi xác thực (401) và lỗi dữ liệu không hợp lệ (422)
         if (isAxiosUnauthorizedError<ErrorResponse>(error)) {
           const config = error.response?.config || { headers: {}, url: '' }
           const { url } = config

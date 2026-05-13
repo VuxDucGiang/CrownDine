@@ -3,6 +3,7 @@ const path = {
   login: '/login',
   register: '/register',
   verifyRegister: '/verify-register',
+  forbidden: '/access-denied',
   menu: '/menu',
   profile: '/profile',
   profileInfo: '/profile/info',
