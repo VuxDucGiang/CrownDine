@@ -21,7 +21,6 @@ import { setPaymentResultToSession } from '@/utils/paymentResultStorage'
 import { Modal } from '@/components/ui/modal'
 import { toast } from 'sonner'
 import { useSearchParams } from 'react-router-dom'
-import { isAxiosErrorConfict } from '@/utils/utils'
 
 // --- 3. MAIN COMPONENT ---
 export default function Reservation() {
@@ -166,9 +165,6 @@ export default function Reservation() {
           }
         } catch (error) {
           console.error('Lỗi khi tự động đặt bàn qua AI:', error)
-          if (isAxiosErrorConfict(error)) {
-            toast.error('Bàn đã được đặt trong khung giờ này. Vui lòng chọn bàn khác.')
-          }
           setCurrentStep(2) // Lỗi thì đưa về chọn bàn thủ công
         } finally {
           setIsCreatingReservation(false)
@@ -277,7 +273,6 @@ export default function Reservation() {
       }
     } catch (error) {
       console.error('Failed to add/update item:', error)
-      toast.error('Không thể thêm món. Vui lòng thử lại.')
     }
   }
 
@@ -302,7 +297,6 @@ export default function Reservation() {
       setCartItems(cartItems.map((i) => (i.type === type && i.id === id ? { ...i, quantity: newQuantity } : i)))
     } catch (error) {
       console.error('Failed to update quantity:', error)
-      toast.error('Không thể cập nhật số lượng. Vui lòng thử lại.')
     }
   }
 
@@ -358,11 +352,6 @@ export default function Reservation() {
       }
     } catch (error) {
       console.error('Failed to finalize table selection:', error)
-      if (isAxiosErrorConfict(error)) {
-        toast.error('Bàn đã được đặt trong khung giờ này. Vui lòng chọn bàn khác.')
-      } else {
-        toast.error('Không thể giữ chỗ bàn. Vui lòng thử lại.')
-      }
     } finally {
       setIsCreatingReservation(false)
     }
@@ -431,9 +420,6 @@ export default function Reservation() {
           setCurrentStep(4)
         } catch (error) {
           console.error('Failed to fetch/sync order details:', error)
-          // Vẫn cho phép tiếp tục với checkoutSummary = null (Step4Payment có fallback logic)
-          // Nhưng hiện thông báo lỗi nếu sync thất bại
-          toast.error('Có lỗi xảy ra khi lưu thông tin món ăn. Vui lòng thử lại.')
         } finally {
           setIsLoadingOrderDetails(false)
         }
@@ -460,7 +446,6 @@ export default function Reservation() {
       setCartItems(cartItems.filter((i) => !(i.type === type && i.id === id)))
     } catch (error) {
       console.error('Failed to remove item:', error)
-      toast.error('Không thể xóa món. Vui lòng thử lại.')
     }
   }
 

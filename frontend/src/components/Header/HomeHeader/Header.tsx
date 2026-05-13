@@ -79,7 +79,6 @@ const Header = () => {
     },
     onError: () => {
       logout() // Always clear local state even if api fails
-      toast.error('Có lỗi xảy ra khi đăng xuất')
       navigate('/login')
     }
   })

@@ -44,7 +44,6 @@ export default function AdminHeader() {
     },
     onError: () => {
       logout()
-      toast.error('Có lỗi xảy ra khi đăng xuất')
       navigate('/login')
     }
   })

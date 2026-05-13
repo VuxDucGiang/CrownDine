@@ -42,14 +42,14 @@ class Http {
     this.instance.interceptors.response.use(
       (response) => response,
       (error: AxiosError) => {
-        if (
-          ![HttpStatusCode.UnprocessableEntity, HttpStatusCode.Unauthorized].includes(error.response?.status as number)
-        ) {
+        // Toast lỗi nếu không phải lỗi xác thực (401) hoặc lỗi dữ liệu không hợp lệ
+        if (![HttpStatusCode.Unauthorized].includes(error.response?.status as number)) {
           const data = error.response?.data as { message?: string } | undefined
-          const message = data?.message || error.message
+          const message = data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.'
           toast.error(message)
         }
 
+        // Xử lý lỗi xác thực (401) và lỗi dữ liệu không hợp lệ (422)
         if (isAxiosUnauthorizedError<ErrorResponse>(error)) {
           const config = error.response?.config || { headers: {}, url: '' }
           const { url } = config

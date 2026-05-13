@@ -65,9 +65,6 @@ export function ScheduleTable({ isAdmin = false, currentDate, schedules, staffs,
         onSuccess: () => {
           toast.success('Xóa ca làm việc thành công')
           setDeleteTarget(null)
-        },
-        onError: () => {
-          toast.error('Có lỗi xảy ra khi xóa ca làm việc')
         }
       }
     )
