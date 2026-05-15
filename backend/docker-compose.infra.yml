@@ -1,19 +1,55 @@
 name: crowndine-infra
 
 services:
+  mysql:
+    image: mysql:8.0
+    container_name: crowndine_db
+    restart: unless-stopped
+    command: [ "mysqld", "--default-authentication-plugin=mysql_native_password" ]
+    environment:
+      MYSQL_DATABASE: crowndine
+      MYSQL_USER: user
+      MYSQL_PASSWORD: 123456
+      MYSQL_ROOT_PASSWORD: 1234567
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    healthcheck:
+      test: [ "CMD", "mysqladmin", "ping", "-h", "127.0.0.1", "-uroot", "-p1234567" ]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - crowndine_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+
   redis:
     image: redis:7-alpine
     container_name: crowndine_redis
     restart: unless-stopped
+    command: [ "redis-server", "--appendonly", "yes", "--appendfsync", "everysec" ]
     ports:
       - "6379:6379"
     volumes:
       - redis_data:/data
     healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
+      test: [ "CMD", "redis-cli", "ping" ]
       interval: 10s
       timeout: 3s
       retries: 5
+    networks:
+      - crowndine_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   rabbitmq:
     image: rabbitmq:3.13-management
@@ -28,11 +64,25 @@ services:
     volumes:
       - rabbitmq_data:/var/lib/rabbitmq
     healthcheck:
-      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      test: [ "CMD", "rabbitmq-diagnostics", "-q", "ping" ]
       interval: 15s
       timeout: 5s
       retries: 5
+    networks:
+      - crowndine_net
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
+  mysql_data:
   redis_data:
   rabbitmq_data:
+
+networks:
+  crowndine_net:
+    name: crowndine_net
+
+#docker compose -f docker-compose.infra.yml up -d
