@@ -9,8 +9,6 @@ import userApi from '@/apis/user.api'
 import type { Order } from '@/types/order.type'
 import { useMutation, useQuery } from '@tanstack/react-query'
 import type { User } from '@/types/profile.type'
-import type { ErrorResponse } from '@/types/utils.type'
-import { isAxiosError } from '@/utils/utils'
 import type { MyVoucherResponse } from '@/types/voucher.type'
 
 interface PaymentModalProps {
@@ -64,13 +62,9 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
       setCustomerVouchers(data.vouchers)
       toast.success(`Tìm thấy khách hàng: ${data.customer.firstName} ${data.customer.lastName}`)
     },
-    onError: (err: unknown) => {
+    onError: () => {
       setFoundCustomer(null)
       setCustomerVouchers([])
-      const message = isAxiosError<ErrorResponse>(err)
-        ? err.response?.data?.message || err.message
-        : 'Không thể tra cứu khách hàng'
-      toast.error(`Lỗi khi tra cứu: ${message}`)
     }
   })
 
@@ -83,10 +77,6 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
       toast.success('Áp dụng voucher thành công!')
       refetchCheckout()
       onSuccess()
-    },
-    onError: (err: unknown) => {
-      const message = isAxiosError<ErrorResponse>(err) ? err.response?.data?.message || err.message : 'Lỗi hệ thống'
-      toast.error(`Lỗi áp dụng voucher: ${message}`)
     }
   })
 
@@ -127,10 +117,6 @@ export default function PaymentModal({ isOpen, onClose, order, onSuccess }: Paym
           onClose()
         }
       }
-    },
-    onError: (err: unknown) => {
-      const message = isAxiosError<ErrorResponse>(err) ? err.response?.data?.message || err.message : 'Lỗi hệ thống'
-      toast.error(`Lỗi thanh toán: ${message}`)
     }
   })
 

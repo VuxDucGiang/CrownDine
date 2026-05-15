@@ -10,7 +10,6 @@ import com.crowndine.model.User;
 import com.crowndine.model.Feedback;
 import com.crowndine.repository.FeedbackRepository;
 import com.crowndine.repository.OrderDetailRepository;
-import com.crowndine.repository.OrderRepository;
 import com.crowndine.repository.ReservationRepository;
 import com.crowndine.repository.UserRepository;
 import com.crowndine.service.reservation.ReservationService;
@@ -24,9 +23,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,7 +35,6 @@ public class ReservationServiceImpl implements ReservationService {
     private final ReservationRepository reservationRepository;
     private final UserRepository userRepository;
     private final OrderDetailRepository orderDetailRepository;
-    private final OrderRepository orderRepository;
     private final FeedbackRepository feedbackRepository;
 
     @Override
@@ -62,38 +59,58 @@ public class ReservationServiceImpl implements ReservationService {
     @Override
     public PageResponse<ReservationHistoryResponse> getReservationHistory(String username, int page, int size) {
         User user = getUserByUserName(username);
+        Long userId = user.getId();
+        int pageNumber = (page > 0) ? page - 1 : 0;
+        Pageable pageable = PageRequest.of(pageNumber, size);
+        Page<Reservation> pageEntity = reservationRepository.findByUser_Id(userId, pageable);
 
-        List<ReservationHistoryResponse> reservationHistory = reservationRepository.findAllByUser_Id(user.getId()).stream()
-                .map(this::toHistoryResponse)
+        List<Reservation> reservations = pageEntity.getContent();
+        List<Long> orderIds = reservations.stream()
+                .map(Reservation::getOrder)
+                .filter(Objects::nonNull)
+                .map(Order::getId)
                 .toList();
 
-        List<ReservationHistoryResponse> standaloneOrderHistory = orderRepository.findAllByUser_IdAndReservationIsNull(user.getId()).stream()
-                .map(this::fromStandaloneOrderToHistoryResponse)
+        Map<Long, List<OrderDetail>> orderDetailsByOrderId = Collections.emptyMap();
+        Map<Long, Feedback> generalFeedbackByOrderId = Collections.emptyMap();
+        Map<Long, Feedback> detailFeedbackByOrderDetailId = Collections.emptyMap();
+
+        if (!orderIds.isEmpty()) {
+            List<OrderDetail> orderDetails = orderDetailRepository.findByOrder_IdIn(orderIds);
+            orderDetailsByOrderId = orderDetails.stream()
+                    .collect(Collectors.groupingBy(detail -> detail.getOrder().getId()));
+
+            generalFeedbackByOrderId = feedbackRepository.findByUser_IdAndOrder_IdInAndOrderDetailIsNull(userId, orderIds)
+                    .stream()
+                    .collect(Collectors.toMap(feedback -> feedback.getOrder().getId(), feedback -> feedback, (left, right) -> left));
+
+            List<Long> orderDetailIds = orderDetails.stream().map(OrderDetail::getId).toList();
+            if (!orderDetailIds.isEmpty()) {
+                detailFeedbackByOrderDetailId = feedbackRepository.findByUser_IdAndOrderDetail_IdIn(userId, orderDetailIds)
+                        .stream()
+                        .collect(Collectors.toMap(feedback -> feedback.getOrderDetail().getId(), feedback -> feedback, (left, right) -> left));
+            }
+        }
+
+        final Map<Long, List<OrderDetail>> finalOrderDetailsByOrderId = orderDetailsByOrderId;
+        final Map<Long, Feedback> finalGeneralFeedbackByOrderId = generalFeedbackByOrderId;
+        final Map<Long, Feedback> finalDetailFeedbackByOrderDetailId = detailFeedbackByOrderDetailId;
+
+        List<ReservationHistoryResponse> responses = reservations.stream()
+                .map(reservation -> toHistoryResponse(
+                        reservation,
+                        finalOrderDetailsByOrderId,
+                        finalGeneralFeedbackByOrderId,
+                        finalDetailFeedbackByOrderDetailId
+                ))
                 .toList();
-
-        List<ReservationHistoryResponse> allHistory = new ArrayList<>(reservationHistory);
-        allHistory.addAll(standaloneOrderHistory);
-        allHistory.sort((left, right) -> {
-            java.time.LocalDateTime leftCreated = left.getCreatedAt() != null ? left.getCreatedAt() : java.time.LocalDateTime.MIN;
-            java.time.LocalDateTime rightCreated = right.getCreatedAt() != null ? right.getCreatedAt() : java.time.LocalDateTime.MIN;
-            return rightCreated.compareTo(leftCreated);
-        });
-
-        int totalItems = allHistory.size();
-        int totalPages = (int) Math.ceil((double) totalItems / size);
-        int fromIndex = page * size;
-        int toIndex = Math.min(fromIndex + size, totalItems);
-
-        List<ReservationHistoryResponse> pagedData = fromIndex < totalItems
-                ? allHistory.subList(fromIndex, toIndex)
-                : Collections.emptyList();
 
         return PageResponse.<ReservationHistoryResponse>builder()
-                .page(page + 1)
+                .page(pageNumber + 1)
                 .pageSize(size)
-                .totalPages(totalPages)
-                .totalItems(totalItems)
-                .data(pagedData)
+                .totalPages(pageEntity.getTotalPages())
+                .totalItems(pageEntity.getTotalElements())
+                .data(responses)
                 .build();
     }
 
@@ -187,7 +204,12 @@ public class ReservationServiceImpl implements ReservationService {
         return response;
     }
 
-    private ReservationHistoryResponse toHistoryResponse(Reservation reservation) {
+    private ReservationHistoryResponse toHistoryResponse(
+            Reservation reservation,
+            Map<Long, List<OrderDetail>> orderDetailsByOrderId,
+            Map<Long, Feedback> generalFeedbackByOrderId,
+            Map<Long, Feedback> detailFeedbackByOrderDetailId
+    ) {
         ReservationHistoryResponse response = new ReservationHistoryResponse();
         response.setReservationId(reservation.getId());
         response.setReservationCode(reservation.getCode());
@@ -199,75 +221,39 @@ public class ReservationServiceImpl implements ReservationService {
         response.setEndTime(reservation.getEndTime());
         response.setGuestNumber(reservation.getGuestNumber());
         response.setReservationStatus(reservation.getStatus());
-        response.setTableName(reservation.getTable() != null ? reservation.getTable().getName() : null);
+        response.setTableName(reservation.getTable().getName());
         response.setCreatedAt(reservation.getCreatedAt());
 
         Order order = reservation.getOrder();
-        if (order != null) {
-            response.setOrderId(order.getId());
-            response.setOrderStatus(order.getStatus());
-            response.setFinalPrice(order.getFinalPrice());
-
-            Long userId = reservation.getUser() != null ? reservation.getUser().getId() : null;
-            List<OrderLineResponse> items = orderDetailRepository.findByOrder_Id(order.getId()).stream()
-                    .map(orderDetail -> toLineResponse(orderDetail, userId))
-                    .toList();
-            response.setItems(items);
-            response.setHasGeneralFeedback(
-                    userId != null && feedbackRepository.existsByUser_IdAndOrder_IdAndOrderDetailIsNull(userId, order.getId())
-            );
-            if (userId != null) {
-                feedbackRepository.findByUser_IdAndOrder_IdAndOrderDetailIsNull(userId, order.getId()).ifPresent(feedback -> {
-                    response.setGeneralFeedback(toFeedbackSummary(feedback));
-                    response.setCanEditGeneralFeedback(canEditFeedback(feedback));
-                });
-            }
+        if (order == null) {
+            return response;
         }
 
-        return response;
-    }
+        OrderHistoryResponse orderHistoryResponse = new OrderHistoryResponse();
+        orderHistoryResponse.setOrderId(order.getId());
+        orderHistoryResponse.setOrderStatus(order.getStatus());
+        orderHistoryResponse.setFinalPrice(order.getFinalPrice());
 
-    private ReservationHistoryResponse fromStandaloneOrderToHistoryResponse(Order order) {
-        ReservationHistoryResponse response = new ReservationHistoryResponse();
-        response.setReservationId(null);
-        response.setReservationCode(null);
-        response.setDate(order.getCreatedAt().toLocalDate());
-        response.setStartTime(order.getCreatedAt().toLocalTime());
-        response.setEndTime(order.getCreatedAt().toLocalTime().plusHours(1));
-        response.setGuestNumber(0);
-        response.setCreatedAt(order.getCreatedAt());
-
-        if (order.getStatus() == com.crowndine.common.enums.EOrderStatus.COMPLETED) {
-            response.setReservationStatus(EReservationStatus.COMPLETED);
-        } else if (order.getStatus() == com.crowndine.common.enums.EOrderStatus.CANCELLED) {
-            response.setReservationStatus(EReservationStatus.CANCELLED);
-        } else {
-            response.setReservationStatus(EReservationStatus.CONFIRMED);
-        }
-
-        response.setTableName(order.getRestaurantTable().getName());
-        response.setOrderId(order.getId());
-        response.setOrderStatus(order.getStatus());
-        response.setFinalPrice(order.getFinalPrice());
-
-        Long userId = order.getUser() != null ? order.getUser().getId() : null;
-        List<OrderLineResponse> items = orderDetailRepository.findByOrder_Id(order.getId()).stream()
-                .map(orderDetail -> toLineResponse(orderDetail, userId))
+        List<OrderLineResponse> items = orderDetailsByOrderId.getOrDefault(order.getId(), List.of()).stream()
+                .map(orderDetail -> toLineResponse(orderDetail, detailFeedbackByOrderDetailId))
                 .toList();
-        response.setItems(items);
-        response.setHasGeneralFeedback(
-                userId != null && feedbackRepository.existsByUser_IdAndOrder_IdAndOrderDetailIsNull(userId, order.getId())
-        );
-        if (userId != null) {
-            feedbackRepository.findByUser_IdAndOrder_IdAndOrderDetailIsNull(userId, order.getId()).ifPresent(feedback -> {
-                response.setGeneralFeedback(toFeedbackSummary(feedback));
-                response.setCanEditGeneralFeedback(canEditFeedback(feedback));
-            });
+        orderHistoryResponse.setItems(items);
+        response.setOrderHistoryResponse(orderHistoryResponse);
+
+        Feedback generalFeedback = generalFeedbackByOrderId.get(order.getId());
+        response.setHasGeneralFeedback(generalFeedback != null);
+        if (generalFeedback != null) {
+            response.setGeneralFeedback(toFeedbackSummary(generalFeedback));
+            response.setCanEditGeneralFeedback(canEditFeedback(generalFeedback));
         }
+
         return response;
     }
 
-    private OrderLineResponse toLineResponse(OrderDetail orderDetail, Long userId) {
+    private OrderLineResponse toLineResponse(
+            OrderDetail orderDetail,
+            Map<Long, Feedback> detailFeedbackByOrderDetailId
+    ) {
         OrderLineResponse response = new OrderLineResponse();
         response.setOrderDetailId(orderDetail.getId());
         Long itemId = orderDetail.getItem() != null ? orderDetail.getItem().getId() : null;
@@ -277,12 +263,11 @@ public class ReservationServiceImpl implements ReservationService {
         response.setQuantity(orderDetail.getQuantity());
         response.setTotalPrice(orderDetail.getTotalPrice());
 
-        if (userId != null) {
-            response.setHasFeedback(feedbackRepository.existsByUser_IdAndOrderDetail_Id(userId, orderDetail.getId()));
-            feedbackRepository.findByUser_IdAndOrderDetail_Id(userId, orderDetail.getId()).ifPresent(feedback -> {
-                response.setFeedback(toFeedbackSummary(feedback));
-                response.setCanEditFeedback(canEditFeedback(feedback));
-            });
+        Feedback detailFeedback = detailFeedbackByOrderDetailId.get(orderDetail.getId());
+        response.setHasFeedback(detailFeedback != null);
+        if (detailFeedback != null) {
+            response.setFeedback(toFeedbackSummary(detailFeedback));
+            response.setCanEditFeedback(canEditFeedback(detailFeedback));
         }
 
         response.setUnitPrice(orderDetail.getAppliedUnitPrice());

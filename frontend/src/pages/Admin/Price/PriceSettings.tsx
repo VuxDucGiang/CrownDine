@@ -41,9 +41,6 @@ export default function PriceSettings() {
     onSuccess: () => {
       toast.success('Cập nhật giá thành công')
       queryClient.invalidateQueries({ queryKey: ['items'] })
-    },
-    onError: () => {
-      toast.error('Cập nhật giá thất bại')
     }
   })
 

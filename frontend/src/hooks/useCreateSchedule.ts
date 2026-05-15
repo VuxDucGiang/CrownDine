@@ -13,9 +13,6 @@ const useCreateSchedule = (onSuccessCallback?: () => void) => {
         queryClient.invalidateQueries({ queryKey: ['work-schedules'] })
         onSuccessCallback?.()
       }
-    },
-    onError: () => {
-      toast.error('Thêm Lịch làm việc thất bại!')
     }
   })
 }

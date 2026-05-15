@@ -12,9 +12,6 @@ const useCreateShift = () => {
         toast.success('Thêm ca làm việc thành công!')
         queryClient.invalidateQueries({ queryKey: ['shifts'] })
       }
-    },
-    onError: () => {
-      toast.error('Có lỗi xảy ra khi thêm ca làm việc!')
     }
   })
 }

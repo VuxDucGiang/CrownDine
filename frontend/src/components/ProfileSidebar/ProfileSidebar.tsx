@@ -38,9 +38,6 @@ const ProfileSidebar = ({ user }: ProfileSidebarProps) => {
         setUser({ ...user, avatar: res.data.data })
         toast.success('Cập nhật ảnh đại diện thành công')
       }
-    },
-    onError: () => {
-      toast.error('Cập nhật ảnh đại diện thất bại')
     }
   })
 

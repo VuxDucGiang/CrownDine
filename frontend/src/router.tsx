@@ -33,6 +33,7 @@ import AttendanceBoard from './pages/Staffs/Attendance'
 import PaymentManagement from './pages/Admin/Payment/PaymentManagement'
 import Cashier from './pages/Staffs/Cashier'
 import NotFound from './pages/NotFound'
+import Forbidden from './pages/Forbidden'
 
 const router = createBrowserRouter([
   {
@@ -73,6 +74,10 @@ const router = createBrowserRouter([
       { path: path.register, element: <Register /> },
       { path: path.verifyRegister, element: <VerifyRegister /> }
     ]
+  },
+  {
+    path: path.forbidden,
+    element: <Forbidden />
   },
 
   // Nhóm 3: Admin

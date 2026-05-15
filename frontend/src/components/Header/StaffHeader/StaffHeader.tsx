@@ -38,7 +38,6 @@ const StaffHeader = () => {
     },
     onError: () => {
       logout()
-      toast.error('Có lỗi xảy ra khi đăng xuất')
       navigate('/login')
     }
   })

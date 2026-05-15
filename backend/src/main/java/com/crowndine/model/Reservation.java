@@ -64,7 +64,7 @@ public class Reservation extends AbstractEntity<Long> {
     private User createdByStaff;
 
     @ManyToOne
-    @JoinColumn(name = "restaurant_table_id")
+    @JoinColumn(name = "restaurant_table_id", nullable = false)
     private RestaurantTable table;
 
     @OneToOne(mappedBy = "reservation")
